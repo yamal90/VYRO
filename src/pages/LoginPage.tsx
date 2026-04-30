@@ -91,7 +91,7 @@ const LoginPage: React.FC = () => {
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-white tracking-wider">VYRO GPU</h1>
           <p className="text-slate-400 mt-2 text-sm">
-            {isRegister ? 'Crea un account con referral obbligatorio' : 'Accedi al tuo account Supabase'}
+            {isRegister ? 'Crea un account con referral obbligatorio' : 'Accedi al tuo account'}
           </p>
         </div>
 
@@ -253,8 +253,8 @@ const LoginPage: React.FC = () => {
         </div>
 
         <p className="text-center text-slate-600 text-[10px] mt-6 leading-relaxed">
-          Registrazione con Supabase Auth e profilo persistito su database.<br />
-          Il referral code viene validato dal backend.
+          Accesso protetto e profilo persistito in piattaforma.<br />
+          Il referral code viene validato automaticamente.
         </p>
       </motion.div>
     </div>

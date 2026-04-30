@@ -50,7 +50,7 @@ const DevicesPage: React.FC = () => {
         <h1 className="font-display text-xl font-bold text-white tracking-wider relative z-10">
           Centro Dispositivi
         </h1>
-        <p className="text-white/60 text-xs mt-1 relative z-10">GPU virtuali per il cloud computing</p>
+        <p className="text-white/60 text-xs mt-1 relative z-10">GPU per il cloud computing</p>
       </div>
 
       {/* Tabs */}
@@ -258,8 +258,8 @@ const DevicesPage: React.FC = () => {
       {/* Disclaimer */}
       <div className="px-4 mt-6">
         <p className="text-[10px] text-slate-400 text-center leading-relaxed">
-          I dispositivi virtuali producono crediti VX simulati all'interno della piattaforma.
-          Non rappresentano hardware reale né rendimenti finanziari.
+          Ogni dispositivo amplia la tua presenza nella piattaforma e rende la dashboard
+          piu ricca di attivita, potenza e progressione visiva.
         </p>
       </div>
     </div>

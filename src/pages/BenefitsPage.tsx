@@ -91,7 +91,7 @@ const BenefitsPage: React.FC = () => {
             <div>
               <p className="text-white/80 text-xs font-medium mb-1">Claim giornaliero</p>
               <p className="font-display text-3xl font-bold">2.5 VX</p>
-              <p className="text-white/60 text-[10px] mt-1">Token virtuali giornalieri</p>
+              <p className="text-white/60 text-[10px] mt-1">Ricompensa giornaliera</p>
             </div>
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -278,8 +278,8 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-[10px] text-amber-700 leading-relaxed text-center">
-            ⚠️ Tutti i bonus e le ricompense sono in VX token virtuali interni.
-            Non rappresentano alcun valore finanziario reale.
+            Missioni, streak e badge rendono l'esperienza VYRO GPU piu coinvolgente,
+            premiando la costanza e la crescita del tuo profilo giorno dopo giorno.
           </p>
         </div>
       </div>

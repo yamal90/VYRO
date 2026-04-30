@@ -150,7 +150,7 @@ const TeamPage: React.FC = () => {
       {/* Team Rates */}
       <div className="px-4 mt-4">
         <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
-          <p className="text-xs font-bold text-purple-700 mb-2">Ricompense team (crediti virtuali)</p>
+          <p className="text-xs font-bold text-purple-700 mb-2">Ricompense team</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-[10px] text-purple-500 font-semibold">Livello 1 — Diretti</p>
@@ -244,9 +244,8 @@ const TeamPage: React.FC = () => {
       <div className="px-4 mt-6">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-[10px] text-amber-700 leading-relaxed text-center">
-            ⚠️ Le ricompense team sono crediti virtuali interni alla piattaforma VYRO GPU.
-            Non rappresentano rendimenti finanziari reali. Le percentuali si applicano
-            esclusivamente ai crediti virtuali generati dall'attività degli utenti.
+            Il programma team valorizza la crescita della tua rete con bonus progressivi,
+            attivita condivise e una panoramica chiara dei risultati generati dai membri invitati.
           </p>
         </div>
       </div>

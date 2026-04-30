@@ -53,7 +53,7 @@ const TransactionsPage: React.FC = () => {
         <h1 className="font-display text-xl font-bold text-white tracking-wider relative z-10">
           Transazioni
         </h1>
-        <p className="text-white/60 text-xs mt-1 relative z-10">Storico movimenti crediti virtuali</p>
+        <p className="text-white/60 text-xs mt-1 relative z-10">Storico completo dei movimenti account</p>
       </div>
 
       {/* Filters */}

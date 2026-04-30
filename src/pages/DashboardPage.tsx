@@ -37,7 +37,7 @@ const DashboardPage: React.FC = () => {
       color: 'bg-blue-100 text-blue-600',
       onClick: () => {
         setPage('transactions');
-        pushNotice('info', 'I prelievi demo verranno mostrati nello storico transazioni.');
+        pushNotice('info', 'I prelievi verranno mostrati nello storico transazioni.');
       },
     },
     {
@@ -145,7 +145,7 @@ const DashboardPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">USDT Demo</p>
+                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">USDT Balance</p>
                 <p className="text-white font-display text-lg font-semibold tracking-wide">
                   {mask(currentUser.demo_usdt_balance)}
                 </p>
@@ -187,7 +187,7 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
           <TrendingUp size={16} className="text-purple-500" />
-          I miei guadagni virtuali
+          I miei guadagni
         </h3>
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -290,8 +290,8 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-[10px] text-amber-700 leading-relaxed text-center">
-            ⚠️ Tutti i valori sono crediti virtuali interni alla piattaforma VYRO GPU.
-            Non rappresentano rendimenti finanziari reali né investimenti garantiti.
+            VYRO GPU ti offre un ambiente dinamico per seguire risultati, crescita del team
+            e progressione della tua attivita in un'esperienza sempre fluida e aggiornata.
           </p>
         </div>
       </div>
