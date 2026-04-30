@@ -1,33 +1,283 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { User, UserDevice, Transaction, TeamMember, DailyClaim, Page, GPUDevice } from '../types';
-import {
-  DEMO_USER, ADMIN_USER, DEMO_USER_DEVICES, DEMO_TRANSACTIONS,
-  DEMO_TEAM_MEMBERS, DEMO_DAILY_CLAIMS, GPU_DEVICES, ALL_USERS, uid
-} from './data';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import type {
+  ActionResult,
+  AdminLog,
+  AppNotice,
+  AuthMode,
+  DailyClaim,
+  GPUDevice,
+  Page,
+  RegisterPayload,
+  TeamMember,
+  Transaction,
+  User,
+  UserDevice,
+} from '../types';
+import { GPU_DEVICES } from './data';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 interface AppState {
   currentUser: User | null;
   isLoggedIn: boolean;
   currentPage: Page;
+  authMode: AuthMode;
+  authLoading: boolean;
+  bootstrapped: boolean;
   userDevices: UserDevice[];
   transactions: Transaction[];
   teamMembers: TeamMember[];
   dailyClaims: DailyClaim[];
   gpuDevices: GPUDevice[];
   allUsers: User[];
+  adminUserDevices: UserDevice[];
+  adminTransactions: Transaction[];
+  adminLogs: AdminLog[];
   balanceVisible: boolean;
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
+  notice: AppNotice | null;
+  login: (email: string, password: string) => Promise<ActionResult>;
+  register: (payload: RegisterPayload) => Promise<ActionResult>;
+  logout: () => Promise<void>;
   setPage: (page: Page) => void;
+  setAuthMode: (mode: AuthMode) => void;
   toggleBalanceVisibility: () => void;
-  activateDevice: (deviceId: string) => { success: boolean; message: string };
-  claimDailyReward: () => { success: boolean; message: string };
-  updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => void;
-  updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => void;
-  blockUser: (userId: string) => void;
+  activateDevice: (deviceId: string) => Promise<ActionResult>;
+  claimDailyReward: () => Promise<ActionResult>;
+  updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => Promise<ActionResult>;
+  updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => Promise<ActionResult>;
+  blockUser: (userId: string) => Promise<ActionResult>;
+  refreshAppData: () => Promise<void>;
+  pushNotice: (kind: AppNotice['kind'], message: string) => void;
+  clearNotice: () => void;
 }
 
+type ProfileRow = {
+  id: string;
+  email: string;
+  username: string;
+  role: string;
+  avatar_url: string | null;
+  tier: string;
+  balance: number;
+  referral_code: string;
+  referred_by: string | null;
+  streak: number;
+  last_claim: string | null;
+  last_claim_amount: number;
+  joined_at: string;
+  team_size: number;
+  account_blocked: boolean;
+  claim_eligible: boolean;
+  created_at: string;
+  updated_at: string;
+  tier_override: boolean;
+};
+
+type TeamMemberRow = {
+  id: string;
+  owner_id: string;
+  username: string;
+  avatar_url: string | null;
+  tier: string;
+  joined: string;
+  contribution: number;
+  active_balance: number;
+  active_sub_count: number;
+  account_blocked: boolean;
+  claim_eligible: boolean;
+  created_at: string;
+  updated_at: string;
+  is_test_bot: boolean;
+  expires_at: string | null;
+};
+
+type PortfolioEntryRow = {
+  id: string;
+  owner_id: string;
+  name: string;
+  allocation: number;
+  value: number;
+  change: number;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
+type DepositRow = {
+  id: string;
+  owner_id: string;
+  amount: number;
+  asset: string;
+  network: string;
+  tx_hash: string | null;
+  status: string;
+  created_at: string;
+};
+
+type WithdrawalRow = {
+  id: string;
+  owner_id: string;
+  amount: number;
+  tx_hash: string | null;
+  status: string;
+  created_at: string;
+  wallet_address: string | null;
+};
+
+type ActivityLogRow = {
+  id: string;
+  owner_id: string;
+  type: string;
+  description: string;
+  amount: number | null;
+  created_at: string;
+};
+
+type PlatformSettingsRow = {
+  id: number;
+  maintenance_mode: boolean;
+  deposits_enabled: boolean;
+  withdrawals_enabled: boolean;
+  daily_claim_enabled: boolean;
+  min_deposit: number;
+  min_withdraw: number;
+  deposit_asset: string;
+  deposit_network: string;
+  deposit_address: string;
+};
+
 const AppContext = createContext<AppState | null>(null);
+
+const emptyResult = (message: string): ActionResult => ({ success: false, message });
+
+const mapProfileToUser = (
+  profile: ProfileRow,
+  computePower: number,
+  demoUsdtBalance: number,
+): User => ({
+  id: profile.id,
+  username: profile.username,
+  email: profile.email,
+  invite_code: profile.referral_code,
+  invited_by: profile.referred_by || null,
+  role: profile.role === 'admin' ? 'admin' : 'user',
+  status: profile.account_blocked ? 'blocked' : 'active',
+  vx_balance: Number(profile.balance ?? 0),
+  demo_usdt_balance: demoUsdtBalance,
+  compute_power: computePower,
+  avatar_url: profile.avatar_url || undefined,
+  created_at: profile.created_at || profile.joined_at,
+});
+
+const mapTeamMember = (row: TeamMemberRow, index: number): TeamMember => ({
+  id: row.id,
+  user_id: row.id,
+  username: row.username,
+  created_at: row.joined || row.created_at,
+  device_active: row.active_sub_count > 0 || row.active_balance > 0,
+  production: Number(row.contribution ?? 0),
+  status: row.account_blocked ? 'inactive' : 'active',
+  level: index % 2 === 0 ? 1 : 2,
+});
+
+const mapPortfolioEntryToUserDevice = (entry: PortfolioEntryRow): UserDevice => {
+  const matchingDevice = GPU_DEVICES.find((device) => device.name === entry.name) ?? {
+    id: `portfolio-${entry.id}`,
+    name: entry.name,
+    price: Number(entry.value ?? 0),
+    reward_3_days: Number((entry.change ?? 0) * 0.42),
+    reward_7_days: Number(entry.change ?? 0),
+    compute_power: Math.max(1, Math.round(Number(entry.allocation ?? 0))),
+    image_url: undefined,
+    active: true,
+  };
+
+  return {
+    id: entry.id,
+    user_id: entry.owner_id,
+    device_id: matchingDevice.id,
+    device: matchingDevice,
+    status: 'active',
+    start_date: entry.created_at,
+    end_date: null,
+    total_generated: Number(entry.change ?? 0),
+    created_at: entry.created_at,
+  };
+};
+
+const mapLogsToTransactions = (
+  deposits: DepositRow[],
+  withdrawals: WithdrawalRow[],
+  activities: ActivityLogRow[],
+): Transaction[] => {
+  const depositTransactions: Transaction[] = deposits.map((row) => ({
+    id: row.id,
+    user_id: row.owner_id,
+    type: 'deposit',
+    amount: Number(row.amount ?? 0),
+    currency: row.asset === 'USDT' ? 'USDT' : 'VX',
+    status: row.status === 'approved' || row.status === 'completed' ? 'completed' : row.status === 'rejected' ? 'rejected' : 'pending',
+    description: `Deposito ${row.asset} ${row.network}`,
+    created_at: row.created_at,
+  }));
+
+  const withdrawalTransactions: Transaction[] = withdrawals.map((row) => ({
+    id: row.id,
+    user_id: row.owner_id,
+    type: 'withdrawal',
+    amount: -Math.abs(Number(row.amount ?? 0)),
+    currency: 'USDT',
+    status: row.status === 'approved' || row.status === 'completed' ? 'completed' : row.status === 'rejected' ? 'rejected' : 'pending',
+    description: row.wallet_address ? `Prelievo verso ${row.wallet_address}` : 'Richiesta prelievo',
+    created_at: row.created_at,
+  }));
+
+  const activityTransactions: Transaction[] = activities.map((row) => {
+    let type: Transaction['type'] = 'login_bonus';
+    let currency: Transaction['currency'] = 'VX';
+    if (row.type.includes('deposit')) type = 'deposit';
+    else if (row.type.includes('withdraw')) {
+      type = 'withdrawal';
+      currency = 'USDT';
+    } else if (row.type.includes('claim')) type = 'daily_claim';
+    else if (row.type.includes('team')) type = 'team_bonus';
+    else if (row.type.includes('purchase') || row.type.includes('device')) type = 'device_purchase';
+    else if (row.type.includes('reward') || row.type.includes('yield')) type = 'device_reward';
+
+    return {
+      id: row.id,
+      user_id: row.owner_id,
+      type,
+      amount: Number(row.amount ?? 0),
+      currency,
+      status: 'completed',
+      description: row.description,
+      created_at: row.created_at,
+    };
+  });
+
+  return [...activityTransactions, ...depositTransactions, ...withdrawalTransactions].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+};
+
+const makeDailyClaims = (profile: ProfileRow): DailyClaim[] => {
+  if (!profile.last_claim) {
+    return [];
+  }
+
+  return [
+    {
+      id: `${profile.id}-last-claim`,
+      user_id: profile.id,
+      amount: Number(profile.last_claim_amount ?? 0),
+      claim_date: profile.last_claim.slice(0, 10),
+      created_at: profile.last_claim,
+    },
+  ];
+};
+
+const randomInviteCode = () => `VYRO-${Math.random().toString(16).slice(2, 10).toUpperCase()}`;
 
 export const useApp = () => {
   const ctx = useContext(AppContext);
@@ -37,141 +287,521 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('login');
-  const [userDevices, setUserDevices] = useState<UserDevice[]>(DEMO_USER_DEVICES);
-  const [transactions, setTransactions] = useState<Transaction[]>(DEMO_TRANSACTIONS);
-  const [teamMembers] = useState<TeamMember[]>(DEMO_TEAM_MEMBERS);
-  const [dailyClaims, setDailyClaims] = useState<DailyClaim[]>(DEMO_DAILY_CLAIMS);
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [bootstrapped, setBootstrapped] = useState(false);
+  const [userDevices, setUserDevices] = useState<UserDevice[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [dailyClaims, setDailyClaims] = useState<DailyClaim[]>([]);
   const [gpuDevices] = useState<GPUDevice[]>(GPU_DEVICES);
-  const [allUsers, setAllUsers] = useState<User[]>(ALL_USERS);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [adminUserDevices, setAdminUserDevices] = useState<UserDevice[]>([]);
+  const [adminTransactions, setAdminTransactions] = useState<Transaction[]>([]);
+  const [adminLogs, setAdminLogs] = useState<AdminLog[]>([]);
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [notice, setNotice] = useState<AppNotice | null>(null);
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettingsRow | null>(null);
 
-  const login = useCallback((email: string, _password: string) => {
-    if (email === 'admin@vyrogpu.com') {
-      setCurrentUser({ ...ADMIN_USER });
-      setIsLoggedIn(true);
-      setCurrentPage('home');
-      return true;
-    }
-    setCurrentUser({ ...DEMO_USER });
-    setIsLoggedIn(true);
-    setCurrentPage('home');
-    return true;
+  const pushNotice = useCallback((kind: AppNotice['kind'], message: string) => {
+    setNotice({ kind, message });
   }, []);
 
-  const logout = useCallback(() => {
+  const clearNotice = useCallback(() => setNotice(null), []);
+
+  const resetData = useCallback(() => {
     setCurrentUser(null);
-    setIsLoggedIn(false);
     setCurrentPage('login');
+    setUserDevices([]);
+    setTransactions([]);
+    setTeamMembers([]);
+    setDailyClaims([]);
+    setAllUsers([]);
+    setAdminUserDevices([]);
+    setAdminTransactions([]);
+    setAdminLogs([]);
   }, []);
 
-  const setPage = useCallback((page: Page) => {
-    setCurrentPage(page);
-  }, []);
+  const fetchAppData = useCallback(async (profileId: string, role: User['role']) => {
+    if (!supabase) return null;
 
-  const toggleBalanceVisibility = useCallback(() => {
-    setBalanceVisible(v => !v);
-  }, []);
+    const [
+      profileRes,
+      settingsRes,
+      portfolioRes,
+      teamRes,
+      depositsRes,
+      withdrawalsRes,
+      activitiesRes,
+    ] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', profileId).single<ProfileRow>(),
+      supabase.from('platform_settings').select('*').eq('id', 1).maybeSingle<PlatformSettingsRow>(),
+      supabase.from('portfolio_entries').select('*').eq('owner_id', profileId).order('position', { ascending: true }),
+      supabase.from('team_members').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
+      supabase.from('deposits').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
+      supabase.from('withdrawals').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
+      supabase.from('activity_logs').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
+    ]);
 
-  const activateDevice = useCallback((deviceId: string): { success: boolean; message: string } => {
-    if (!currentUser) return { success: false, message: 'Non autenticato' };
-    const device = gpuDevices.find(d => d.id === deviceId);
-    if (!device) return { success: false, message: 'Dispositivo non trovato' };
-    if (currentUser.vx_balance < device.price) return { success: false, message: 'Saldo VX insufficiente' };
+    if (profileRes.error) throw profileRes.error;
+    if (settingsRes.error) throw settingsRes.error;
+    if (portfolioRes.error) throw portfolioRes.error;
+    if (teamRes.error) throw teamRes.error;
+    if (depositsRes.error) throw depositsRes.error;
+    if (withdrawalsRes.error) throw withdrawalsRes.error;
+    if (activitiesRes.error) throw activitiesRes.error;
 
-    const newBalance = currentUser.vx_balance - device.price;
-    const newPower = currentUser.compute_power + device.compute_power;
-    setCurrentUser(u => u ? { ...u, vx_balance: newBalance, compute_power: newPower } : null);
+    const portfolio = (portfolioRes.data ?? []) as PortfolioEntryRow[];
+    const deposits = (depositsRes.data ?? []) as DepositRow[];
+    const withdrawals = (withdrawalsRes.data ?? []) as WithdrawalRow[];
+    const activities = (activitiesRes.data ?? []) as ActivityLogRow[];
 
-    const newUserDevice: UserDevice = {
-      id: uid(),
-      user_id: currentUser.id,
-      device_id: deviceId,
-      device: device,
-      status: 'pending',
-      start_date: new Date().toISOString(),
-      end_date: null,
-      total_generated: 0,
-      created_at: new Date().toISOString(),
-    };
-    setUserDevices(prev => [newUserDevice, ...prev]);
+    const computePower = portfolio.reduce((sum, entry) => sum + Number(entry.allocation ?? 0), 0);
+    const demoUsdtBalance =
+      deposits.reduce((sum, row) => sum + Number(row.amount ?? 0), 0) -
+      withdrawals.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
+    const profile = mapProfileToUser(profileRes.data as ProfileRow, computePower, demoUsdtBalance);
 
-    const tx: Transaction = {
-      id: uid(),
-      user_id: currentUser.id,
-      type: 'device_purchase',
-      amount: -device.price,
-      currency: 'VX',
-      status: 'completed',
-      description: `Attivazione ${device.name}`,
-      created_at: new Date().toISOString(),
-    };
-    setTransactions(prev => [tx, ...prev]);
+    setCurrentUser(profile);
+    setPlatformSettings((settingsRes.data as PlatformSettingsRow) ?? null);
+    setUserDevices(portfolio.map(mapPortfolioEntryToUserDevice));
+    setTransactions(mapLogsToTransactions(deposits, withdrawals, activities));
+    setTeamMembers(((teamRes.data ?? []) as TeamMemberRow[]).map(mapTeamMember));
+    setDailyClaims(makeDailyClaims(profileRes.data as ProfileRow));
 
-    return { success: true, message: `${device.name} attivato con successo!` };
-  }, [currentUser, gpuDevices]);
+    if (role === 'admin') {
+      const [profilesAllRes, portfolioAllRes, depositsAllRes, withdrawalsAllRes, activitiesAllRes] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('portfolio_entries').select('*').order('created_at', { ascending: false }),
+        supabase.from('deposits').select('*').order('created_at', { ascending: false }),
+        supabase.from('withdrawals').select('*').order('created_at', { ascending: false }),
+        supabase.from('activity_logs').select('*').order('created_at', { ascending: false }),
+      ]);
 
-  const claimDailyReward = useCallback((): { success: boolean; message: string } => {
-    if (!currentUser) return { success: false, message: 'Non autenticato' };
-    const today = new Date().toISOString().slice(0, 10);
-    const alreadyClaimed = dailyClaims.some(c => c.claim_date === today && c.user_id === currentUser.id);
-    if (alreadyClaimed) return { success: false, message: 'Già riscosso oggi!' };
+      if (profilesAllRes.error) throw profilesAllRes.error;
+      if (portfolioAllRes.error) throw portfolioAllRes.error;
+      if (depositsAllRes.error) throw depositsAllRes.error;
+      if (withdrawalsAllRes.error) throw withdrawalsAllRes.error;
+      if (activitiesAllRes.error) throw activitiesAllRes.error;
 
-    const amount = 2.5;
-    setCurrentUser(u => u ? { ...u, vx_balance: u.vx_balance + amount } : null);
+      const allProfileRows = (profilesAllRes.data ?? []) as ProfileRow[];
+      const allPortfolioRows = (portfolioAllRes.data ?? []) as PortfolioEntryRow[];
+      const allDepositRows = (depositsAllRes.data ?? []) as DepositRow[];
+      const allWithdrawalRows = (withdrawalsAllRes.data ?? []) as WithdrawalRow[];
+      const allActivityRows = (activitiesAllRes.data ?? []) as ActivityLogRow[];
 
-    const claim: DailyClaim = {
-      id: uid(),
-      user_id: currentUser.id,
-      amount,
-      claim_date: today,
-      created_at: new Date().toISOString(),
-    };
-    setDailyClaims(prev => [claim, ...prev]);
+      const computeByUser = new Map<string, number>();
+      for (const row of allPortfolioRows) {
+        computeByUser.set(row.owner_id, (computeByUser.get(row.owner_id) ?? 0) + Number(row.allocation ?? 0));
+      }
+      const usdtByUser = new Map<string, number>();
+      for (const row of allDepositRows) {
+        usdtByUser.set(row.owner_id, (usdtByUser.get(row.owner_id) ?? 0) + Number(row.amount ?? 0));
+      }
+      for (const row of allWithdrawalRows) {
+        usdtByUser.set(row.owner_id, (usdtByUser.get(row.owner_id) ?? 0) - Number(row.amount ?? 0));
+      }
 
-    const tx: Transaction = {
-      id: uid(),
-      user_id: currentUser.id,
-      type: 'daily_claim',
-      amount,
-      currency: 'VX',
-      status: 'completed',
-      description: 'Claim giornaliero VX token',
-      created_at: new Date().toISOString(),
-    };
-    setTransactions(prev => [tx, ...prev]);
-
-    return { success: true, message: `+${amount} VX token riscossi!` };
-  }, [currentUser, dailyClaims]);
-
-  const updateUserBalance = useCallback((userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => {
-    if (currentUser?.role !== 'admin') return;
-    setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, [field]: amount } : u));
-    if (currentUser?.id === userId) {
-      setCurrentUser(u => u ? { ...u, [field]: amount } : null);
+      setAllUsers(
+        allProfileRows.map((row) =>
+          mapProfileToUser(row, computeByUser.get(row.id) ?? 0, usdtByUser.get(row.id) ?? 0),
+        ),
+      );
+      setAdminUserDevices(allPortfolioRows.map(mapPortfolioEntryToUserDevice));
+      setAdminTransactions(mapLogsToTransactions(allDepositRows, allWithdrawalRows, allActivityRows));
+      setAdminLogs(
+        allActivityRows.slice(0, 40).map((row) => ({
+          id: row.id,
+          admin_id: row.owner_id,
+          action: row.type,
+          metadata: { description: row.description, amount: row.amount ?? 0 },
+          created_at: row.created_at,
+        })),
+      );
+    } else {
+      setAllUsers([]);
+      setAdminUserDevices([]);
+      setAdminTransactions([]);
+      setAdminLogs([]);
     }
-  }, [currentUser]);
 
-  const updateDeviceStatus = useCallback((userDeviceId: string, status: UserDevice['status']) => {
-    if (currentUser?.role !== 'admin') return;
-    setUserDevices(prev => prev.map(d => d.id === userDeviceId ? { ...d, status } : d));
-  }, [currentUser]);
+    return profile;
+  }, []);
 
-  const blockUser = useCallback((_userId: string) => {
-    if (currentUser?.role !== 'admin') return;
-    // In demo, just remove from list
-    setAllUsers(prev => prev.filter(u => u.id !== _userId));
-  }, [currentUser]);
+  const syncReferral = useCallback(async (profile: ProfileRow, referralCode: string) => {
+    if (!supabase) return;
+    const normalized = referralCode.trim().toUpperCase();
+    if (!normalized || normalized === profile.referral_code || profile.referred_by) return;
+
+    const { data: referrer, error: referrerError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('referral_code', normalized)
+      .single<ProfileRow>();
+
+    if (referrerError || !referrer) return;
+
+    await supabase
+      .from('profiles')
+      .update({
+        referred_by: normalized,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', profile.id);
+
+    const { data: existingMember } = await supabase
+      .from('team_members')
+      .select('id')
+      .eq('owner_id', referrer.id)
+      .eq('username', profile.username)
+      .maybeSingle();
+
+    if (!existingMember) {
+      await supabase.from('team_members').insert({
+        owner_id: referrer.id,
+        username: profile.username,
+        avatar_url: profile.avatar_url || '',
+        tier: profile.role === 'admin' ? 'ADMIN' : 'ZYRA',
+        joined: profile.joined_at,
+        contribution: 0,
+        active_balance: Number(profile.balance ?? 0),
+        active_sub_count: 0,
+        account_blocked: profile.account_blocked,
+        claim_eligible: profile.claim_eligible,
+        is_test_bot: false,
+      });
+    }
+
+    await supabase
+      .from('profiles')
+      .update({
+        team_size: Number(referrer.team_size ?? 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', referrer.id);
+  }, []);
+
+  const hydrateFromSession = useCallback(async (session: Session | null) => {
+    if (!supabase || !session?.user) {
+      resetData();
+      setBootstrapped(true);
+      return;
+    }
+
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single<ProfileRow>();
+    if (error || !data) {
+      resetData();
+      pushNotice('error', 'Profilo utente non trovato su Supabase.');
+      setBootstrapped(true);
+      return;
+    }
+
+    const referralFromMetadata = String(session.user.user_metadata?.referralCode ?? session.user.user_metadata?.referral_code ?? '').trim();
+    if (referralFromMetadata) {
+      await syncReferral(data, referralFromMetadata);
+    }
+
+    await fetchAppData(session.user.id, data.role === 'admin' ? 'admin' : 'user');
+    setCurrentPage('home');
+    setBootstrapped(true);
+  }, [fetchAppData, pushNotice, resetData, syncReferral]);
+
+  useEffect(() => {
+    let active = true;
+    if (!isSupabaseConfigured || !supabase) {
+      setBootstrapped(true);
+      return;
+    }
+
+    const boot = async () => {
+      setAuthLoading(true);
+      const { data } = await supabase.auth.getSession();
+      if (active) {
+        await hydrateFromSession(data.session);
+        setAuthLoading(false);
+      }
+    };
+    void boot();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => {
+        if (!active) return;
+        setAuthLoading(true);
+        void hydrateFromSession(session).finally(() => {
+          if (active) setAuthLoading(false);
+        });
+      }, 0);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [hydrateFromSession]);
+
+  const refreshAppData = useCallback(async () => {
+    if (!supabase || !currentUser) return;
+    setAuthLoading(true);
+    try {
+      await fetchAppData(currentUser.id, currentUser.role);
+    } catch (error) {
+      pushNotice('error', error instanceof Error ? error.message : 'Aggiornamento dati non riuscito');
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [currentUser, fetchAppData, pushNotice]);
+
+  const login = useCallback(async (email: string, password: string): Promise<ActionResult> => {
+    if (!supabase) return emptyResult('Configura Supabase prima del login.');
+    clearNotice();
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      return { success: true, message: 'Accesso completato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Accesso non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearNotice, pushNotice]);
+
+  const register = useCallback(async (payload: RegisterPayload): Promise<ActionResult> => {
+    if (!supabase) return emptyResult('Configura Supabase prima della registrazione.');
+    clearNotice();
+    const referralCode = payload.referralCode.trim().toUpperCase();
+    if (!referralCode) return emptyResult('Il referral code è obbligatorio.');
+    if (payload.password !== payload.confirmPassword) return emptyResult('Le password non coincidono.');
+    if (payload.password.length < 6) return emptyResult('La password deve avere almeno 6 caratteri.');
+
+    const { data: referrer, error: referrerError } = await supabase
+      .from('profiles')
+      .select('id,referral_code')
+      .eq('referral_code', referralCode)
+      .maybeSingle();
+
+    if (referrerError || !referrer) {
+      return emptyResult('Referral code non valido.');
+    }
+
+    setAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: payload.email.trim().toLowerCase(),
+        password: payload.password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            username: payload.username.trim(),
+            referralCode,
+          },
+        },
+      });
+      if (error) throw error;
+
+      if (data.session?.user) {
+        const { data: createdProfile } = await supabase.from('profiles').select('*').eq('id', data.session.user.id).single<ProfileRow>();
+        if (createdProfile) {
+          await syncReferral(createdProfile, referralCode);
+        }
+        return { success: true, message: 'Registrazione completata.' };
+      }
+
+      setAuthMode('login');
+      pushNotice('success', 'Registrazione completata. Controlla la mail di conferma.');
+      return { success: true, message: 'Registrazione completata. Conferma la mail.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Registrazione non riuscita';
+      pushNotice('error', message);
+      return emptyResult(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearNotice, pushNotice, syncReferral]);
+
+  const logout = useCallback(async () => {
+    if (!supabase) {
+      resetData();
+      return;
+    }
+    await supabase.auth.signOut();
+    resetData();
+    setAuthMode('login');
+  }, [resetData]);
+
+  const setPage = useCallback((page: Page) => setCurrentPage(page), []);
+  const toggleBalanceVisibility = useCallback(() => setBalanceVisible((value) => !value), []);
+
+  const activateDevice = useCallback(async (deviceId: string): Promise<ActionResult> => {
+    if (!supabase || !currentUser) return emptyResult('Non autenticato');
+    const device = gpuDevices.find((entry) => entry.id === deviceId);
+    if (!device) return emptyResult('Dispositivo non trovato');
+    if (currentUser.vx_balance < device.price) return emptyResult('Saldo VX insufficiente');
+
+    try {
+      const now = new Date().toISOString();
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          balance: currentUser.vx_balance - device.price,
+          updated_at: now,
+        })
+        .eq('id', currentUser.id);
+      if (profileError) throw profileError;
+
+      const { error: portfolioError } = await supabase.from('portfolio_entries').insert({
+        owner_id: currentUser.id,
+        name: device.name,
+        allocation: device.compute_power,
+        value: device.price,
+        change: device.reward_7_days,
+        position: userDevices.length + 1,
+      });
+      if (portfolioError) throw portfolioError;
+
+      await supabase.from('activity_logs').insert({
+        owner_id: currentUser.id,
+        type: 'device_purchase',
+        description: `Attivazione ${device.name}`,
+        amount: -device.price,
+      });
+
+      await refreshAppData();
+      return { success: true, message: `${device.name} attivato con successo.` };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Attivazione non riuscita';
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, gpuDevices, pushNotice, refreshAppData, supabase, userDevices.length]);
+
+  const claimDailyReward = useCallback(async (): Promise<ActionResult> => {
+    if (!supabase || !currentUser) return emptyResult('Non autenticato');
+    if (platformSettings && !platformSettings.daily_claim_enabled) {
+      return emptyResult('Il claim giornaliero è disabilitato dalla piattaforma.');
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const alreadyClaimed = dailyClaims.some((claim) => claim.claim_date === today);
+    if (alreadyClaimed) return emptyResult('Già riscosso oggi.');
+    const reward = 0.8;
+
+    try {
+      const now = new Date().toISOString();
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          balance: currentUser.vx_balance + reward,
+          streak: dailyClaims.length + 1,
+          last_claim: now,
+          last_claim_amount: reward,
+          updated_at: now,
+        })
+        .eq('id', currentUser.id);
+      if (profileError) throw profileError;
+
+      await supabase.from('activity_logs').insert({
+        owner_id: currentUser.id,
+        type: 'daily_claim',
+        description: 'Claim giornaliero VX token',
+        amount: reward,
+      });
+
+      await refreshAppData();
+      return { success: true, message: `+${reward} VX riscossi.` };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Claim non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, dailyClaims, pushNotice, refreshAppData, supabase]);
+
+  const updateUserBalance = useCallback(async (
+    userId: string,
+    field: 'vx_balance' | 'demo_usdt_balance',
+    amount: number,
+  ): Promise<ActionResult> => {
+    if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+    if (field !== 'vx_balance') {
+      pushNotice('info', 'Nel database reale admin modifica solo il saldo principale.');
+      return emptyResult('Campo non supportato dal database attuale.');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ balance: amount, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: 'Saldo aggiornato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Aggiornamento saldo non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, pushNotice, refreshAppData]);
+
+  const updateDeviceStatus = useCallback(async (_userDeviceId: string, _status: UserDevice['status']): Promise<ActionResult> => {
+    pushNotice('info', 'Lo schema corrente non espone stati separati dei dispositivi. Le posizioni sono considerate attive.');
+    return emptyResult('Operazione non supportata dal database attuale.');
+  }, [pushNotice]);
+
+  const blockUser = useCallback(async (userId: string): Promise<ActionResult> => {
+    if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ account_blocked: true, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: 'Utente bloccato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Blocco utente non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, pushNotice, refreshAppData]);
 
   return (
-    <AppContext.Provider value={{
-      currentUser, isLoggedIn, currentPage, userDevices, transactions,
-      teamMembers, dailyClaims, gpuDevices, allUsers, balanceVisible,
-      login, logout, setPage, toggleBalanceVisibility,
-      activateDevice, claimDailyReward,
-      updateUserBalance, updateDeviceStatus, blockUser,
-    }}>
+    <AppContext.Provider
+      value={{
+        currentUser,
+        isLoggedIn: Boolean(currentUser),
+        currentPage,
+        authMode,
+        authLoading,
+        bootstrapped,
+        userDevices,
+        transactions,
+        teamMembers,
+        dailyClaims,
+        gpuDevices,
+        allUsers,
+        adminUserDevices,
+        adminTransactions,
+        adminLogs,
+        balanceVisible,
+        notice,
+        login,
+        register,
+        logout,
+        setPage,
+        setAuthMode,
+        toggleBalanceVisibility,
+        activateDevice,
+        claimDailyReward,
+        updateUserBalance,
+        updateDeviceStatus,
+        blockUser,
+        refreshAppData,
+        pushNotice,
+        clearNotice,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

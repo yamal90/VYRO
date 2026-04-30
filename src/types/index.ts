@@ -5,6 +5,7 @@ export interface User {
   invite_code: string;
   invited_by: string | null;
   role: 'user' | 'admin';
+  status: 'active' | 'blocked';
   vx_balance: number;
   demo_usdt_balance: number;
   compute_power: number;
@@ -73,4 +74,23 @@ export interface AdminLog {
   created_at: string;
 }
 
+export interface ActionResult {
+  success: boolean;
+  message: string;
+}
+
+export interface RegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  referralCode: string;
+}
+
+export interface AppNotice {
+  kind: 'info' | 'success' | 'error';
+  message: string;
+}
+
+export type AuthMode = 'login' | 'register';
 export type Page = 'home' | 'devices' | 'transactions' | 'team' | 'benefits' | 'admin' | 'login';

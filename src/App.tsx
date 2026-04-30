@@ -9,6 +9,8 @@ import TeamPage from './pages/TeamPage';
 import BenefitsPage from './pages/BenefitsPage';
 import AdminPage from './pages/AdminPage';
 import BottomNav from './components/BottomNav';
+import SupabaseSetupState from './components/SupabaseSetupState';
+import { isSupabaseConfigured } from './lib/supabase';
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -17,7 +19,22 @@ const pageVariants = {
 };
 
 const AppContent: React.FC = () => {
-  const { isLoggedIn, currentPage } = useApp();
+  const { isLoggedIn, currentPage, bootstrapped, authLoading, notice, clearNotice } = useApp();
+
+  if (!isSupabaseConfigured) {
+    return <SupabaseSetupState />;
+  }
+
+  if (!bootstrapped) {
+    return (
+      <div className="min-h-screen gradient-dark flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-white/15 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm text-white/70">Connessione a Supabase...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return <LoginPage />;
@@ -44,6 +61,27 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="max-w-lg mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50">
+      <AnimatePresence>
+        {notice && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            onClick={clearNotice}
+            className={`absolute top-3 left-3 right-3 z-50 rounded-2xl px-4 py-3 text-left text-sm shadow-lg ${
+              notice.kind === 'error'
+                ? 'bg-red-600 text-white'
+                : notice.kind === 'success'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-900 text-white'
+            }`}
+          >
+            <span className="font-semibold block">{notice.message}</span>
+            <span className="text-[11px] opacity-75 block mt-1">Tocca per chiudere</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
       <AnimatePresence mode="wait">
         <motion.div
           key={currentPage}
@@ -55,6 +93,11 @@ const AppContent: React.FC = () => {
           {renderPage()}
         </motion.div>
       </AnimatePresence>
+      {authLoading && (
+        <div className="absolute inset-0 z-40 pointer-events-none bg-white/30 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+        </div>
+      )}
       {currentPage !== 'admin' && <BottomNav />}
     </div>
   );

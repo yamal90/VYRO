@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Copy, Check, Zap, Cpu, UserPlus } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useApp } from '../store/AppContext';
 
 const TeamPage: React.FC = () => {
@@ -10,7 +11,7 @@ const TeamPage: React.FC = () => {
 
   if (!currentUser) return null;
 
-  const inviteLink = `https://vyrogpu.com/invite/${currentUser.invite_code}`;
+  const inviteLink = `${window.location.origin}?ref=${currentUser.invite_code}`;
   const level1 = teamMembers.filter(m => m.level === 1);
   const level2 = teamMembers.filter(m => m.level === 2);
   const activeMembers = activeLevel === 1 ? level1 : level2;
@@ -95,17 +96,16 @@ const TeamPage: React.FC = () => {
             </div>
           </div>
 
-          {/* QR placeholder */}
+          {/* QR */}
           <div className="bg-white rounded-xl p-4 flex items-center gap-4">
-            <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center">
-              <div className="grid grid-cols-5 gap-0.5">
-                {Array.from({ length: 25 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-3 h-3 rounded-[1px] ${Math.random() > 0.4 ? 'bg-slate-800' : 'bg-transparent'}`}
-                  />
-                ))}
-              </div>
+            <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center p-1.5">
+              <QRCodeSVG
+                value={inviteLink}
+                size={68}
+                fgColor="#0f172a"
+                bgColor="#ffffff"
+                level="M"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-slate-800 text-xs font-medium mb-1">Link invito</p>

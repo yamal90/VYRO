@@ -10,7 +10,7 @@ type AdminTab = 'users' | 'devices' | 'transactions' | 'logs';
 
 const AdminPage: React.FC = () => {
   const {
-    currentUser, allUsers, userDevices, transactions,
+    currentUser, allUsers, adminUserDevices, adminTransactions, adminLogs,
     setPage, updateUserBalance, updateDeviceStatus, blockUser
   } = useApp();
   const [activeTab, setActiveTab] = useState<AdminTab>('users');
@@ -38,22 +38,14 @@ const AdminPage: React.FC = () => {
     { key: 'logs', label: 'Log', icon: Eye },
   ];
 
-  const handleSaveBalance = (userId: string) => {
+  const handleSaveBalance = async (userId: string) => {
     const amount = parseFloat(editBalance);
     if (!isNaN(amount)) {
-      updateUserBalance(userId, 'vx_balance', amount);
+      await updateUserBalance(userId, 'vx_balance', amount);
     }
     setEditingUser(null);
     setEditBalance('');
   };
-
-  const logs = [
-    { time: '2025-06-15 14:30', action: 'Approvato dispositivo ud-2', admin: 'AdminVyro' },
-    { time: '2025-06-15 12:00', action: 'Modificato saldo usr-001', admin: 'AdminVyro' },
-    { time: '2025-06-14 18:00', action: 'Bloccato utente usr-spam', admin: 'AdminVyro' },
-    { time: '2025-06-14 09:00', action: 'Creato nuovo modello GPU', admin: 'AdminVyro' },
-    { time: '2025-06-13 16:30', action: 'Aggiornata percentuale team L1', admin: 'AdminVyro' },
-  ];
 
   return (
     <div className="min-h-screen gradient-dark pb-24">
@@ -79,9 +71,9 @@ const AdminPage: React.FC = () => {
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
             { label: 'Utenti', value: allUsers.length, color: 'from-purple-500 to-violet-600' },
-            { label: 'Dispositivi', value: userDevices.length, color: 'from-blue-500 to-indigo-600' },
-            { label: 'Transazioni', value: transactions.length, color: 'from-cyan-500 to-teal-600' },
-            { label: 'Attivi', value: userDevices.filter(d => d.status === 'active').length, color: 'from-green-500 to-emerald-600' },
+            { label: 'Dispositivi', value: adminUserDevices.length, color: 'from-blue-500 to-indigo-600' },
+            { label: 'Transazioni', value: adminTransactions.length, color: 'from-cyan-500 to-teal-600' },
+            { label: 'Attivi', value: adminUserDevices.filter(d => d.status === 'active').length, color: 'from-green-500 to-emerald-600' },
           ].map(stat => (
             <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-xl p-3 text-center`}>
               <p className="font-display text-lg font-bold text-white">{stat.value}</p>
@@ -144,7 +136,7 @@ const AdminPage: React.FC = () => {
                       <Edit3 size={12} />
                     </button>
                     <button
-                      onClick={() => blockUser(user.id)}
+                      onClick={() => void blockUser(user.id)}
                       className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/30"
                     >
                       <UserX size={12} />
@@ -201,7 +193,7 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'devices' && (
           <div className="space-y-2">
-            {userDevices.map(ud => (
+            {adminUserDevices.map(ud => (
               <div key={ud.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -221,7 +213,7 @@ const AdminPage: React.FC = () => {
                   {(['pending', 'processing', 'active', 'completed'] as const).map(status => (
                     <button
                       key={status}
-                      onClick={() => updateDeviceStatus(ud.id, status)}
+                      onClick={() => void updateDeviceStatus(ud.id, status)}
                       className={`px-2 py-1 rounded text-[9px] font-semibold transition-all ${
                         ud.status === status
                           ? 'bg-purple-500 text-white'
@@ -239,7 +231,7 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'transactions' && (
           <div className="space-y-2">
-            {transactions.slice(0, 15).map(tx => (
+            {adminTransactions.slice(0, 15).map(tx => (
               <div key={tx.id} className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${
                   tx.status === 'completed' ? 'bg-green-500' :
@@ -264,12 +256,12 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'logs' && (
           <div className="space-y-2">
-            {logs.map((log, i) => (
+            {adminLogs.map((log, i) => (
               <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Shield size={12} className="text-yellow-400" />
-                  <p className="text-white/60 text-[10px]">{log.time}</p>
-                  <span className="text-purple-400 text-[10px] font-bold ml-auto">{log.admin}</span>
+                  <p className="text-white/60 text-[10px]">{new Date(log.created_at).toLocaleString('it-IT')}</p>
+                  <span className="text-purple-400 text-[10px] font-bold ml-auto">{log.admin_id.slice(0, 8)}</span>
                 </div>
                 <p className="text-white text-xs">{log.action}</p>
               </div>

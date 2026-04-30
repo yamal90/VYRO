@@ -18,8 +18,8 @@ const BenefitsPage: React.FC = () => {
 
   const handleClaim = () => {
     setClaiming(true);
-    setTimeout(() => {
-      const result = claimDailyReward();
+    setTimeout(async () => {
+      const result = await claimDailyReward();
       setClaimResult({ msg: result.message, ok: result.success });
       setClaiming(false);
       setTimeout(() => setClaimResult(null), 3000);

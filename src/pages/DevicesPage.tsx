@@ -31,8 +31,8 @@ const DevicesPage: React.FC = () => {
 
   const handleActivate = (device: GPUDevice) => {
     setActivatingId(device.id);
-    setTimeout(() => {
-      const result = activateDevice(device.id);
+    setTimeout(async () => {
+      const result = await activateDevice(device.id);
       setToast({ msg: result.message, ok: result.success });
       setActivatingId(null);
       setTimeout(() => setToast(null), 3000);

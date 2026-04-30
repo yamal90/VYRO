@@ -13,7 +13,7 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions } = useApp();
+  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice } = useApp();
   if (!currentUser) return null;
 
   const todayIncome = 18.54;
@@ -21,6 +21,44 @@ const DashboardPage: React.FC = () => {
   const teamProd = 6.22;
 
   const recentTx = transactions.slice(0, 4);
+  const actionButtons = [
+    {
+      icon: ArrowDownCircle,
+      label: 'Ricarica',
+      color: 'bg-purple-100 text-purple-600',
+      onClick: () => {
+        setPage('transactions');
+        pushNotice('info', 'Le richieste di ricarica vengono tracciate nella sezione transazioni.');
+      },
+    },
+    {
+      icon: ArrowUpCircle,
+      label: 'Prelievo',
+      color: 'bg-blue-100 text-blue-600',
+      onClick: () => {
+        setPage('transactions');
+        pushNotice('info', 'I prelievi demo verranno mostrati nello storico transazioni.');
+      },
+    },
+    {
+      icon: Repeat,
+      label: 'Scambio',
+      color: 'bg-cyan-100 text-cyan-600',
+      onClick: () => {
+        setPage('devices');
+        pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo VX.');
+      },
+    },
+    {
+      icon: FileText,
+      label: 'Fattura',
+      color: 'bg-emerald-100 text-emerald-600',
+      onClick: () => {
+        setPage('transactions');
+        pushNotice('info', 'Apri una transazione per vedere il relativo dettaglio contabile.');
+      },
+    },
+  ];
 
   const mask = (v: number) => balanceVisible ? v.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '••••••';
 
@@ -57,14 +95,28 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+              <button
+                onClick={() => void refreshAppData()}
+                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
                 <RefreshCw size={16} className="text-white" />
               </button>
-              <button className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+              <button
+                onClick={() => {
+                  window.location.href = 'mailto:support@vyrogpu.com';
+                }}
+                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
                 <Headphones size={16} className="text-white" />
               </button>
               <button
-                onClick={() => currentUser.role === 'admin' && setPage('admin')}
+                onClick={() => {
+                  if (currentUser.role === 'admin') {
+                    setPage('admin');
+                    return;
+                  }
+                  pushNotice('info', 'Area impostazioni in arrivo. Per ora puoi gestire tutto da Team e Transazioni.');
+                }}
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
               >
                 {currentUser.role === 'admin' ? <Shield size={16} className="text-yellow-300" /> : <Settings size={16} className="text-white" />}
@@ -111,12 +163,7 @@ const DashboardPage: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="bg-white rounded-2xl shadow-lg shadow-purple-500/5 p-5 grid grid-cols-4 gap-3"
         >
-          {[
-            { icon: ArrowDownCircle, label: 'Ricarica', color: 'bg-purple-100 text-purple-600' },
-            { icon: ArrowUpCircle, label: 'Prelievo', color: 'bg-blue-100 text-blue-600' },
-            { icon: Repeat, label: 'Scambio', color: 'bg-cyan-100 text-cyan-600' },
-            { icon: FileText, label: 'Fattura', color: 'bg-emerald-100 text-emerald-600' },
-          ].map((item, i) => (
+          {actionButtons.map((item, i) => (
             <motion.button
               key={item.label}
               custom={i}
@@ -124,6 +171,7 @@ const DashboardPage: React.FC = () => {
               initial="hidden"
               animate="visible"
               whileTap={{ scale: 0.92 }}
+              onClick={item.onClick}
               className="flex flex-col items-center gap-2"
             >
               <div className={`w-12 h-12 rounded-xl ${item.color} flex items-center justify-center`}>
