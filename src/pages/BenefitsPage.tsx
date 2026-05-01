@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Gift, Calendar, Award, Trophy, Star,
-  CheckCircle, Lock, Target, Flame, Crown, Zap
+  CheckCircle, Lock, Target, Flame, Crown
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 
 const BenefitsPage: React.FC = () => {
-  const { currentUser, claimDailyReward, dailyClaims } = useApp();
+  const { currentUser, claimDailyReward, dailyClaims, userDevices, teamMembers } = useApp();
   const [claimResult, setClaimResult] = useState<{ msg: string; ok: boolean } | null>(null);
   const [claiming, setClaiming] = useState(false);
 
@@ -30,17 +30,16 @@ const BenefitsPage: React.FC = () => {
   const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   const daysCompleted = Math.min(dailyClaims.length, 7);
 
-  // Badges
-  const badges = [
-    { name: 'Primo Login', icon: '🚀', earned: true, desc: 'Accesso alla piattaforma', tier: 'bronze' },
-    { name: 'Primo GPU', icon: '⚡', earned: true, desc: 'Attivazione primo dispositivo', tier: 'silver' },
-    { name: 'Team Builder', icon: '👥', earned: true, desc: 'Invita 3 membri', tier: 'silver' },
-    { name: 'Streak 7', icon: '🔥', earned: false, desc: '7 claim consecutivi', tier: 'gold' },
-    { name: 'Power User', icon: '💎', earned: false, desc: '100 TFLOPS potenza', tier: 'platinum' },
-    { name: 'Top Earner', icon: '🏆', earned: false, desc: '10.000 VX generati', tier: 'diamond' },
-    { name: 'Legend', icon: '👑', earned: false, desc: '100.000 VX generati', tier: 'ultimate' },
-    { name: 'Pioneer', icon: '🌟', earned: false, desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
-  ];
+  const badges = useMemo(() => [
+    { name: 'Primo Login', icon: '🚀', earned: Boolean(currentUser), desc: 'Accesso alla piattaforma', tier: 'bronze' },
+    { name: 'Primo GPU', icon: '⚡', earned: userDevices.length > 0, desc: 'Attivazione primo dispositivo', tier: 'silver' },
+    { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: 'Invita 3 membri', tier: 'silver' },
+    { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: '7 claim consecutivi', tier: 'gold' },
+    { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: '100 TFLOPS potenza', tier: 'platinum' },
+    { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 VX generati', tier: 'diamond' },
+    { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 VX generati', tier: 'ultimate' },
+    { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
+  ], [currentUser, userDevices, teamMembers, dailyClaims]);
 
   const tierColors: Record<string, string> = {
     bronze: 'from-amber-700 to-amber-900',
@@ -51,14 +50,9 @@ const BenefitsPage: React.FC = () => {
     ultimate: 'from-purple-600 via-pink-500 to-cyan-500',
   };
 
-  // Leaderboard
-  const leaderboard = [
-    { pos: 1, name: 'QuantumRex', vx: 4500, power: 68 },
-    { pos: 2, name: currentUser.username, vx: currentUser.vx_balance, power: currentUser.compute_power },
-    { pos: 3, name: 'NeonDrift', vx: 1220, power: 24 },
-    { pos: 4, name: 'VoltEdge', vx: 780, power: 8 },
-    { pos: 5, name: 'PixelForge', vx: 340, power: 4 },
-  ];
+  const leaderboard = useMemo(() => [
+    { pos: 1, name: currentUser.username, vx: currentUser.vx_balance, power: currentUser.compute_power },
+  ], [currentUser]);
 
   // Missions
   const missions = [

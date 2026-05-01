@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Cpu, Gift, ArrowRightLeft, Users, Sparkles, HelpCircle } from 'lucide-react';
+import { Home, Cpu, Gift, ArrowRightLeft, Users, HelpCircle } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import type { Page } from '../types';
 
@@ -30,6 +30,8 @@ const BottomNav: React.FC = () => {
                   key={item.page}
                   onClick={() => setPage(item.page)}
                   whileTap={{ scale: 0.9 }}
+                  aria-label={item.label}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all relative flex-shrink-0 snap-center ${
                     isActive ? 'text-purple-400' : 'text-slate-500'
                   }`}

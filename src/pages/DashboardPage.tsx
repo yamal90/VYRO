@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Eye, EyeOff, RefreshCw, Headphones, Settings,
+  Eye, EyeOff, RefreshCw, Headphones,
   ArrowDownCircle, ArrowUpCircle, Repeat, FileText,
-  Zap, TrendingUp, Users, Activity, ChevronRight, Shield, Sparkles, LogOut
+  Zap, TrendingUp, Users, Activity, ChevronRight, Shield, Sparkles, LogOut, Settings
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
+import NicknameModal from '../components/ui/NicknameModal';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 15 },
@@ -13,12 +14,27 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice, updateNickname, logout } = useApp();
-  if (!currentUser) return null;
+  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, userDevices, teamMembers, refreshAppData, pushNotice, updateNickname, logout } = useApp();
+  const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
 
-  const todayIncome = 18.54;
-  const personalProd = 12.32;
-  const teamProd = 6.22;
+  const todayIncome = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return transactions
+      .filter((t) => t.amount > 0 && t.created_at.startsWith(today))
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
+
+  const personalProd = useMemo(() => {
+    return userDevices
+      .filter((d) => d.status === 'active')
+      .reduce((sum, d) => sum + d.total_generated, 0);
+  }, [userDevices]);
+
+  const teamProd = useMemo(() => {
+    return teamMembers.reduce((sum, m) => sum + m.production * (m.level === 1 ? 0.03 : 0.02), 0);
+  }, [teamMembers]);
+
+  if (!currentUser) return null;
 
   const recentTx = transactions.slice(0, 4);
   const actionButtons = [
@@ -121,14 +137,9 @@ const DashboardPage: React.FC = () => {
                 <Headphones size={16} className="text-purple-300" />
               </button>
               <button
-                onClick={() => {
-                  const nextNickname = window.prompt('Inserisci nuovo nickname', currentUser.username);
-                  if (!nextNickname || nextNickname.trim() === currentUser.username) return;
-                  void updateNickname(nextNickname).then((result) => {
-                    pushNotice(result.success ? 'success' : 'error', result.message);
-                  });
-                }}
+                onClick={() => setNicknameModalOpen(true)}
                 className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                aria-label="Modifica nickname"
               >
                 <Settings size={16} className="text-purple-300" />
               </button>
@@ -320,6 +331,18 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <NicknameModal
+        isOpen={nicknameModalOpen}
+        currentNickname={currentUser.username}
+        onClose={() => setNicknameModalOpen(false)}
+        onSave={(nickname) => {
+          setNicknameModalOpen(false);
+          void updateNickname(nickname).then((result) => {
+            pushNotice(result.success ? 'success' : 'error', result.message);
+          });
+        }}
+      />
     </div>
   );
 };
