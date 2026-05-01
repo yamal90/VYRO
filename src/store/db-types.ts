@@ -23,6 +23,7 @@ export type ProfileRow = {
 export type TeamMemberRow = {
   id: string;
   owner_id: string;
+  member_user_id: string | null;
   username: string;
   avatar_url: string | null;
   tier: string;
@@ -32,6 +33,7 @@ export type TeamMemberRow = {
   active_sub_count: number;
   account_blocked: boolean;
   claim_eligible: boolean;
+  level?: number;
   created_at: string;
   updated_at: string;
   is_test_bot: boolean;

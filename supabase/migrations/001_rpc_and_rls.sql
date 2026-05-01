@@ -43,6 +43,27 @@ using (public.is_admin(auth.uid()))
 with check (public.is_admin(auth.uid()));
 
 -- ============================================================
+-- Team members hardening: stable member link for nickname sync
+-- ============================================================
+
+alter table public.team_members
+  add column if not exists member_user_id uuid references public.profiles(id) on delete cascade;
+
+create unique index if not exists idx_team_members_owner_member_user_id
+  on public.team_members (owner_id, member_user_id);
+
+create index if not exists idx_team_members_member_user_id
+  on public.team_members (member_user_id);
+
+update public.team_members tm
+set member_user_id = p.id
+from public.profiles owner, public.profiles p
+where tm.owner_id = owner.id
+  and tm.member_user_id is null
+  and p.referred_by = owner.referral_code
+  and p.username = tm.username;
+
+-- ============================================================
 -- RPC: purchase_device
 -- Looks up device in server-side catalog, validates balance,
 -- creates portfolio entry, deducts balance, logs activity.
@@ -218,11 +239,139 @@ as $$
 $$;
 
 -- ============================================================
+-- RPC: get_team_tree
+-- Returns level 1 and level 2 referral descendants for the owner.
+-- ============================================================
+
+create or replace function public.get_team_tree(
+  p_root_user_id uuid
+)
+returns table (
+  id text,
+  owner_id uuid,
+  member_user_id uuid,
+  username text,
+  avatar_url text,
+  tier text,
+  joined timestamptz,
+  contribution numeric(18,2),
+  active_balance numeric(18,2),
+  active_sub_count integer,
+  account_blocked boolean,
+  claim_eligible boolean,
+  is_test_bot boolean,
+  level integer,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_root public.profiles;
+  v_actor uuid := auth.uid();
+begin
+  if v_actor is null then
+    return;
+  end if;
+
+  if v_actor <> p_root_user_id and not private.is_admin(v_actor) then
+    raise exception 'Forbidden';
+  end if;
+
+  select * into v_root from public.profiles where id = p_root_user_id;
+  if v_root is null then
+    return;
+  end if;
+
+  return query
+  with recursive descendants as (
+    select
+      child.id as member_user_id,
+      v_root.id as owner_id,
+      child.username,
+      child.avatar_url,
+      child.tier,
+      child.joined_at as joined,
+      child.account_blocked,
+      child.claim_eligible,
+      child.is_test_bot,
+      child.referral_code,
+      1 as level
+    from public.profiles child
+    where child.referred_by = v_root.referral_code
+
+    union all
+
+    select
+      grandchild.id as member_user_id,
+      descendants.member_user_id as owner_id,
+      grandchild.username,
+      grandchild.avatar_url,
+      grandchild.tier,
+      grandchild.joined_at as joined,
+      grandchild.account_blocked,
+      grandchild.claim_eligible,
+      grandchild.is_test_bot,
+      grandchild.referral_code,
+      descendants.level + 1 as level
+    from descendants
+    join public.profiles parent on parent.id = descendants.member_user_id
+    join public.profiles grandchild on grandchild.referred_by = parent.referral_code
+    where descendants.level < 2
+  )
+  select
+    coalesce(tm.id::text, descendants.owner_id::text || ':' || descendants.member_user_id::text) as id,
+    descendants.owner_id,
+    descendants.member_user_id,
+    descendants.username,
+    coalesce(tm.avatar_url, descendants.avatar_url, '') as avatar_url,
+    coalesce(tm.tier, descendants.tier, 'ZYRA') as tier,
+    coalesce(tm.joined, descendants.joined) as joined,
+    coalesce(tm.contribution, 0)::numeric(18,2) as contribution,
+    coalesce(tm.active_balance, 0)::numeric(18,2) as active_balance,
+    coalesce(tm.active_sub_count, 0) as active_sub_count,
+    coalesce(tm.account_blocked, descendants.account_blocked, false) as account_blocked,
+    coalesce(tm.claim_eligible, descendants.claim_eligible, true) as claim_eligible,
+    coalesce(tm.is_test_bot, descendants.is_test_bot, false) as is_test_bot,
+    descendants.level,
+    coalesce(tm.created_at, descendants.joined) as created_at,
+    coalesce(tm.updated_at, descendants.joined) as updated_at
+  from descendants
+  left join public.team_members tm
+    on tm.owner_id = descendants.owner_id
+   and (
+     tm.member_user_id = descendants.member_user_id
+     or (tm.member_user_id is null and tm.username = descendants.username)
+   )
+  order by descendants.level asc, descendants.joined asc;
+end;
+$$;
+
+-- ============================================================
+-- Remove legacy broad policies created by the base schema.
+-- ============================================================
+
+drop policy if exists "activity_owner_or_admin" on public.activity_logs;
+drop policy if exists "settings_admin_write" on public.platform_settings;
+drop policy if exists "settings_select_all_auth" on public.platform_settings;
+drop policy if exists "notifications_owner_or_admin" on public.notifications;
+drop policy if exists "notifications_write_own_or_admin" on public.notifications;
+drop policy if exists "support_tickets_owner_or_admin" on public.support_tickets;
+drop policy if exists "support_tickets_write_own_or_admin" on public.support_tickets;
+drop policy if exists "team_owner_or_admin" on public.team_members;
+
+-- ============================================================
 -- Tighten RLS: portfolio_entries — insert only via RPC
 -- Users can read their own, but cannot insert/update/delete directly.
 -- ============================================================
 
+drop policy if exists "portfolio_owner_or_admin" on public.portfolio_entries;
 drop policy if exists "portfolio_entries_write_own_or_admin" on public.portfolio_entries;
+drop policy if exists "portfolio_entries_insert_admin_only" on public.portfolio_entries;
+drop policy if exists "portfolio_entries_update_admin_only" on public.portfolio_entries;
+drop policy if exists "portfolio_entries_delete_admin_only" on public.portfolio_entries;
 
 create policy "portfolio_entries_insert_admin_only"
 on public.portfolio_entries for insert
@@ -244,7 +393,11 @@ using (public.is_admin(auth.uid()));
 -- Tighten RLS: deposits — insert only via RPC / admin
 -- ============================================================
 
+drop policy if exists "deposits_owner_or_admin" on public.deposits;
 drop policy if exists "deposits_write_own_or_admin" on public.deposits;
+drop policy if exists "deposits_insert_admin_only" on public.deposits;
+drop policy if exists "deposits_update_admin_only" on public.deposits;
+drop policy if exists "deposits_delete_admin_only" on public.deposits;
 
 create policy "deposits_insert_admin_only"
 on public.deposits for insert
@@ -266,7 +419,11 @@ using (public.is_admin(auth.uid()));
 -- Tighten RLS: withdrawals — insert only via RPC / admin
 -- ============================================================
 
+drop policy if exists "withdrawals_owner_or_admin" on public.withdrawals;
 drop policy if exists "withdrawals_write_own_or_admin" on public.withdrawals;
+drop policy if exists "withdrawals_insert_admin_only" on public.withdrawals;
+drop policy if exists "withdrawals_update_admin_only" on public.withdrawals;
+drop policy if exists "withdrawals_delete_admin_only" on public.withdrawals;
 
 create policy "withdrawals_insert_admin_only"
 on public.withdrawals for insert

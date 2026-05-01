@@ -43,13 +43,13 @@ export const mapProfileToUser = (
 
 export const mapTeamMember = (row: TeamMemberRow): TeamMember => ({
   id: row.id,
-  user_id: row.id,
+  user_id: row.member_user_id ?? row.id,
   username: row.username,
   created_at: row.joined || row.created_at,
   device_active: row.active_sub_count > 0 || row.active_balance > 0,
   production: Number(row.contribution ?? 0),
   status: row.account_blocked ? 'inactive' : 'active',
-  level: 1,
+  level: Number(row.level ?? 1) as 1 | 2,
 });
 
 const computeGeneratedValue = (entry: PortfolioEntryRow, fallbackWeekly: number) => {

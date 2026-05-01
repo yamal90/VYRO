@@ -140,17 +140,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPlatformSettings(null);
   }, []);
 
+  const loadTeamMembers = useCallback(
+    async (profileId: string) => {
+      if (!supabase) return [] as TeamMemberRow[];
+
+      const teamTreeRes = await supabase.rpc('get_team_tree', { p_root_user_id: profileId });
+      if (!teamTreeRes.error && Array.isArray(teamTreeRes.data)) {
+        return teamTreeRes.data as TeamMemberRow[];
+      }
+
+      const fallbackRes = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('owner_id', profileId)
+        .order('created_at', { ascending: false });
+
+      if (fallbackRes.error) throw fallbackRes.error;
+      return (fallbackRes.data ?? []) as TeamMemberRow[];
+    },
+    [],
+  );
+
   /* ── Fetch all data for a user ── */
 
   const fetchAppData = useCallback(async (profileId: string, role: User['role']) => {
     if (!supabase) return null;
 
-    const [profileRes, settingsRes, portfolioRes, teamRes, depositsRes, withdrawalsRes, activitiesRes] =
+    const [profileRes, settingsRes, portfolioRes, depositsRes, withdrawalsRes, activitiesRes] =
       await Promise.all([
         supabase.from('profiles').select('*').eq('id', profileId).single<ProfileRow>(),
         supabase.from('platform_settings').select('*').eq('id', 1).maybeSingle<PlatformSettingsRow>(),
         supabase.from('portfolio_entries').select('*').eq('owner_id', profileId).order('position', { ascending: true }),
-        supabase.from('team_members').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('deposits').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('withdrawals').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('activity_logs').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
@@ -159,7 +179,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (profileRes.error) throw profileRes.error;
     if (settingsRes.error) throw settingsRes.error;
     if (portfolioRes.error) throw portfolioRes.error;
-    if (teamRes.error) throw teamRes.error;
     if (depositsRes.error) throw depositsRes.error;
     if (withdrawalsRes.error) throw withdrawalsRes.error;
     if (activitiesRes.error) throw activitiesRes.error;
@@ -168,6 +187,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const deposits = (depositsRes.data ?? []) as DepositRow[];
     const withdrawals = (withdrawalsRes.data ?? []) as WithdrawalRow[];
     const activities = (activitiesRes.data ?? []) as ActivityLogRow[];
+    const teamRows = await loadTeamMembers(profileId);
 
     const computePower = portfolio.reduce((sum, e) => sum + Number(e.allocation ?? 0), 0);
     const demoUsdtBalance =
@@ -179,7 +199,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPlatformSettings((settingsRes.data as PlatformSettingsRow) ?? null);
     setUserDevices(portfolio.map(mapPortfolioEntryToUserDevice));
     setTransactions(mapLogsToTransactions(deposits, withdrawals, activities));
-    setTeamMembers(((teamRes.data ?? []) as TeamMemberRow[]).map(mapTeamMember));
+    setTeamMembers(teamRows.map(mapTeamMember));
     setDailyClaims(makeDailyClaims(profileRes.data as ProfileRow));
 
     if (role === 'admin') {
@@ -236,7 +256,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     return profile;
-  }, []);
+  }, [loadTeamMembers]);
 
   /* ── Referral sync ── */
 
@@ -264,15 +284,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .update({ referred_by: normalized, updated_at: new Date().toISOString() })
       .eq('id', profile.id);
 
-    const { data: existingMember } = await supabase
-      .from('team_members')
-      .select('id')
-      .eq('owner_id', referrer.id)
-      .eq('username', profile.username)
-      .maybeSingle();
+    let existingMemberById: { id: string } | null = null;
+    let supportsStableMemberId = true;
+    {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('owner_id', referrer.id)
+        .eq('member_user_id', profile.id)
+        .maybeSingle();
+      if (error) {
+        supportsStableMemberId = !/member_user_id|column .* does not exist/i.test(error.message);
+      } else {
+        existingMemberById = data;
+      }
+    }
 
-    if (!existingMember) {
-      await supabase.from('team_members').insert({
+    let existingMemberByName = null;
+    if (!existingMemberById && !supportsStableMemberId) {
+      const { data } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('owner_id', referrer.id)
+        .eq('username', profile.username)
+        .maybeSingle();
+      existingMemberByName = data;
+    }
+
+    if (!existingMemberById && !existingMemberByName) {
+      const insertPayload: Record<string, unknown> = {
         owner_id: referrer.id,
         username: profile.username,
         avatar_url: profile.avatar_url || '',
@@ -284,7 +324,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         account_blocked: profile.account_blocked,
         claim_eligible: profile.claim_eligible,
         is_test_bot: false,
-      });
+      };
+
+      if (supportsStableMemberId) {
+        insertPayload.member_user_id = profile.id;
+      }
+
+      const { error: insertError } = await supabase.from('team_members').insert(insertPayload);
+      if (insertError && supportsStableMemberId && /member_user_id|column .* does not exist/i.test(insertError.message)) {
+        await supabase.from('team_members').insert({
+          owner_id: referrer.id,
+          username: profile.username,
+          avatar_url: profile.avatar_url || '',
+          tier: profile.role === 'admin' ? 'ADMIN' : 'ZYRA',
+          joined: profile.joined_at,
+          contribution: 0,
+          active_balance: Number(profile.balance ?? 0),
+          active_sub_count: 0,
+          account_blocked: profile.account_blocked,
+          claim_eligible: profile.claim_eligible,
+          is_test_bot: false,
+        });
+      } else if (insertError) {
+        throw insertError;
+      }
     }
 
     await supabase
@@ -399,7 +462,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user');
       setBootstrapped(true);
     },
-    [ensureProfileFromSession, fetchAppData, pushNotice, resetData, syncReferral],
+    [ensureProfileFromSession, fetchAppData, loadTeamMembers, pushNotice, resetData, syncReferral],
   );
 
   /* ── Bootstrap + auth listener ── */
