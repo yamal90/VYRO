@@ -154,12 +154,12 @@ const DevicesPage: React.FC = () => {
                         <span className="text-white/90 text-sm font-semibold">{device.compute_power} TFLOPS</span>
                       </div>
                     </div>
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden bg-black/30 border border-white/20 shadow-xl relative animate-gpu-glow p-2">
+                    <div className="w-36 h-36 rounded-2xl overflow-hidden bg-black/30 border border-white/20 shadow-xl relative animate-gpu-glow p-1.5">
                       {device.image_url ? (
                         <img
                           src={device.image_url}
                           alt={device.name}
-                          className="w-full h-full object-contain rounded-xl"
+                          className="w-full h-full object-cover rounded-xl"
                           style={{ filter: 'contrast(1.08) saturate(1.15)' }}
                         />
                       ) : (
