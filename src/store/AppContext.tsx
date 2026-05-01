@@ -537,7 +537,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ?? session.user.email?.split('@')[0]
       ?? 'user',
     ).trim();
-    const referralFromMeta = String(session.user.user_metadata?.referral_code ?? '').trim().toUpperCase();
+    const referralFromMeta = String(
+      session.user.user_metadata?.referred_by
+      ?? session.user.user_metadata?.referralCode
+      ?? session.user.user_metadata?.referral_code
+      ?? '',
+    ).trim().toUpperCase();
     const referralCode = randomInviteCode();
 
     const insertPayload = {
@@ -604,10 +609,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const referralFromMetadata = String(
-      effectiveSession.user.user_metadata?.referralCode ?? effectiveSession.user.user_metadata?.referral_code ?? '',
+      effectiveSession.user.user_metadata?.referred_by
+      ?? effectiveSession.user.user_metadata?.referralCode
+      ?? effectiveSession.user.user_metadata?.referral_code
+      ?? '',
     ).trim();
     const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
-    const referralForSync = referralFromMetadata || referralFromUrl;
+    const referralFromProfile = String(data.referred_by ?? '').trim();
+    const referralForSync = referralFromMetadata || referralFromUrl || referralFromProfile;
     if (referralForSync) {
       await syncReferral(data, referralForSync);
     }
@@ -776,6 +785,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             username: payload.username.trim(),
             referralCode,
             referral_code: referralCode,
+            referred_by: referralCode,
           },
         },
       });
