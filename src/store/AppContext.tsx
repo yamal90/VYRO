@@ -655,9 +655,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       try {
         const { data, error } = await supabase.rpc('purchase_device', {
-          p_device_name: device.name,
-          p_device_price: device.price,
-          p_compute_power: device.compute_power,
+          p_device_id: device.id,
         });
         if (error) throw error;
         const result = data as { success: boolean; message: string };
