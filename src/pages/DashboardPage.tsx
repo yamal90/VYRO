@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import NicknameModal from '../components/ui/NicknameModal';
+import TransferModal from '../components/ui/TransferModal';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 15 },
@@ -15,14 +16,29 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, transactions, userDevices, teamMembers, refreshAppData, pushNotice, updateNickname, logout } = useApp();
+  const {
+    currentUser,
+    balanceVisible,
+    toggleBalanceVisibility,
+    transactions,
+    userDevices,
+    teamMembers,
+    refreshAppData,
+    pushNotice,
+    updateNickname,
+    logout,
+    platformSettings,
+    requestDeposit,
+    requestWithdrawal,
+  } = useApp();
   const navigate = useNavigate();
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
+  const [transferModal, setTransferModal] = useState<'deposit' | 'withdrawal' | null>(null);
 
   const todayIncome = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
     return transactions
-      .filter((t) => t.amount > 0 && t.created_at.startsWith(today))
+      .filter((t) => t.amount > 0 && t.status === 'completed' && t.created_at.startsWith(today))
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
@@ -45,19 +61,13 @@ const DashboardPage: React.FC = () => {
       icon: ArrowDownCircle,
       label: 'Ricarica',
       color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
-      onClick: () => {
-        navigate('/transactions');
-        pushNotice('info', 'Le richieste di ricarica vengono tracciate nella sezione transazioni.');
-      },
+      onClick: () => setTransferModal('deposit'),
     },
     {
       icon: ArrowUpCircle,
       label: 'Prelievo',
       color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-      onClick: () => {
-        navigate('/transactions');
-        pushNotice('info', 'I prelievi verranno mostrati nello storico transazioni.');
-      },
+      onClick: () => setTransferModal('withdrawal'),
     },
     {
       icon: Repeat,
@@ -388,6 +398,34 @@ const DashboardPage: React.FC = () => {
           void updateNickname(nickname).then((result) => {
             pushNotice(result.success ? 'success' : 'error', result.message);
           });
+        }}
+      />
+
+      <TransferModal
+        isOpen={transferModal === 'deposit'}
+        mode="deposit"
+        onClose={() => setTransferModal(null)}
+        depositAddress={platformSettings?.deposit_address ?? ''}
+        depositAsset={platformSettings?.deposit_asset ?? 'USDT'}
+        depositNetwork={platformSettings?.deposit_network ?? 'TRC20'}
+        minDeposit={Number(platformSettings?.min_deposit ?? 0)}
+        onSubmit={async ({ amount, txHash }) => {
+          const result = await requestDeposit(amount, txHash);
+          pushNotice(result.success ? 'success' : 'error', result.message);
+          return result;
+        }}
+      />
+
+      <TransferModal
+        isOpen={transferModal === 'withdrawal'}
+        mode="withdrawal"
+        onClose={() => setTransferModal(null)}
+        availableBalance={currentUser.demo_usdt_balance}
+        minWithdraw={Number(platformSettings?.min_withdraw ?? 0)}
+        onSubmit={async ({ amount, walletAddress }) => {
+          const result = await requestWithdrawal(amount, walletAddress ?? '');
+          pushNotice(result.success ? 'success' : 'error', result.message);
+          return result;
         }}
       />
     </div>

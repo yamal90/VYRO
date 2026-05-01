@@ -67,6 +67,8 @@ interface AppState {
   toggleBalanceVisibility: () => void;
   activateDevice: (deviceId: string) => Promise<ActionResult>;
   claimDailyReward: () => Promise<ActionResult>;
+  requestDeposit: (amount: number, txHash?: string) => Promise<ActionResult>;
+  requestWithdrawal: (amount: number, walletAddress: string) => Promise<ActionResult>;
   updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => Promise<ActionResult>;
   updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => Promise<ActionResult>;
   blockUser: (userId: string) => Promise<ActionResult>;
@@ -81,6 +83,8 @@ interface AppState {
 const AppContext = createContext<AppState | null>(null);
 
 const emptyResult = (message: string): ActionResult => ({ success: false, message });
+const isCompletedDeposit = (status: string | null | undefined) => status === 'approved' || status === 'completed';
+const isCountedWithdrawal = (status: string | null | undefined) => status !== 'rejected';
 
 /* ────────────────────────────────────────────
    Provider
@@ -191,8 +195,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const computePower = portfolio.reduce((sum, e) => sum + Number(e.allocation ?? 0), 0);
     const demoUsdtBalance =
-      deposits.reduce((sum, r) => sum + Number(r.amount ?? 0), 0) -
-      withdrawals.reduce((sum, r) => sum + Number(r.amount ?? 0), 0);
+      deposits.reduce((sum, r) => (isCompletedDeposit(r.status) ? sum + Number(r.amount ?? 0) : sum), 0) -
+      withdrawals.reduce((sum, r) => (isCountedWithdrawal(r.status) ? sum + Number(r.amount ?? 0) : sum), 0);
     const profile = mapProfileToUser(profileRes.data as ProfileRow, computePower, demoUsdtBalance);
 
     setCurrentUser(profile);
@@ -230,9 +234,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const usdtByUser = new Map<string, number>();
       for (const row of allDepositRows) {
+        if (!isCompletedDeposit(row.status)) continue;
         usdtByUser.set(row.owner_id, (usdtByUser.get(row.owner_id) ?? 0) + Number(row.amount ?? 0));
       }
       for (const row of allWithdrawalRows) {
+        if (!isCountedWithdrawal(row.status)) continue;
         usdtByUser.set(row.owner_id, (usdtByUser.get(row.owner_id) ?? 0) - Number(row.amount ?? 0));
       }
 
@@ -777,6 +783,85 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
 
+  const requestDeposit = useCallback(
+    async (amount: number, txHash?: string): Promise<ActionResult> => {
+      if (!supabase || !currentUser) return emptyResult('Non autenticato');
+      const normalizedAmount = Number(amount);
+      const normalizedTxHash = String(txHash ?? '').trim();
+      if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+        return emptyResult('Importo deposito non valido.');
+      }
+      if (platformSettings?.deposits_enabled === false) {
+        return emptyResult('Depositi disabilitati.');
+      }
+      if (Number(platformSettings?.min_deposit ?? 0) > 0 && normalizedAmount < Number(platformSettings?.min_deposit ?? 0)) {
+        return emptyResult(`Importo minimo deposito: ${Number(platformSettings?.min_deposit ?? 0).toFixed(2)}.`);
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('request_deposit', {
+          p_amount: normalizedAmount,
+          p_tx_hash: normalizedTxHash || null,
+        });
+        if (error) throw error;
+        const result = data as { success: boolean; message: string };
+        if (!result.success) return emptyResult(result.message);
+        await refreshAppData();
+        return { success: true, message: result.message };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Richiesta deposito non riuscita';
+        void logOperationalError('request_deposit', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, platformSettings, pushNotice, refreshAppData],
+  );
+
+  const requestWithdrawal = useCallback(
+    async (amount: number, walletAddress: string): Promise<ActionResult> => {
+      if (!supabase || !currentUser) return emptyResult('Non autenticato');
+      const normalizedAmount = Number(amount);
+      const normalizedWallet = String(walletAddress ?? '').trim();
+      if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+        return emptyResult('Importo prelievo non valido.');
+      }
+      if (!normalizedWallet) {
+        return emptyResult('Indirizzo wallet obbligatorio.');
+      }
+      if (normalizedWallet.length < 20) {
+        return emptyResult('Indirizzo wallet non valido.');
+      }
+      if (platformSettings?.withdrawals_enabled === false) {
+        return emptyResult('Prelievi disabilitati.');
+      }
+      if (Number(platformSettings?.min_withdraw ?? 0) > 0 && normalizedAmount < Number(platformSettings?.min_withdraw ?? 0)) {
+        return emptyResult(`Importo minimo prelievo: ${Number(platformSettings?.min_withdraw ?? 0).toFixed(2)}.`);
+      }
+      if (currentUser.demo_usdt_balance < normalizedAmount) {
+        return emptyResult('Saldo USDT insufficiente.');
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('request_withdrawal', {
+          p_amount: normalizedAmount,
+          p_wallet_address: normalizedWallet,
+        });
+        if (error) throw error;
+        const result = data as { success: boolean; message: string };
+        if (!result.success) return emptyResult(result.message);
+        await refreshAppData();
+        return { success: true, message: result.message };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Richiesta prelievo non riuscita';
+        void logOperationalError('request_withdrawal', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, platformSettings, pushNotice, refreshAppData],
+  );
+
   const updateUserBalance = useCallback(
     async (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number): Promise<ActionResult> => {
       if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
@@ -925,6 +1010,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleBalanceVisibility,
         activateDevice,
         claimDailyReward,
+        requestDeposit,
+        requestWithdrawal,
         updateUserBalance,
         updateDeviceStatus,
         blockUser,

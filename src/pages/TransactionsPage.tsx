@@ -33,8 +33,8 @@ const TransactionsPage: React.FC = () => {
     ? transactions
     : transactions.filter(t => t.type === filter);
 
-  const totalIncome = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-  const totalExpense = transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0);
+  const totalIncome = transactions.filter((t) => t.amount > 0 && t.status === 'completed').reduce((s, t) => s + t.amount, 0);
+  const totalExpense = transactions.filter((t) => t.amount < 0 && t.status === 'completed').reduce((s, t) => s + t.amount, 0);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: 'Tutte' },

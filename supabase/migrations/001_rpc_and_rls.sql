@@ -349,6 +349,168 @@ begin
 end;
 $$;
 
+create or replace function public.request_deposit(
+  p_amount numeric,
+  p_tx_hash text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_profile public.profiles;
+  v_settings public.platform_settings;
+begin
+  if v_user_id is null then
+    return json_build_object('success', false, 'message', 'Non autenticato');
+  end if;
+
+  select * into v_profile from public.profiles where id = v_user_id;
+  select * into v_settings from public.platform_settings where id = 1;
+
+  if v_profile is null then
+    return json_build_object('success', false, 'message', 'Profilo non trovato');
+  end if;
+
+  if v_profile.account_blocked then
+    return json_build_object('success', false, 'message', 'Account bloccato');
+  end if;
+
+  if v_settings is not null and not v_settings.deposits_enabled then
+    return json_build_object('success', false, 'message', 'Depositi disabilitati');
+  end if;
+
+  if v_settings is null or nullif(trim(v_settings.deposit_address), '') is null then
+    return json_build_object('success', false, 'message', 'Indirizzo deposito non configurato');
+  end if;
+
+  if p_amount is null or p_amount <= 0 then
+    return json_build_object('success', false, 'message', 'Importo deposito non valido');
+  end if;
+
+  if coalesce(v_settings.min_deposit, 0) > 0 and p_amount < v_settings.min_deposit then
+    return json_build_object('success', false, 'message', 'Importo minimo deposito non raggiunto');
+  end if;
+
+  insert into public.deposits (
+    owner_id,
+    amount,
+    asset,
+    network,
+    tx_hash,
+    status
+  )
+  values (
+    v_user_id,
+    p_amount,
+    coalesce(nullif(trim(v_settings.deposit_asset), ''), 'USDT'),
+    coalesce(nullif(trim(v_settings.deposit_network), ''), 'TRC20'),
+    nullif(trim(p_tx_hash), ''),
+    'pending'
+  );
+
+  return json_build_object(
+    'success', true,
+    'message', 'Richiesta deposito salvata. Invia i fondi al wallet configurato.',
+    'deposit_address', v_settings.deposit_address,
+    'asset', coalesce(nullif(trim(v_settings.deposit_asset), ''), 'USDT'),
+    'network', coalesce(nullif(trim(v_settings.deposit_network), ''), 'TRC20')
+  );
+end;
+$$;
+
+create or replace function public.request_withdrawal(
+  p_amount numeric,
+  p_wallet_address text
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_profile public.profiles;
+  v_settings public.platform_settings;
+  v_available numeric(18,2);
+begin
+  if v_user_id is null then
+    return json_build_object('success', false, 'message', 'Non autenticato');
+  end if;
+
+  select * into v_profile from public.profiles where id = v_user_id;
+  select * into v_settings from public.platform_settings where id = 1;
+
+  if v_profile is null then
+    return json_build_object('success', false, 'message', 'Profilo non trovato');
+  end if;
+
+  if v_profile.account_blocked then
+    return json_build_object('success', false, 'message', 'Account bloccato');
+  end if;
+
+  if v_settings is not null and not v_settings.withdrawals_enabled then
+    return json_build_object('success', false, 'message', 'Prelievi disabilitati');
+  end if;
+
+  if p_amount is null or p_amount <= 0 then
+    return json_build_object('success', false, 'message', 'Importo prelievo non valido');
+  end if;
+
+  if coalesce(v_settings.min_withdraw, 0) > 0 and p_amount < v_settings.min_withdraw then
+    return json_build_object('success', false, 'message', 'Importo minimo prelievo non raggiunto');
+  end if;
+
+  if nullif(trim(p_wallet_address), '') is null then
+    return json_build_object('success', false, 'message', 'Wallet di prelievo obbligatorio');
+  end if;
+
+  select
+    coalesce((
+      select sum(d.amount)
+      from public.deposits d
+      where d.owner_id = v_user_id
+        and d.status in ('approved', 'completed')
+    ), 0)
+    -
+    coalesce((
+      select sum(w.amount)
+      from public.withdrawals w
+      where w.owner_id = v_user_id
+        and w.status <> 'rejected'
+    ), 0)
+  into v_available;
+
+  if v_available < p_amount then
+    return json_build_object('success', false, 'message', 'Saldo USDT insufficiente');
+  end if;
+
+  insert into public.withdrawals (
+    owner_id,
+    amount,
+    wallet_address,
+    status
+  )
+  values (
+    v_user_id,
+    p_amount,
+    trim(p_wallet_address),
+    'pending'
+  );
+
+  return json_build_object(
+    'success', true,
+    'message', 'Richiesta prelievo salvata. Il wallet è stato memorizzato.',
+    'wallet_address', trim(p_wallet_address)
+  );
+end;
+$$;
+
+grant execute on function public.request_deposit(numeric, text) to authenticated;
+grant execute on function public.request_withdrawal(numeric, text) to authenticated;
+
 -- ============================================================
 -- Remove legacy broad policies created by the base schema.
 -- ============================================================
