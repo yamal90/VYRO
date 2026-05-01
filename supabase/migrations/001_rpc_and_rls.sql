@@ -94,7 +94,7 @@ begin
   -- Create portfolio entry
   v_entry_id := gen_random_uuid();
   insert into public.portfolio_entries (id, owner_id, name, allocation, value, change, position)
-  values (v_entry_id, v_user_id, v_device.name, v_device.compute_power, v_device.price, v_device.reward_7_days, 1);
+  values (v_entry_id, v_user_id, v_device.name, v_device.compute_power, v_device.price, 0, 1);
 
   -- Log activity
   insert into public.activity_logs (owner_id, type, description, amount)
