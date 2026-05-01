@@ -133,6 +133,15 @@ const DevicesPage: React.FC = () => {
               >
                 {/* GPU Visual */}
                 <div className={`bg-gradient-to-br ${gpuColors[i % gpuColors.length]} p-6 relative overflow-hidden`}>
+                  {device.image_url && (
+                    <img
+                      src={device.image_url}
+                      alt={device.name}
+                      className="absolute inset-0 w-full h-full object-cover opacity-30"
+                      style={{ filter: 'contrast(1.08) saturate(1.25)' }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-900/55 to-slate-900/35" />
                   {/* Animated background effects */}
                   <div className="absolute inset-0">
                     <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse" />
@@ -153,27 +162,6 @@ const DevicesPage: React.FC = () => {
                         <Zap size={14} className="text-yellow-300" />
                         <span className="text-white/90 text-sm font-semibold">{device.compute_power} TFLOPS</span>
                       </div>
-                    </div>
-                    
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-black/30 backdrop-blur-sm border border-white/10 shadow-xl relative animate-gpu-glow">
-                      {device.image_url ? (
-                        <img 
-                          src={device.image_url} 
-                          alt={device.name} 
-                          className="w-full h-full object-cover"
-                          style={{ filter: 'contrast(1.1) saturate(1.3)' }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Cpu className="w-10 h-10 text-white/60" />
-                        </div>
-                      )}
-                      {/* Scanner effect */}
-                      <motion.div
-                        animate={{ y: ['-100%', '300%'] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                        className="absolute left-0 right-0 h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent"
-                      />
                     </div>
                   </div>
                 </div>
@@ -303,35 +291,36 @@ const DevicesPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-                          <span>Produzione</span>
-                          <span>
-                            {Math.min(
-                              100,
-                              Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
-                            )}
-                            %
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-violet-500 to-cyan-500"
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-
                       {ud.status === 'active' && (
-                        <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-2 text-green-400 text-sm">
-                          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                          <Activity size={14} />
-                          <span className="font-medium">Produzione in corso...</span>
+                        <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            <Activity size={14} />
+                            <span className="font-medium">Produzione in corso...</span>
+                          </div>
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between text-[10px] text-green-300 mb-1">
+                              <span>Produzione live</span>
+                              <span>
+                                {Math.min(
+                                  100,
+                                  Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                                )}
+                                %
+                              </span>
+                            </div>
+                            <div className="w-full h-2 rounded-full bg-slate-900/40 overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-violet-500 to-cyan-500"
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
