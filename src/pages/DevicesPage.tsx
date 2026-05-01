@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Zap, Clock, Check, AlertCircle, Loader2, Activity, Power, TrendingUp } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import type { GPUDevice } from '../types';
+import LiveProductionInline from '../components/LiveProductionInline';
 
 const gpuColors = [
   'from-violet-600 to-purple-700',
@@ -228,6 +229,9 @@ const DevicesPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Live Production Bar - only show when user has devices */}
+            <LiveProductionInline />
+            
             {userDevices.length === 0 ? (
               <div className="text-center py-16">
                 <Cpu className="w-16 h-16 text-purple-500/50 mx-auto mb-4" />
