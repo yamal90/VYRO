@@ -100,6 +100,9 @@ const AppContext = createContext<AppState | null>(null);
 const emptyResult = (message: string): ActionResult => ({ success: false, message });
 const isCompletedDeposit = (status: string | null | undefined) => status === 'approved' || status === 'completed';
 const isCountedWithdrawal = (status: string | null | undefined) => status !== 'rejected';
+const normalizeReferralCode = (value: unknown) => String(value ?? '').trim().toUpperCase();
+const isReferralSentinel = (code: string) =>
+  code === '' || code === 'SYSTEM' || code === 'NULL' || code === 'UNDEFINED';
 
 /* ────────────────────────────────────────────
    Provider
@@ -345,11 +348,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const syncReferral = useCallback(async (profile: ProfileRow, referralCode: string) => {
     if (!supabase) return;
-    const normalized = referralCode.trim().toUpperCase();
+    const normalized = normalizeReferralCode(referralCode);
+    const referredBy = normalizeReferralCode(profile.referred_by);
     if (
-      !normalized ||
+      isReferralSentinel(normalized) ||
       normalized === profile.referral_code ||
-      (profile.referred_by && profile.referred_by !== 'SYSTEM')
+      normalized === referredBy ||
+      (!isReferralSentinel(referredBy) && referredBy !== normalized)
     ) {
       return;
     }
@@ -452,16 +457,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return;
         }
 
-        const referralFromMetadata = String(
+        const referralFromMetadata = normalizeReferralCode(
           effectiveSession.user.user_metadata?.referred_by ??
             effectiveSession.user.user_metadata?.referralCode ??
             effectiveSession.user.user_metadata?.referral_code ??
             '',
-        ).trim();
-        const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
-        const referralFromProfile = String(data.referred_by ?? '').trim();
+        );
+        const referralFromUrl = normalizeReferralCode(new URLSearchParams(window.location.search).get('ref') ?? '');
+        const referralFromProfile = normalizeReferralCode(data.referred_by ?? '');
         const referralForSync = referralFromMetadata || referralFromUrl || referralFromProfile;
-        if (referralForSync) {
+        if (!isReferralSentinel(referralForSync)) {
           await syncReferral(data, referralForSync);
         }
 
