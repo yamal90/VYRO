@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Eye, EyeOff, RefreshCw, Headphones,
@@ -14,7 +15,8 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, userDevices, teamMembers, refreshAppData, pushNotice, updateNickname, logout } = useApp();
+  const { currentUser, balanceVisible, toggleBalanceVisibility, transactions, userDevices, teamMembers, refreshAppData, pushNotice, updateNickname, logout } = useApp();
+  const navigate = useNavigate();
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
 
   const todayIncome = useMemo(() => {
@@ -43,7 +45,7 @@ const DashboardPage: React.FC = () => {
       label: 'Ricarica',
       color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
       onClick: () => {
-        setPage('transactions');
+        navigate('/transactions');
         pushNotice('info', 'Le richieste di ricarica vengono tracciate nella sezione transazioni.');
       },
     },
@@ -52,7 +54,7 @@ const DashboardPage: React.FC = () => {
       label: 'Prelievo',
       color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
       onClick: () => {
-        setPage('transactions');
+        navigate('/transactions');
         pushNotice('info', 'I prelievi verranno mostrati nello storico transazioni.');
       },
     },
@@ -61,7 +63,7 @@ const DashboardPage: React.FC = () => {
       label: 'Scambio',
       color: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
       onClick: () => {
-        setPage('devices');
+        navigate('/devices');
         pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo VX.');
       },
     },
@@ -70,7 +72,7 @@ const DashboardPage: React.FC = () => {
       label: 'Fattura',
       color: 'bg-green-500/20 text-green-400 border border-green-500/30',
       onClick: () => {
-        setPage('transactions');
+        navigate('/transactions');
         pushNotice('info', 'Apri una transazione per vedere il relativo dettaglio contabile.');
       },
     },
@@ -145,7 +147,7 @@ const DashboardPage: React.FC = () => {
               </button>
               {currentUser.role === 'admin' && (
                 <button
-                  onClick={() => setPage('admin')}
+                  onClick={() => navigate('/admin')}
                   className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-yellow-500/30"
                 >
                   <Shield size={16} className="text-yellow-400" />
@@ -285,7 +287,7 @@ const DashboardPage: React.FC = () => {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-white">Ultime attività</h3>
           <button
-            onClick={() => setPage('transactions')}
+            onClick={() => navigate('/transactions')}
             className="text-purple-400 text-xs font-semibold flex items-center gap-0.5 hover:text-purple-300 transition-colors"
           >
             Vedi tutto <ChevronRight size={14} />

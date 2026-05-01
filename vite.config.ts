@@ -19,10 +19,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom"],
           motion: ["framer-motion"],
           supabase: ["@supabase/supabase-js"],
-          router: ["react-router-dom"],
+          router: ["react-router-dom", "react", "react-dom"],
         },
       },
     },

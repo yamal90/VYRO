@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User } from 'lucide-react';
 
@@ -17,6 +17,13 @@ const NicknameModal: React.FC<NicknameModalProps> = ({
 }) => {
   const [value, setValue] = useState(currentNickname);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setValue(currentNickname);
+      setError('');
+    }
+  }, [isOpen, currentNickname]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -104,7 +104,7 @@ const LiveProductionBar: React.FC = () => {
                   <div className="bg-white/5 rounded-lg p-2 text-center">
                     <TrendingUp size={12} className="text-cyan-400 mx-auto mb-1" />
                     <p className="font-display text-cyan-400 text-xs font-bold">
-                      {(production * 24 * 3600).toFixed(1)}
+                      {(production * 60 * 24).toFixed(1)}
                     </p>
                     <p className="text-[8px] text-slate-500">VX/giorno</p>
                   </div>

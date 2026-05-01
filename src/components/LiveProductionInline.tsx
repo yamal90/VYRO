@@ -103,7 +103,7 @@ const LiveProductionInline: React.FC<LiveProductionInlineProps> = ({ className =
             <div className="bg-white/5 rounded-lg p-2 text-center">
               <TrendingUp size={14} className="text-cyan-400 mx-auto mb-1" />
               <p className="font-display text-cyan-400 text-sm font-bold">
-                {(production * 24 * 3600).toFixed(1)}
+                {(production * 60 * 24).toFixed(1)}
               </p>
               <p className="text-[9px] text-slate-500">VX/giorno</p>
             </div>

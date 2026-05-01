@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppProvider, useApp } from './store/AppContext';
 import LoginPage from './pages/LoginPage';
@@ -31,8 +32,27 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
+const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="relative z-10"
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const AppContent: React.FC = () => {
-  const { isLoggedIn, currentPage, bootstrapped, authLoading, notice, clearNotice } = useApp();
+  const { isLoggedIn, bootstrapped, authLoading, notice, clearNotice, currentUser } = useApp();
+  const location = useLocation();
 
   if (!isSupabaseConfigured) {
     return <SupabaseSetupState />;
@@ -53,26 +73,8 @@ const AppContent: React.FC = () => {
     return <LoginPage />;
   }
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <DashboardPage />;
-      case 'devices':
-        return <DevicesPage />;
-      case 'transactions':
-        return <TransactionsPage />;
-      case 'team':
-        return <TeamPage />;
-      case 'benefits':
-        return <BenefitsPage />;
-      case 'admin':
-        return <AdminPage />;
-      case 'faq':
-        return <FAQPage />;
-      default:
-        return <DashboardPage />;
-    }
-  };
+  const isAdmin = currentUser?.role === 'admin';
+  const showNav = location.pathname !== '/admin';
 
   return (
     <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50 overflow-hidden">
@@ -102,18 +104,18 @@ const AppContent: React.FC = () => {
       </AnimatePresence>
       
       <Suspense fallback={<PageLoader />}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentPage}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="relative z-10"
-          >
-            {renderPage()}
-          </motion.div>
-        </AnimatePresence>
+        <Routes>
+          <Route path="/" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
+          <Route path="/devices" element={<AnimatedPage><DevicesPage /></AnimatedPage>} />
+          <Route path="/transactions" element={<AnimatedPage><TransactionsPage /></AnimatedPage>} />
+          <Route path="/team" element={<AnimatedPage><TeamPage /></AnimatedPage>} />
+          <Route path="/benefits" element={<AnimatedPage><BenefitsPage /></AnimatedPage>} />
+          <Route path="/faq" element={<AnimatedPage><FAQPage /></AnimatedPage>} />
+          {isAdmin && (
+            <Route path="/admin" element={<AnimatedPage><AdminPage /></AnimatedPage>} />
+          )}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </Suspense>
 
       {authLoading && (
@@ -125,7 +127,7 @@ const AppContent: React.FC = () => {
           <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
         </div>
       )}
-      {currentPage !== 'admin' && <BottomNav />}
+      {showNav && <BottomNav />}
     </div>
   );
 };

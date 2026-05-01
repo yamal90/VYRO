@@ -1,34 +1,33 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Cpu, Gift, ArrowRightLeft, Users, HelpCircle } from 'lucide-react';
-import { useApp } from '../store/AppContext';
-import type { Page } from '../types';
 
-const navItems: { page: Page; icon: React.ElementType; label: string }[] = [
-  { page: 'home', icon: Home, label: 'Home' },
-  { page: 'devices', icon: Cpu, label: 'GPU' },
-  { page: 'benefits', icon: Gift, label: 'Benefici' },
-  { page: 'faq', icon: HelpCircle, label: 'FAQ' },
-  { page: 'transactions', icon: ArrowRightLeft, label: 'Transazioni' },
-  { page: 'team', icon: Users, label: 'Team' },
+const navItems: { path: string; icon: React.ElementType; label: string }[] = [
+  { path: '/', icon: Home, label: 'Home' },
+  { path: '/devices', icon: Cpu, label: 'GPU' },
+  { path: '/benefits', icon: Gift, label: 'Benefici' },
+  { path: '/faq', icon: HelpCircle, label: 'FAQ' },
+  { path: '/transactions', icon: ArrowRightLeft, label: 'Transazioni' },
+  { path: '/team', icon: Users, label: 'Team' },
 ];
 
 const BottomNav: React.FC = () => {
-  const { currentPage, setPage } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50" aria-label="Navigazione principale">
       <div className="max-w-lg mx-auto">
         <div className="bg-slate-900/95 backdrop-blur-xl border-t border-purple-500/20 px-1 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-4px_30px_rgba(124,58,237,0.15)]">
-          {/* Scrollable nav container */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 snap-x snap-mandatory">
             {navItems.map(item => {
-              const isActive = currentPage === item.page;
+              const isActive = location.pathname === item.path;
               const Icon = item.icon;
               return (
                 <motion.button
-                  key={item.page}
-                  onClick={() => setPage(item.page)}
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
                   whileTap={{ scale: 0.9 }}
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
@@ -59,7 +58,7 @@ const BottomNav: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 

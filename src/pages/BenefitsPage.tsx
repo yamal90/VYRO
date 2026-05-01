@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Gift, Calendar, Award, Trophy, Star,
   CheckCircle, Lock, Target, Flame, Crown
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
+import { supabase } from '../lib/supabase';
 
 const BenefitsPage: React.FC = () => {
   const { currentUser, claimDailyReward, dailyClaims, userDevices, teamMembers } = useApp();
@@ -50,9 +51,21 @@ const BenefitsPage: React.FC = () => {
     ultimate: 'from-purple-600 via-pink-500 to-cyan-500',
   };
 
-  const leaderboard = useMemo(() => [
-    { pos: 1, name: currentUser.username, vx: currentUser.vx_balance, power: currentUser.compute_power },
-  ], [currentUser]);
+  const [leaderboard, setLeaderboard] = useState<{ pos: number; name: string; vx: number; power: number }[]>([]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.rpc('leaderboard_top', { p_limit: 10 }).then(({ data }) => {
+      if (data && Array.isArray(data)) {
+        setLeaderboard(data.map((r: { pos: number; username: string; vx: number; power: number }) => ({
+          pos: Number(r.pos),
+          name: r.username,
+          vx: Number(r.vx),
+          power: Number(r.power),
+        })));
+      }
+    });
+  }, [currentUser.vx_balance]);
 
   // Missions
   const missions = [

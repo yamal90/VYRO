@@ -7,7 +7,6 @@ import type {
   AuthMode,
   DailyClaim,
   GPUDevice,
-  Page,
   RegisterPayload,
   TeamMember,
   Transaction,
@@ -41,7 +40,6 @@ import {
 interface AppState {
   currentUser: User | null;
   isLoggedIn: boolean;
-  currentPage: Page;
   authMode: AuthMode;
   authLoading: boolean;
   bootstrapped: boolean;
@@ -64,7 +62,6 @@ interface AppState {
   register: (payload: RegisterPayload) => Promise<ActionResult>;
   updateNickname: (nickname: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
-  setPage: (page: Page) => void;
   setAuthMode: (mode: AuthMode) => void;
   toggleBalanceVisibility: () => void;
   activateDevice: (deviceId: string) => Promise<ActionResult>;
@@ -90,7 +87,6 @@ const emptyResult = (message: string): ActionResult => ({ success: false, messag
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('login');
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [authLoading, setAuthLoading] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
@@ -132,7 +128,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetData = useCallback(() => {
     setCurrentUser(null);
-    setCurrentPage('login');
     setUserDevices([]);
     setTransactions([]);
     setTeamMembers([]);
@@ -395,7 +390,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user');
-      setCurrentPage('home');
       setBootstrapped(true);
     },
     [ensureProfileFromSession, fetchAppData, pushNotice, resetData, syncReferral],
@@ -650,7 +644,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [currentUser, pushNotice, refreshAppData],
   );
 
-  const setPage = useCallback((page: Page) => setCurrentPage(page), []);
   const toggleBalanceVisibility = useCallback(() => setBalanceVisible((v) => !v), []);
 
   const activateDevice = useCallback(
@@ -661,32 +654,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (currentUser.vx_balance < device.price) return emptyResult('Saldo VX insufficiente');
 
       try {
-        const now = new Date().toISOString();
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ balance: currentUser.vx_balance - device.price, updated_at: now })
-          .eq('id', currentUser.id);
-        if (profileError) throw profileError;
-
-        const { error: portfolioError } = await supabase.from('portfolio_entries').insert({
-          owner_id: currentUser.id,
-          name: device.name,
-          allocation: device.compute_power,
-          value: device.price,
-          change: device.reward_7_days,
-          position: userDevices.length + 1,
+        const { data, error } = await supabase.rpc('purchase_device', {
+          p_device_name: device.name,
+          p_device_price: device.price,
+          p_compute_power: device.compute_power,
         });
-        if (portfolioError) throw portfolioError;
-
-        await supabase.from('activity_logs').insert({
-          owner_id: currentUser.id,
-          type: 'device_purchase',
-          description: `Attivazione ${device.name}`,
-          amount: -device.price,
-        });
+        if (error) throw error;
+        const result = data as { success: boolean; message: string };
+        if (!result.success) return emptyResult(result.message);
 
         await refreshAppData();
-        return { success: true, message: `${device.name} attivato con successo.` };
+        return { success: true, message: result.message };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Attivazione non riuscita';
         void logOperationalError('activate_device', message);
@@ -694,48 +672,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return emptyResult(message);
       }
     },
-    [currentUser, gpuDevices, logOperationalError, pushNotice, refreshAppData, userDevices.length],
+    [currentUser, gpuDevices, logOperationalError, pushNotice, refreshAppData],
   );
 
   const claimDailyReward = useCallback(async (): Promise<ActionResult> => {
     if (!supabase || !currentUser) return emptyResult('Non autenticato');
-    if (platformSettings && !platformSettings.daily_claim_enabled)
-      return emptyResult('Il claim giornaliero è disabilitato dalla piattaforma.');
-    const today = new Date().toISOString().slice(0, 10);
-    const alreadyClaimed = dailyClaims.some((c) => c.claim_date === today);
-    if (alreadyClaimed) return emptyResult('Già riscosso oggi.');
-    const reward = 0.8;
 
     try {
-      const now = new Date().toISOString();
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          balance: currentUser.vx_balance + reward,
-          streak: dailyClaims.length + 1,
-          last_claim: now,
-          last_claim_amount: reward,
-          updated_at: now,
-        })
-        .eq('id', currentUser.id);
-      if (profileError) throw profileError;
-
-      await supabase.from('activity_logs').insert({
-        owner_id: currentUser.id,
-        type: 'daily_claim',
-        description: 'Claim giornaliero VX token',
-        amount: reward,
-      });
+      const { data, error } = await supabase.rpc('claim_daily_reward');
+      if (error) throw error;
+      const result = data as { success: boolean; message: string };
+      if (!result.success) return emptyResult(result.message);
 
       await refreshAppData();
-      return { success: true, message: `+${reward} VX riscossi.` };
+      return { success: true, message: result.message };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Claim non riuscito';
       void logOperationalError('claim_daily', message);
       pushNotice('error', message);
       return emptyResult(message);
     }
-  }, [currentUser, dailyClaims, logOperationalError, platformSettings, pushNotice, refreshAppData]);
+  }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
 
   const updateUserBalance = useCallback(
     async (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number): Promise<ActionResult> => {
@@ -859,7 +816,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentUser,
         isLoggedIn: Boolean(currentUser),
-        currentPage,
         authMode,
         authLoading,
         bootstrapped,
@@ -882,7 +838,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         register,
         updateNickname,
         logout,
-        setPage,
         setAuthMode,
         toggleBalanceVisibility,
         activateDevice,
