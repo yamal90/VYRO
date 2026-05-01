@@ -132,8 +132,8 @@ const DashboardPage: React.FC = () => {
             <div className="absolute -bottom-10 -left-10 w-60 h-60 border border-white/10 rounded-full" />
           </div>
 
-          <div className="flex items-center justify-between relative z-10 mb-6">
-            <div className="flex items-center gap-3">
+          <div className="relative z-10 mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/30 relative shrink-0">
                 <img
                   src={profileAvatar}
@@ -144,22 +144,25 @@ const DashboardPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setAvatarModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-white/10 text-xs font-semibold text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-white/10 text-xs font-semibold text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
               >
                 Foto
               </button>
-              <div>
+              <div className="min-w-0">
                 <p className="text-white font-bold text-base flex items-center gap-2">
                   {currentUser.username}
                   <Sparkles size={14} className="text-yellow-400" />
                 </p>
-                <p className="text-white/50 text-xs">ID: {currentUser.id}</p>
+                <p className="text-white/50 text-xs md:text-[13px]" title={currentUser.id}>
+                  <span className="md:hidden">ID: {currentUser.id.slice(0, 8)}...{currentUser.id.slice(-6)}</span>
+                  <span className="hidden md:inline break-all">ID: {currentUser.id}</span>
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:justify-end">
               <button
                 onClick={() => void refreshAppData()}
-                className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
               >
                 <RefreshCw size={16} className="text-purple-300" />
               </button>
@@ -167,13 +170,13 @@ const DashboardPage: React.FC = () => {
                 onClick={() => {
                   window.location.href = 'mailto:support@vyrogpu.com';
                 }}
-                className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
               >
                 <Headphones size={16} className="text-purple-300" />
               </button>
               <button
                 onClick={() => setNicknameModalOpen(true)}
-                className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
                 aria-label="Modifica nickname"
               >
                 <Settings size={16} className="text-purple-300" />
@@ -181,14 +184,14 @@ const DashboardPage: React.FC = () => {
               {currentUser.role === 'admin' && (
                 <button
                   onClick={() => navigate('/admin')}
-                  className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-yellow-500/30"
+                  className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-yellow-500/30"
                 >
                   <Shield size={16} className="text-yellow-400" />
                 </button>
               )}
               <button
                 onClick={() => { void logout(); }}
-                className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-red-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-red-500/30"
               >
                 <LogOut size={16} className="text-red-300" />
               </button>
