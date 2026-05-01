@@ -572,6 +572,9 @@ begin
   if v_code = '' then
     return json_build_object('success', false, 'message', 'Referral code obbligatorio');
   end if;
+  if v_code in ('SYSTEM', 'NULL', 'UNDEFINED') then
+    return json_build_object('success', true, 'message', 'Referral di sistema ignorato');
+  end if;
 
   select * into v_target from public.profiles where id = v_target_id;
   if v_target is null then
