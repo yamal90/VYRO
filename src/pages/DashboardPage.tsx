@@ -39,6 +39,7 @@ const DashboardPage: React.FC = () => {
   if (!currentUser) return null;
 
   const recentTx = transactions.slice(0, 4);
+  const profileAvatar = currentUser.avatar_url || `https://i.pravatar.cc/160?u=${currentUser.id}`;
   const actionButtons = [
     {
       icon: ArrowDownCircle,
@@ -80,26 +81,38 @@ const DashboardPage: React.FC = () => {
 
   const mask = (v: number) => balanceVisible ? v.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '••••••';
 
+  const chartHeights = [35, 55, 42, 68, 50, 75, 60, 82, 70, 90, 65, 85, 78, 95];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 pb-32 pt-16">
       {/* Header with background */}
       <div className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div className="absolute inset-0 bg-slate-950/55" />
         {/* Animated gradient orbs */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 hidden md:block">
           <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity }}
-            className="absolute top-0 right-0 w-64 h-64 bg-purple-600/30 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.1, 1], opacity: [0.24, 0.36, 0.24] }}
+            transition={{ duration: 12, repeat: Infinity }}
+            className="absolute top-0 right-0 w-56 h-56 bg-purple-600/24 rounded-full blur-2xl"
           />
           <motion.div
-            animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-            className="absolute top-20 left-0 w-48 h-48 bg-cyan-600/20 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.16, 0.3, 0.16] }}
+            transition={{ duration: 14, repeat: Infinity, delay: 1 }}
+            className="absolute top-20 left-0 w-40 h-40 bg-cyan-600/16 rounded-full blur-2xl"
           />
         </div>
         
         <div className="px-4 pt-6 pb-24 relative z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/70 via-indigo-600/65 to-cyan-600/60" />
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700/72 via-indigo-700/66 to-cyan-700/58" />
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-4 right-4 w-40 h-40 border border-white/20 rounded-full" />
             <div className="absolute top-20 right-20 w-20 h-20 border border-white/10 rounded-full" />
@@ -108,13 +121,13 @@ const DashboardPage: React.FC = () => {
 
           <div className="flex items-center justify-between relative z-10 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-400/50 shadow-lg shadow-purple-500/30 relative">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/30 relative">
                 <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`}
+                  src={profileAvatar}
                   alt={currentUser.username}
-                  className="w-full h-full object-cover bg-purple-900"
+                  className="w-full h-full object-cover bg-slate-900"
                 />
-                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-purple-900" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-slate-900" />
               </div>
               <div>
                 <p className="text-white font-bold text-base flex items-center gap-2">
@@ -160,6 +173,16 @@ const DashboardPage: React.FC = () => {
               >
                 <LogOut size={16} className="text-red-300" />
               </button>
+            </div>
+          </div>
+
+          <div className="relative z-10 mb-5 rounded-2xl border border-white/15 bg-slate-900/45 px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-10 w-10 rounded-xl border border-white/15" />
+              <div>
+                <p className="text-xs text-cyan-200/90 uppercase tracking-[0.22em]">Realtime Control Center</p>
+                <p className="text-sm text-white/90">Monitoraggio continuo, sicurezza attiva, produzione cloud live.</p>
+              </div>
             </div>
           </div>
 
@@ -251,6 +274,26 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      <div className="px-4 mt-6">
+        <div className="surface-card rounded-2xl p-4">
+          <h3 className="text-sm font-bold text-white mb-3">Snapshot Operativo</h3>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-emerald-400/25 bg-emerald-500/10 p-3 text-center">
+              <p className="text-[10px] text-emerald-200/80">Nodo</p>
+              <p className="text-sm font-bold text-emerald-300">Online</p>
+            </div>
+            <div className="rounded-xl border border-cyan-400/25 bg-cyan-500/10 p-3 text-center">
+              <p className="text-[10px] text-cyan-200/80">Latenza</p>
+              <p className="text-sm font-bold text-cyan-300">9 ms</p>
+            </div>
+            <div className="rounded-xl border border-violet-400/25 bg-violet-500/10 p-3 text-center">
+              <p className="text-[10px] text-violet-200/80">Qualità</p>
+              <p className="text-sm font-bold text-violet-300">Ultra</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Personal Earnings */}
       <div className="px-4 mt-6">
         <div className="surface-card rounded-2xl p-5">
@@ -264,12 +307,12 @@ const DashboardPage: React.FC = () => {
 
           {/* Mini Chart */}
           <div className="flex items-end gap-1 h-24 mb-4">
-            {[35, 55, 42, 68, 50, 75, 60, 82, 70, 90, 65, 85, 78, 95].map((h, i) => (
+            {chartHeights.map((h, i) => (
               <motion.div
                 key={i}
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
-                transition={{ delay: 0.5 + i * 0.05, duration: 0.4 }}
+                transition={{ delay: 0.3 + i * 0.03, duration: 0.3 }}
                 className={`flex-1 rounded-sm ${i >= 12 ? 'bg-gradient-to-t from-purple-600 to-cyan-500' : 'bg-purple-800/50'}`}
               />
             ))}

@@ -30,37 +30,49 @@ const DevicesPage: React.FC = () => {
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  const handleActivate = (device: GPUDevice) => {
+  const handleActivate = async (device: GPUDevice) => {
     setActivatingId(device.id);
-    setTimeout(async () => {
-      const result = await activateDevice(device.id);
-      setToast({ msg: result.message, ok: result.success });
-      setActivatingId(null);
-      setTimeout(() => setToast(null), 3000);
-      if (result.success) setActiveTab('my');
-    }, 1000);
+    const result = await activateDevice(device.id);
+    setToast({ msg: result.message, ok: result.success });
+    setActivatingId(null);
+    setTimeout(() => setToast(null), 3000);
+    if (result.success) setActiveTab('my');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1600&q=80')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div className="absolute inset-0 bg-slate-950/55" />
         {/* Animated background */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-80 h-80 bg-purple-500/16 rounded-full blur-2xl" />
+          <div className="absolute top-20 right-1/4 w-56 h-56 bg-cyan-500/16 rounded-full blur-2xl" />
         </div>
         
-        <div className="gradient-primary px-4 pt-6 pb-8 relative z-10">
+        <div className="px-4 pt-6 pb-8 relative z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700/72 via-indigo-700/64 to-cyan-700/58" />
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-0 right-0 w-32 h-32 border border-white/20 rounded-full" />
             <div className="absolute bottom-0 left-1/4 w-48 h-48 border border-white/10 rounded-full" />
           </div>
           
-          <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10">
-            Centro GPU
-          </h1>
-          <p className="text-white/60 text-xs mt-1 relative z-10">Hardware per cloud computing</p>
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-white tracking-wider">Centro GPU</h1>
+              <p className="text-white/60 text-xs mt-1">Hardware per cloud computing</p>
+            </div>
+            <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-11 w-11 rounded-xl border border-white/15 bg-slate-900/40" />
+          </div>
           
           {/* Quick stats */}
           <div className="flex gap-3 mt-4 relative z-10">
@@ -130,13 +142,13 @@ const DevicesPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="gpu-card-enhanced overflow-hidden"
+              className="gpu-card-enhanced overflow-hidden"
               >
                 {/* GPU Visual */}
                 <div className={`bg-gradient-to-br ${gpuColors[i % gpuColors.length]} p-6 relative overflow-hidden`}>
                   {/* Animated background effects */}
                   <div className="absolute inset-0">
-                    <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse" />
+                    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full blur-xl" />
                     <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full blur-lg" />
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -155,7 +167,7 @@ const DevicesPage: React.FC = () => {
                         <span className="text-white/90 text-sm font-semibold">{device.compute_power} TFLOPS</span>
                       </div>
                     </div>
-                    <div className="w-36 h-36 rounded-2xl overflow-hidden bg-black/30 border border-white/20 shadow-xl relative animate-gpu-glow p-1.5">
+                    <div className="w-36 h-36 rounded-2xl overflow-hidden bg-black/30 border border-white/20 shadow-xl relative p-1.5">
                       {device.image_url ? (
                         <img
                           src={device.image_url}
@@ -212,7 +224,7 @@ const DevicesPage: React.FC = () => {
 
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => handleActivate(device)}
+                    onClick={() => void handleActivate(device)}
                     disabled={activatingId === device.id || (currentUser?.vx_balance ?? 0) < device.price}
                     className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                       (currentUser?.vx_balance ?? 0) >= device.price

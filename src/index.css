@@ -159,6 +159,11 @@ body {
   75% { transform: translateY(5px) rotate(-0.5deg); }
 }
 
+@keyframes float-gentle {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { 
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 0 0 40px rgba(124, 58, 237, 0.2); 
@@ -191,6 +196,10 @@ body {
 
 .animate-float {
   animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 10s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
@@ -648,4 +657,45 @@ body {
 .soft-divider {
   background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.35), transparent);
   height: 1px;
+}
+
+.cyber-grid-static {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Performance guardrails for mobile and reduced motion */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .glow-purple,
+  .glow-cyan,
+  .glow-blue,
+  .glow-pink,
+  .glow-green,
+  .glow-rainbow {
+    box-shadow: none;
+    animation: none;
+  }
+
+  .animate-float,
+  .animate-float-gentle,
+  .animate-pulse-glow,
+  .animate-electric,
+  .animate-holographic,
+  .animate-data-stream,
+  .animate-neon-flicker,
+  .animate-scanner,
+  .animate-pulse-ring,
+  .animate-gpu-glow {
+    animation: none !important;
+  }
+
+  .cyber-grid {
+    animation: none;
+    background-image:
+      linear-gradient(rgba(124, 58, 237, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 58, 237, 0.07) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
 }

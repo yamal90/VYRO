@@ -71,7 +71,7 @@ const AppContent: React.FC = () => {
   const showNav = location.pathname !== '/admin';
 
   return (
-    <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50 overflow-hidden">
+    <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-slate-950/90 shadow-[0_20px_60px_rgba(2,6,23,0.55)] overflow-hidden border border-white/10">
       <ParticleBackground intensity="low" />
       
       <AnimatePresence>

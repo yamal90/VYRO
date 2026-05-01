@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Cpu, Eye, EyeOff, KeyRound, Ticket, UserPlus, Zap } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, KeyRound, Ticket, UserPlus, Zap, ShieldCheck, Sparkles } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 
 type AuthStep = 'auth' | 'forgot' | 'reset';
@@ -122,27 +122,28 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen gradient-dark flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-10"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&h=1200&fit=crop')" }}
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1597852074816-d933c7d2b988?auto=format&fit=crop&w=1200&q=80')" }}
         />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/55 to-slate-950/85" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-2xl" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-lg relative z-10"
       >
         <div className="text-center mb-8">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.12 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl gradient-primary glow-purple mb-4"
+            className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-slate-900/70 border border-white/15 shadow-[0_14px_34px_rgba(2,6,23,0.5)] mb-4 overflow-hidden"
           >
-            <Cpu className="w-10 h-10 text-white" />
+            <img src="/vyro-wow-logo.svg" alt="VYRO logo" className="w-full h-full object-cover" />
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-white tracking-wider">VYRO GPU</h1>
           <p className="text-slate-400 mt-2 text-sm">
@@ -158,10 +159,15 @@ const LoginPage: React.FC = () => {
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
             Accesso sicuro con redirect su dominio configurato
           </div>
+          <div className="mt-3 flex items-center justify-center gap-2 text-[11px] text-slate-300/90">
+            <ShieldCheck size={13} className="text-emerald-300" />
+            Protezione account, verifica referral e sessione crittografata
+          </div>
         </div>
 
-        <div className="relative bg-slate-800/60 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl overflow-hidden">
+        <div className="relative bg-slate-800/62 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/10 to-transparent" />
+          <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-violet-500/15 blur-2xl" />
           {authStep === 'auth' ? (
             <div className="flex gap-2 bg-slate-900/50 p-1 rounded-2xl mb-6">
               <button
@@ -394,6 +400,21 @@ const LoginPage: React.FC = () => {
             )}
           </form>
 
+          <div className="mt-6 grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+              <p className="text-[10px] text-slate-400">Uptime</p>
+              <p className="text-sm font-semibold text-emerald-300">99.98%</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+              <p className="text-[10px] text-slate-400">Shield</p>
+              <p className="text-sm font-semibold text-cyan-300">Attivo</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+              <p className="text-[10px] text-slate-400">Cloud</p>
+              <p className="text-sm font-semibold text-violet-300">Realtime</p>
+            </div>
+          </div>
+
           <div className="mt-4 pt-4 border-t border-slate-700/50 text-center">
             {authStep === 'auth' ? (
               <p className="text-slate-400 text-sm">
@@ -419,6 +440,10 @@ const LoginPage: React.FC = () => {
         <p className="text-center text-slate-600 text-[10px] mt-6 leading-relaxed">
           Accesso protetto e profilo persistito in piattaforma.<br />
           Il referral code viene validato automaticamente.
+        </p>
+        <p className="text-center text-slate-500 text-[10px] mt-2 flex items-center justify-center gap-1">
+          <Sparkles size={10} />
+          VYRO Experience
         </p>
       </motion.div>
     </div>
