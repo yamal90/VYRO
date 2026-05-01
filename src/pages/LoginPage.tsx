@@ -4,7 +4,7 @@ import { Cpu, Eye, EyeOff, Ticket, UserPlus, Zap } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 
 const LoginPage: React.FC = () => {
-  const { authMode, setAuthMode, login, register, authLoading } = useApp();
+  const { authMode, setAuthMode, login, loginWithGoogle, register, authLoading } = useApp();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -236,6 +236,19 @@ const LoginPage: React.FC = () => {
                 </>
               )}
             </motion.button>
+
+            <button
+              type="button"
+              disabled={authLoading}
+              onClick={async () => {
+                setError('');
+                const result = await loginWithGoogle();
+                if (!result.success) setError(result.message);
+              }}
+              className="w-full py-3 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-colors disabled:opacity-50"
+            >
+              Continua con Google
+            </button>
           </form>
 
           <div className="mt-4 pt-4 border-t border-slate-700/50 text-center">

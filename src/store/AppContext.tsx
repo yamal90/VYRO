@@ -36,6 +36,7 @@ interface AppState {
   balanceVisible: boolean;
   notice: AppNotice | null;
   login: (email: string, password: string) => Promise<ActionResult>;
+  loginWithGoogle: () => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
   updateNickname: (nickname: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
@@ -597,6 +598,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [clearNotice, pushNotice]);
 
+  const loginWithGoogle = useCallback(async (): Promise<ActionResult> => {
+    if (!supabase) return emptyResult('Configura Supabase prima del login.');
+    clearNotice();
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      return { success: true, message: 'Redirect a Google in corso...' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Accesso Google non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearNotice, pushNotice]);
+
   const register = useCallback(async (payload: RegisterPayload): Promise<ActionResult> => {
     if (!supabase) return emptyResult('Configura Supabase prima della registrazione.');
     clearNotice();
@@ -831,6 +854,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         balanceVisible,
         notice,
         login,
+        loginWithGoogle,
         register,
         updateNickname,
         logout,

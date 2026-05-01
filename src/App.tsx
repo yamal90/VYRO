@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50 overflow-hidden">
+    <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50 overflow-hidden">
       {/* Animated particle background */}
       <ParticleBackground intensity="low" />
       
