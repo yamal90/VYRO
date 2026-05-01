@@ -87,7 +87,7 @@ const AvatarModal: React.FC<AvatarModalProps> = ({ isOpen, currentAvatarUrl, onC
 
             <form onSubmit={handleSubmit}>
               <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 mb-4">
-                <div className="w-24 h-24 rounded-full overflow-hidden border border-cyan-400/40 mx-auto mb-3 bg-slate-900">
+                <div className="w-28 h-28 rounded-2xl overflow-hidden border border-cyan-400/40 mx-auto mb-3 bg-slate-900">
                   {previewUrl ? (
                     <img src={previewUrl} alt="Anteprima avatar" className="w-full h-full object-cover" />
                   ) : (

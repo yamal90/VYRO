@@ -134,17 +134,17 @@ const DashboardPage: React.FC = () => {
 
           <div className="flex items-center justify-between relative z-10 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/30 relative">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/30 relative shrink-0">
                 <img
                   src={profileAvatar}
                   alt={currentUser.username}
-                  className="w-full h-full object-cover bg-slate-900"
+                  className="w-full h-full object-cover object-center bg-slate-900"
                 />
-                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-slate-900" />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900" />
               </div>
               <button
                 onClick={() => setAvatarModalOpen(true)}
-                className="px-2 py-1 rounded-lg bg-white/10 text-[10px] text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-white/10 text-xs font-semibold text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
               >
                 Foto
               </button>

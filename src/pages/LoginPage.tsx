@@ -146,6 +146,7 @@ const LoginPage: React.FC = () => {
             <img src="/vyro-wow-logo.svg" alt="VYRO logo" className="w-full h-full object-cover" />
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-white tracking-wider">VYRO GPU</h1>
+          <p className="text-cyan-300/90 mt-1 text-[11px] uppercase tracking-[0.34em]">Experience</p>
           <p className="text-slate-400 mt-2 text-sm">
             {authStep === 'forgot'
               ? 'Recupera la password via email'
