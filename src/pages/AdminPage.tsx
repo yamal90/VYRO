@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Activity,
@@ -29,7 +30,6 @@ const AdminPage: React.FC = () => {
     adminLogs,
     platformSettings,
     refreshAppData,
-    setPage,
     updateUserBalance,
     updateDeviceStatus,
     blockUser,
@@ -38,6 +38,7 @@ const AdminPage: React.FC = () => {
     updatePlatformSettings,
     pushNotice,
   } = useApp();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>('users');
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
@@ -86,7 +87,7 @@ const AdminPage: React.FC = () => {
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <p className="text-white text-lg font-bold">Accesso negato</p>
-          <button onClick={() => setPage('home')} className="mt-4 text-purple-400 text-sm">
+          <button onClick={() => navigate('/')} className="mt-4 text-purple-400 text-sm">
             Torna alla home
           </button>
         </div>
@@ -135,7 +136,7 @@ const AdminPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setPage('home')}
+              onClick={() => navigate('/')}
               className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
             >
               <ArrowLeft size={18} />
