@@ -1,13 +1,55 @@
 -- ============================================================
+-- Server-side GPU device catalog (source of truth for prices)
+-- ============================================================
+
+create table if not exists public.gpu_catalog (
+  id text primary key,
+  name text not null,
+  price numeric(18,2) not null check (price > 0),
+  compute_power integer not null check (compute_power > 0),
+  reward_7_days numeric(18,2) not null default 0,
+  active boolean not null default true
+);
+
+insert into public.gpu_catalog (id, name, price, compute_power, reward_7_days) values
+  ('gpu-1', 'Intel Core i3-12100',    80,    4,    12.32),
+  ('gpu-2', 'Intel Core i5-12400F',   160,   8,    26.80),
+  ('gpu-3', 'AMD Ryzen 5 5600',       480,   24,   82.19),
+  ('gpu-4', 'Intel Core i5-13400F',   1200,  68,   209.94),
+  ('gpu-5', 'AMD Ryzen 5 7600',       3000,  160,  548.84),
+  ('gpu-6', 'Intel Core i7-13700KF',  7200,  360,  1379.93),
+  ('gpu-7', 'AMD Ryzen 7 7800X3D',    18000, 900,  3703.00),
+  ('gpu-8', 'Intel Core i9-14900K',   34000, 1800, 7677.00),
+  ('gpu-9', 'AMD Ryzen 9 7950X3D',    72000, 4200, 18666.00)
+on conflict (id) do update set
+  name = excluded.name,
+  price = excluded.price,
+  compute_power = excluded.compute_power,
+  reward_7_days = excluded.reward_7_days;
+
+alter table public.gpu_catalog enable row level security;
+
+drop policy if exists "gpu_catalog_read_authenticated" on public.gpu_catalog;
+create policy "gpu_catalog_read_authenticated"
+on public.gpu_catalog for select
+to authenticated
+using (true);
+
+drop policy if exists "gpu_catalog_write_admin_only" on public.gpu_catalog;
+create policy "gpu_catalog_write_admin_only"
+on public.gpu_catalog for all
+to authenticated
+using (private.is_admin(auth.uid()))
+with check (private.is_admin(auth.uid()));
+
+-- ============================================================
 -- RPC: purchase_device
--- Validates balance, creates portfolio entry, deducts balance,
--- and logs activity — all server-side in a single transaction.
+-- Looks up device in server-side catalog, validates balance,
+-- creates portfolio entry, deducts balance, logs activity.
 -- ============================================================
 
 create or replace function public.purchase_device(
-  p_device_name text,
-  p_device_price numeric,
-  p_compute_power integer
+  p_device_id text
 )
 returns json
 language plpgsql
@@ -17,10 +59,17 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_profile public.profiles;
+  v_device public.gpu_catalog;
   v_entry_id uuid;
 begin
   if v_user_id is null then
     return json_build_object('success', false, 'message', 'Non autenticato');
+  end if;
+
+  -- Look up device from trusted server-side catalog
+  select * into v_device from public.gpu_catalog where id = p_device_id and active = true;
+  if v_device is null then
+    return json_build_object('success', false, 'message', 'Dispositivo non trovato o non disponibile');
   end if;
 
   select * into v_profile from public.profiles where id = v_user_id for update;
@@ -33,27 +82,27 @@ begin
     return json_build_object('success', false, 'message', 'Account bloccato');
   end if;
 
-  if v_profile.balance < p_device_price then
+  if v_profile.balance < v_device.price then
     return json_build_object('success', false, 'message', 'Saldo insufficiente');
   end if;
 
   -- Deduct balance
   update public.profiles
-  set balance = balance - p_device_price
+  set balance = balance - v_device.price
   where id = v_user_id;
 
   -- Create portfolio entry
   v_entry_id := gen_random_uuid();
   insert into public.portfolio_entries (id, owner_id, name, allocation, value, change, position)
-  values (v_entry_id, v_user_id, p_device_name, p_compute_power, p_device_price, 0, 1);
+  values (v_entry_id, v_user_id, v_device.name, v_device.compute_power, v_device.price, v_device.reward_7_days, 1);
 
   -- Log activity
   insert into public.activity_logs (owner_id, type, description, amount)
-  values (v_user_id, 'device_purchase', 'Acquisto ' || p_device_name, -p_device_price);
+  values (v_user_id, 'device_purchase', 'Acquisto ' || v_device.name, -v_device.price);
 
   return json_build_object(
     'success', true,
-    'message', p_device_name || ' attivato con successo!',
+    'message', v_device.name || ' attivato con successo!',
     'entry_id', v_entry_id
   );
 end;

@@ -32,23 +32,17 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="relative z-10"
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
-};
+const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    variants={pageVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    className="relative z-10"
+  >
+    {children}
+  </motion.div>
+);
 
 const AppContent: React.FC = () => {
   const { isLoggedIn, bootstrapped, authLoading, notice, clearNotice, currentUser } = useApp();
@@ -104,18 +98,20 @@ const AppContent: React.FC = () => {
       </AnimatePresence>
       
       <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
-          <Route path="/devices" element={<AnimatedPage><DevicesPage /></AnimatedPage>} />
-          <Route path="/transactions" element={<AnimatedPage><TransactionsPage /></AnimatedPage>} />
-          <Route path="/team" element={<AnimatedPage><TeamPage /></AnimatedPage>} />
-          <Route path="/benefits" element={<AnimatedPage><BenefitsPage /></AnimatedPage>} />
-          <Route path="/faq" element={<AnimatedPage><FAQPage /></AnimatedPage>} />
-          {isAdmin && (
-            <Route path="/admin" element={<AnimatedPage><AdminPage /></AnimatedPage>} />
-          )}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
+            <Route path="/devices" element={<AnimatedPage><DevicesPage /></AnimatedPage>} />
+            <Route path="/transactions" element={<AnimatedPage><TransactionsPage /></AnimatedPage>} />
+            <Route path="/team" element={<AnimatedPage><TeamPage /></AnimatedPage>} />
+            <Route path="/benefits" element={<AnimatedPage><BenefitsPage /></AnimatedPage>} />
+            <Route path="/faq" element={<AnimatedPage><FAQPage /></AnimatedPage>} />
+            {isAdmin && (
+              <Route path="/admin" element={<AnimatedPage><AdminPage /></AnimatedPage>} />
+            )}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
       </Suspense>
 
       {authLoading && (
