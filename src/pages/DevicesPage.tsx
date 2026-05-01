@@ -161,7 +161,13 @@ const DevicesPage: React.FC = () => {
                           src={device.image_url}
                           alt={device.name}
                           className="w-full h-full object-cover rounded-xl"
-                          style={{ filter: 'contrast(1.08) saturate(1.15)' }}
+                          style={{ filter: 'brightness(1.14) contrast(1.12) saturate(1.12)' }}
+                          onError={(e) => {
+                            const el = e.currentTarget;
+                            const clean = (device.image_url || '').split('?')[0];
+                            if (el.src.endsWith(clean)) return;
+                            el.src = clean;
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
