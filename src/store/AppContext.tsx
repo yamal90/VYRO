@@ -36,7 +36,7 @@ interface AppState {
   balanceVisible: boolean;
   notice: AppNotice | null;
   login: (email: string, password: string) => Promise<ActionResult>;
-  loginWithGoogle: () => Promise<ActionResult>;
+  loginWithGoogle: (referralCode?: string) => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
   updateNickname: (nickname: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
@@ -511,6 +511,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .eq('id', referrer.id);
   }, []);
 
+  const ensureProfileFromSession = useCallback(async (session: Session) => {
+    if (!supabase) return null;
+    const usernameFromMeta = String(
+      session.user.user_metadata?.username
+      ?? session.user.user_metadata?.full_name
+      ?? session.user.email?.split('@')[0]
+      ?? 'user',
+    ).trim();
+    const referralFromMeta = String(session.user.user_metadata?.referral_code ?? '').trim().toUpperCase();
+    const referralCode = randomInviteCode();
+
+    const insertPayload = {
+      id: session.user.id,
+      email: session.user.email ?? '',
+      username: usernameFromMeta || 'user',
+      role: 'user',
+      tier: 'ZYRA',
+      avatar_url: '',
+      balance: 0,
+      referral_code: referralCode,
+      referred_by: referralFromMeta || 'SYSTEM',
+      streak: 0,
+      last_claim: null,
+      last_claim_amount: 0,
+      joined_at: new Date().toISOString(),
+      team_size: 0,
+      account_blocked: false,
+      claim_eligible: true,
+      tier_override: false,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: insertError } = await supabase.from('profiles').insert(insertPayload);
+    if (insertError && !/duplicate key|already exists/i.test(insertError.message)) {
+      throw insertError;
+    }
+
+    const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single<ProfileRow>();
+    return data ?? null;
+  }, []);
+
   const hydrateFromSession = useCallback(async (session: Session | null) => {
     if (!supabase || !session?.user) {
       resetData();
@@ -518,23 +559,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single<ProfileRow>();
+    let { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single<ProfileRow>();
     if (error || !data) {
+      try {
+        data = await ensureProfileFromSession(session);
+      } catch {
+        data = null;
+      }
+    }
+    if (!data) {
       resetData();
-      pushNotice('error', 'Profilo utente non trovato su Supabase.');
+      pushNotice('error', 'Profilo utente non disponibile. Riprova tra pochi secondi.');
       setBootstrapped(true);
       return;
     }
 
     const referralFromMetadata = String(session.user.user_metadata?.referralCode ?? session.user.user_metadata?.referral_code ?? '').trim();
-    if (referralFromMetadata) {
-      await syncReferral(data, referralFromMetadata);
+    const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
+    const referralForSync = referralFromMetadata || referralFromUrl;
+    if (referralForSync) {
+      await syncReferral(data, referralForSync);
     }
 
     await fetchAppData(session.user.id, data.role === 'admin' ? 'admin' : 'user');
     setCurrentPage('home');
     setBootstrapped(true);
-  }, [fetchAppData, pushNotice, resetData, syncReferral]);
+  }, [ensureProfileFromSession, fetchAppData, pushNotice, resetData, syncReferral]);
 
   useEffect(() => {
     let active = true;
@@ -598,15 +648,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [clearNotice, pushNotice]);
 
-  const loginWithGoogle = useCallback(async (): Promise<ActionResult> => {
+  const loginWithGoogle = useCallback(async (referralCode?: string): Promise<ActionResult> => {
     if (!supabase) return emptyResult('Configura Supabase prima del login.');
     clearNotice();
     setAuthLoading(true);
     try {
+      const normalizedReferral = String(referralCode ?? '').trim().toUpperCase();
+      const redirectUrl = normalizedReferral
+        ? `${window.location.origin}?ref=${encodeURIComponent(normalizedReferral)}`
+        : window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
         },
       });
       if (error) throw error;

@@ -242,11 +242,17 @@ const LoginPage: React.FC = () => {
               disabled={authLoading}
               onClick={async () => {
                 setError('');
-                const result = await loginWithGoogle();
+                const result = await loginWithGoogle(isRegister ? referralCode : undefined);
                 if (!result.success) setError(result.message);
               }}
-              className="w-full py-3 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-colors disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3 .8 3.7 1.4l2.5-2.4C16.6 3.6 14.5 2.7 12 2.7 6.9 2.7 2.8 6.8 2.8 12s4.1 9.3 9.2 9.3c5.3 0 8.8-3.7 8.8-8.9 0-.6-.1-1.1-.2-1.6H12z"/>
+                <path fill="#34A853" d="M3.9 7.6l3.2 2.4c.9-1.8 2.8-3 4.9-3 1.8 0 3 .8 3.7 1.4l2.5-2.4C16.6 3.6 14.5 2.7 12 2.7 8.4 2.7 5.3 4.7 3.9 7.6z"/>
+                <path fill="#FBBC05" d="M12 21.3c2.5 0 4.6-.8 6.2-2.3l-2.9-2.3c-.8.5-1.8.9-3.3.9-2.4 0-4.5-1.6-5.2-3.8L3.5 16c1.4 3.1 4.6 5.3 8.5 5.3z"/>
+                <path fill="#4285F4" d="M20.8 12.4c0-.6-.1-1.1-.2-1.6H12v3.9h5.4c-.3 1.4-1.2 2.6-2.5 3.4l2.9 2.3c1.7-1.5 3-4 3-7z"/>
+              </svg>
               Continua con Google
             </button>
           </form>

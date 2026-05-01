@@ -28,7 +28,14 @@ const AppContent: React.FC = () => {
   }
 
   if (!bootstrapped) {
-    return <LoginPage />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-white/15 border-t-cyan-300 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm text-white/75">Riconnessione account...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!isLoggedIn) {

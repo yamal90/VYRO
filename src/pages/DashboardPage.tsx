@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Eye, EyeOff, RefreshCw, Headphones, Settings,
   ArrowDownCircle, ArrowUpCircle, Repeat, FileText,
-  Zap, TrendingUp, Users, Activity, ChevronRight, Shield, Sparkles
+  Zap, TrendingUp, Users, Activity, ChevronRight, Shield, Sparkles, LogOut
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 
@@ -13,7 +13,7 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice, updateNickname } = useApp();
+  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice, updateNickname, logout } = useApp();
   if (!currentUser) return null;
 
   const todayIncome = 18.54;
@@ -135,6 +135,12 @@ const DashboardPage: React.FC = () => {
                 className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
               >
                 {currentUser.role === 'admin' ? <Shield size={16} className="text-yellow-400" /> : <Settings size={16} className="text-purple-300" />}
+              </button>
+              <button
+                onClick={() => { void logout(); }}
+                className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-red-500/30"
+              >
+                <LogOut size={16} className="text-red-300" />
               </button>
             </div>
           </div>
