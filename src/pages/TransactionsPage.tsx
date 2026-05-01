@@ -2,25 +2,24 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowDownCircle, ArrowUpCircle, Cpu, Users, Gift,
-  Star, Clock, Check, X, Filter
+  Star, Clock, Check, X, Filter, TrendingUp, TrendingDown
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
-// types used inline
 
 const typeConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  deposit: { icon: ArrowDownCircle, label: 'Ricarica', color: 'bg-green-100 text-green-600' },
-  withdrawal: { icon: ArrowUpCircle, label: 'Prelievo', color: 'bg-red-100 text-red-500' },
-  device_purchase: { icon: Cpu, label: 'Acquisto GPU', color: 'bg-purple-100 text-purple-600' },
-  device_reward: { icon: Star, label: 'Produzione GPU', color: 'bg-amber-100 text-amber-600' },
-  team_bonus: { icon: Users, label: 'Bonus Team', color: 'bg-blue-100 text-blue-600' },
-  daily_claim: { icon: Gift, label: 'Claim Giornaliero', color: 'bg-cyan-100 text-cyan-600' },
-  login_bonus: { icon: Gift, label: 'Bonus Login', color: 'bg-emerald-100 text-emerald-600' },
+  deposit: { icon: ArrowDownCircle, label: 'Ricarica', color: 'bg-green-500/20 text-green-400 border border-green-500/30' },
+  withdrawal: { icon: ArrowUpCircle, label: 'Prelievo', color: 'bg-red-500/20 text-red-400 border border-red-500/30' },
+  device_purchase: { icon: Cpu, label: 'Acquisto GPU', color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30' },
+  device_reward: { icon: Star, label: 'Produzione GPU', color: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
+  team_bonus: { icon: Users, label: 'Bonus Team', color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
+  daily_claim: { icon: Gift, label: 'Claim Giornaliero', color: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' },
+  login_bonus: { icon: Gift, label: 'Bonus Login', color: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
 };
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  completed: { label: 'Completato', icon: Check, color: 'text-green-600 bg-green-50' },
-  pending: { label: 'In attesa', icon: Clock, color: 'text-yellow-600 bg-yellow-50' },
-  rejected: { label: 'Rifiutato', icon: X, color: 'text-red-600 bg-red-50' },
+  completed: { label: 'Completato', icon: Check, color: 'text-green-400 bg-green-500/20' },
+  pending: { label: 'In attesa', icon: Clock, color: 'text-yellow-400 bg-yellow-500/20' },
+  rejected: { label: 'Rifiutato', icon: X, color: 'text-red-400 bg-red-500/20' },
 };
 
 type FilterType = 'all' | 'deposit' | 'withdrawal' | 'device_purchase' | 'device_reward' | 'team_bonus' | 'daily_claim' | 'login_bonus';
@@ -34,6 +33,9 @@ const TransactionsPage: React.FC = () => {
     ? transactions
     : transactions.filter(t => t.type === filter);
 
+  const totalIncome = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0);
+
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: 'Tutte' },
     { key: 'deposit', label: 'Entrate' },
@@ -44,16 +46,24 @@ const TransactionsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
       {/* Header */}
-      <div className="gradient-primary px-4 pt-6 pb-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-32 h-32 border border-white/20 rounded-full" />
+      <div className="relative overflow-hidden pt-12">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
         </div>
-        <h1 className="font-display text-xl font-bold text-white tracking-wider relative z-10">
-          Transazioni
-        </h1>
-        <p className="text-white/60 text-xs mt-1 relative z-10">Storico completo dei movimenti account</p>
+        
+        <div className="gradient-primary px-4 pt-6 pb-8 relative z-10">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-0 right-0 w-32 h-32 border border-white/20 rounded-full" />
+          </div>
+          
+          <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10">
+            Transazioni
+          </h1>
+          <p className="text-white/50 text-xs mt-1 relative z-10">Storico completo dei movimenti account</p>
+        </div>
       </div>
 
       {/* Filters */}
@@ -63,10 +73,10 @@ const TransactionsPage: React.FC = () => {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 filter === f.key
-                  ? 'gradient-primary text-white shadow-md'
-                  : 'bg-white text-slate-500 shadow-sm hover:text-slate-700'
+                  ? 'gradient-primary text-white shadow-md shadow-purple-500/30'
+                  : 'glass-dark text-slate-400 border border-purple-500/20 hover:text-white'
               }`}
             >
               {f.label}
@@ -78,17 +88,23 @@ const TransactionsPage: React.FC = () => {
       {/* Summary */}
       <div className="px-4 mb-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Totale entrate</p>
-            <p className="font-display font-bold text-green-600 text-lg mt-1">
-              +{transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0).toFixed(2)}
+          <div className="glass-dark rounded-xl p-4 border border-green-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp size={16} className="text-green-400" />
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Totale entrate</p>
+            </div>
+            <p className="font-display font-bold text-green-400 text-xl">
+              +{totalIncome.toFixed(2)}
             </p>
             <p className="text-[10px] text-slate-400">VX token</p>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Totale uscite</p>
-            <p className="font-display font-bold text-red-500 text-lg mt-1">
-              {transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0).toFixed(2)}
+          <div className="glass-dark rounded-xl p-4 border border-red-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingDown size={16} className="text-red-400" />
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Totale uscite</p>
+            </div>
+            <p className="font-display font-bold text-red-400 text-xl">
+              {totalExpense.toFixed(2)}
             </p>
             <p className="text-[10px] text-slate-400">VX token</p>
           </div>
@@ -99,8 +115,8 @@ const TransactionsPage: React.FC = () => {
       <div className="px-4 space-y-2">
         {filtered.length === 0 ? (
           <div className="text-center py-16">
-            <Filter className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm">Nessuna transazione trovata</p>
+            <Filter className="w-12 h-12 text-purple-500/50 mx-auto mb-3" />
+            <p className="text-slate-400 text-sm">Nessuna transazione trovata</p>
           </div>
         ) : (
           filtered.map((tx, i) => {
@@ -116,17 +132,17 @@ const TransactionsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-50"
+                className="glass-dark rounded-xl overflow-hidden border border-purple-500/20"
               >
                 <button
                   onClick={() => setExpanded(isExpanded ? null : tx.id)}
-                  className="w-full p-3.5 flex items-center gap-3 text-left"
+                  className="w-full p-4 flex items-center gap-3 text-left"
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tc.color}`}>
                     <TxIcon size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">{tx.description}</p>
+                    <p className="text-sm font-medium text-white truncate">{tx.description}</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">
                       {new Date(tx.created_at).toLocaleDateString('it-IT', {
                         day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -134,7 +150,7 @@ const TransactionsPage: React.FC = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    <p className={`text-sm font-bold font-display ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
                     </p>
                     <p className="text-[10px] text-slate-400">{tx.currency}</p>
@@ -145,12 +161,12 @@ const TransactionsPage: React.FC = () => {
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
-                    className="border-t border-slate-100 px-3.5 py-3 bg-slate-50/50"
+                    className="border-t border-purple-500/10 px-4 py-3 bg-slate-900/50"
                   >
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <p className="text-[9px] text-slate-400 uppercase">Tipo</p>
-                        <p className="text-xs font-medium text-slate-700">{tc.label}</p>
+                        <p className="text-xs font-medium text-white">{tc.label}</p>
                       </div>
                       <div>
                         <p className="text-[9px] text-slate-400 uppercase">Stato</p>
@@ -161,7 +177,7 @@ const TransactionsPage: React.FC = () => {
                       </div>
                       <div className="col-span-2">
                         <p className="text-[9px] text-slate-400 uppercase">ID Transazione</p>
-                        <p className="text-xs font-mono text-slate-600">{tx.id}</p>
+                        <p className="text-xs font-mono text-purple-400">{tx.id}</p>
                       </div>
                     </div>
                   </motion.div>

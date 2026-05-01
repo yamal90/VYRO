@@ -10,6 +10,8 @@ import BenefitsPage from './pages/BenefitsPage';
 import AdminPage from './pages/AdminPage';
 import BottomNav from './components/BottomNav';
 import SupabaseSetupState from './components/SupabaseSetupState';
+import ParticleBackground from './components/ParticleBackground';
+import LiveProductionBar from './components/LiveProductionBar';
 import { isSupabaseConfigured } from './lib/supabase';
 
 const pageVariants = {
@@ -53,7 +55,10 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50">
+    <div className="max-w-lg mx-auto relative min-h-screen bg-slate-50 shadow-2xl shadow-slate-300/50 overflow-hidden">
+      {/* Animated particle background */}
+      <ParticleBackground intensity="low" />
+      
       <AnimatePresence>
         {notice && (
           <motion.button
@@ -75,6 +80,10 @@ const AppContent: React.FC = () => {
           </motion.button>
         )}
       </AnimatePresence>
+      
+      {/* Live Production Bar */}
+      <LiveProductionBar />
+      
       <AnimatePresence mode="wait">
         <motion.div
           key={currentPage}
@@ -82,6 +91,7 @@ const AppContent: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          className="relative z-10"
         >
           {renderPage()}
         </motion.div>
