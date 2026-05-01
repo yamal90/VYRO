@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -50,6 +50,7 @@ const AdminPage: React.FC = () => {
   const [logFilter, setLogFilter] = useState<'all' | 'error' | 'activity'>('all');
   const [depositTxDraft, setDepositTxDraft] = useState<Record<string, string>>({});
   const [withdrawTxDraft, setWithdrawTxDraft] = useState<Record<string, string>>({});
+  const adminBootstrappedForUserRef = useRef<string | null>(null);
   const [settingsDraft, setSettingsDraft] = useState({
     maintenance_mode: false,
     deposits_enabled: true,
@@ -99,9 +100,14 @@ const AdminPage: React.FC = () => {
   );
 
   React.useEffect(() => {
-    if (!currentUser || currentUser.role !== 'admin') return;
+    if (!currentUser || currentUser.role !== 'admin') {
+      adminBootstrappedForUserRef.current = null;
+      return;
+    }
+    if (adminBootstrappedForUserRef.current === currentUser.id) return;
+    adminBootstrappedForUserRef.current = currentUser.id;
     void refreshAppData();
-  }, [currentUser, refreshAppData]);
+  }, [currentUser?.id, currentUser?.role, refreshAppData]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (

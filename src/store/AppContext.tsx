@@ -537,10 +537,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   /* ── Actions ── */
 
   const refreshAppData = useCallback(async () => {
-    if (!supabase || !currentUser) return;
+    if (!supabase || !currentUser?.id || !currentUser?.role) return;
+    const currentUserId = currentUser.id;
+    const currentUserRole = currentUser.role;
     setAuthLoading(true);
     try {
-      await fetchAppData(currentUser.id, currentUser.role, {
+      await fetchAppData(currentUserId, currentUserRole, {
         includeAdminData: window.location.pathname.startsWith('/admin'),
       });
     } catch (err) {
@@ -548,7 +550,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setAuthLoading(false);
     }
-  }, [currentUser, fetchAppData, pushNotice]);
+  }, [currentUser?.id, currentUser?.role, fetchAppData, pushNotice]);
 
   const login = useCallback(
     async (email: string, password: string): Promise<ActionResult> => {
