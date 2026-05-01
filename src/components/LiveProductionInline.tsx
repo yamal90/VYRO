@@ -66,7 +66,7 @@ const LiveProductionInline: React.FC<LiveProductionInlineProps> = ({ className =
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] text-slate-400">Efficienza</span>
               <span className="text-[11px] text-green-400 font-display font-bold">
-                {productionPercent.toFixed(0)}%
+                {productionPercent.toFixed(2)}%
               </span>
             </div>
             <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden relative">

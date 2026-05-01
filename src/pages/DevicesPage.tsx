@@ -292,9 +292,11 @@ const DevicesPage: React.FC = () => {
                 const sc = statusConfig[ud.status];
                 const StatusIcon = sc.icon;
                 const liveGenerated = liveGeneratedById.get(ud.id) ?? Number(ud.total_generated ?? 0);
-                const livePercent = Math.min(
-                  100,
-                  Math.round((liveGenerated / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                const livePercent = Number(
+                  Math.min(
+                    100,
+                    (liveGenerated / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100,
+                  ).toFixed(2),
                 );
                 return (
                   <motion.div
@@ -358,7 +360,7 @@ const DevicesPage: React.FC = () => {
                           <div className="mt-2">
                             <div className="flex items-center justify-between text-[10px] text-green-300 mb-1">
                               <span>Produzione live</span>
-                              <span>{livePercent}%</span>
+                              <span>{livePercent.toFixed(2)}%</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-slate-900/40 overflow-hidden">
                               <div

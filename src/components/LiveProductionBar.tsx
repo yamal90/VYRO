@@ -72,10 +72,10 @@ const LiveProductionBar: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <Activity size={12} className="text-green-400 animate-pulse" />
                   <span className="font-display font-bold text-green-400 text-sm">
-                    +{liveIncrement.toFixed(3)}
+                    +{liveIncrement.toFixed(2)}
                   </span>
                 </div>
-                <span className="text-[9px] text-slate-500">$</span>
+                <span className="text-[9px] text-slate-500">{productionPercent.toFixed(2)}%</span>
               </div>
             </div>
           </motion.div>

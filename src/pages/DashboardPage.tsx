@@ -112,7 +112,37 @@ const DashboardPage: React.FC = () => {
 
   const mask = (v: number) => balanceVisible ? v.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '••••••';
 
-  const chartHeights = [35, 55, 42, 68, 50, 75, 60, 82, 70, 90, 65, 85, 78, 95];
+  const productionBars = useMemo(() => {
+    const activeDevices = userDevices.filter((d) => d.status === 'active');
+    const barsCount = 14;
+    if (activeDevices.length === 0) {
+      return Array.from({ length: barsCount }, (_, index) => 8 + (index % 3) * 2);
+    }
+
+    const totalCycleTarget = activeDevices.reduce(
+      (sum, d) => sum + Math.max(Number(d.device?.reward_7_days ?? 0), 0),
+      0,
+    );
+    if (totalCycleTarget <= 0) {
+      return Array.from({ length: barsCount }, () => 8);
+    }
+
+    return Array.from({ length: barsCount }, (_, index) => {
+      const hoursAgo = barsCount - 1 - index;
+      const pointTimeMs = nowMs - hoursAgo * 60 * 60 * 1000;
+      const generatedAtPoint = activeDevices.reduce((sum, device) => {
+        const cycleTarget = Math.max(Number(device.device?.reward_7_days ?? 0), 0);
+        const startMs = Date.parse(device.start_date);
+        if (cycleTarget <= 0 || !Number.isFinite(startMs) || startMs <= 0) return sum;
+        const elapsedMs = Math.max(0, pointTimeMs - startMs);
+        const elapsedInCycleMs = elapsedMs % CYCLE_MS;
+        return sum + cycleTarget * (elapsedInCycleMs / CYCLE_MS);
+      }, 0);
+
+      const percent = Math.min(100, (generatedAtPoint / totalCycleTarget) * 100);
+      return Math.max(8, Number(percent.toFixed(2)));
+    });
+  }, [userDevices, nowMs]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 pb-32 pt-16">
@@ -347,13 +377,13 @@ const DashboardPage: React.FC = () => {
 
           {/* Mini Chart */}
           <div className="flex items-end gap-1 h-24 mb-4">
-            {chartHeights.map((h, i) => (
+            {productionBars.map((h, i) => (
               <motion.div
                 key={i}
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
                 transition={{ delay: 0.3 + i * 0.03, duration: 0.3 }}
-                className={`flex-1 rounded-sm ${i >= 12 ? 'bg-gradient-to-t from-purple-600 to-cyan-500' : 'bg-purple-800/50'}`}
+                className={`flex-1 rounded-sm ${i >= productionBars.length - 2 ? 'bg-gradient-to-t from-purple-600 to-cyan-500' : 'bg-purple-800/50'}`}
               />
             ))}
           </div>
