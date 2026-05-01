@@ -147,7 +147,8 @@ const DevicesPage: React.FC = () => {
                   <div className="flex items-center justify-between relative z-10">
                     <div>
                       <p className="text-white/60 text-[10px] uppercase tracking-widest mb-1">Modello</p>
-                      <p className="font-display text-3xl font-bold text-white">{device.name}</p>
+                      <p className="font-display text-2xl font-bold text-white leading-tight">{device.name}</p>
+                      {device.description && <p className="text-white/85 text-[11px] mt-1">{device.description}</p>}
                       <div className="flex items-center gap-2 mt-2">
                         <Zap size={14} className="text-yellow-300" />
                         <span className="text-white/90 text-sm font-semibold">{device.compute_power} TFLOPS</span>
@@ -273,6 +274,9 @@ const DevicesPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="font-display font-bold text-white text-lg">{ud.device?.name}</p>
+                            {ud.device?.description && (
+                              <p className="text-[11px] text-slate-300 mt-0.5">{ud.device.description}</p>
+                            )}
                             <p className="text-[11px] text-slate-400">ID: {ud.id}</p>
                           </div>
                         </div>
@@ -296,6 +300,30 @@ const DevicesPage: React.FC = () => {
                           <p className="text-sm font-bold text-white font-display">
                             {new Date(ud.start_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
                           </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                          <span>Produzione</span>
+                          <span>
+                            {Math.min(
+                              100,
+                              Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-violet-500 to-cyan-500"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                              )}%`,
+                            }}
+                          />
                         </div>
                       </div>
 

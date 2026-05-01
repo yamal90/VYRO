@@ -16,6 +16,7 @@ export interface User {
 export interface GPUDevice {
   id: string;
   name: string;
+  description?: string;
   price: number;
   reward_3_days: number;
   reward_7_days: number;
