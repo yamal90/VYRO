@@ -288,7 +288,7 @@ begin
     raise exception 'Forbidden';
   end if;
 
-  select * into v_root from public.profiles where id = p_root_user_id;
+  select * into v_root from public.profiles p where p.id = p_root_user_id;
   if v_root is null then
     return;
   end if;
@@ -304,7 +304,7 @@ begin
       child.joined_at as joined,
       child.account_blocked,
       child.claim_eligible,
-      child.is_test_bot,
+      false as is_test_bot,
       child.referral_code,
       1 as level
     from public.profiles child
@@ -321,7 +321,7 @@ begin
       grandchild.joined_at as joined,
       grandchild.account_blocked,
       grandchild.claim_eligible,
-      grandchild.is_test_bot,
+      false as is_test_bot,
       grandchild.referral_code,
       descendants.level + 1 as level
     from descendants

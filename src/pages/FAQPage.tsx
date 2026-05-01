@@ -28,15 +28,15 @@ const faqCategories: FAQCategory[] = [
     items: [
       {
         question: 'Cos\'è VYRO GPU?',
-        answer: 'VYRO GPU è una piattaforma innovativa di cloud computing che permette agli utenti di attivare potenti unità di elaborazione GPU per generare VX Token attraverso la potenza di calcolo distribuita. Ogni GPU attiva contribuisce alla rete e genera ricompense proporzionali alla sua potenza in TFLOPS.'
+        answer: 'VYRO GPU è una piattaforma innovativa di cloud computing che permette agli utenti di attivare potenti unità di elaborazione GPU per generare Dollari interni attraverso la potenza di calcolo distribuita. Ogni GPU attiva contribuisce alla rete e genera ricompense proporzionali alla sua potenza in TFLOPS.'
       },
       {
         question: 'Come funziona il sistema?',
-        answer: 'Il funzionamento è semplice: acquisti e attivi una GPU dal nostro catalogo, il sistema la registra nella tua dashboard, e da quel momento inizia a produrre VX Token automaticamente. La produzione è calcolata in base ai TFLOPS della GPU e viene aggiornata in tempo reale nella Live Production Bar.'
+        answer: 'Il funzionamento è semplice: acquisti e attivi una GPU dal nostro catalogo, il sistema la registra nella tua dashboard, e da quel momento inizia a produrre Dollari automaticamente. La produzione è calcolata in base ai TFLOPS della GPU e viene aggiornata in tempo reale nella Live Production Bar.'
       },
       {
         question: 'Cosa sono i TFLOPS?',
-        answer: 'TFLOPS (Tera Floating-point Operations Per Second) è l\'unità di misura della potenza di calcolo di una GPU. Più TFLOPS ha una GPU, maggiore è la sua capacità di elaborazione e quindi la sua produzione di VX Token. Le nostre GPU vanno da 4 TFLOPS (X-120) a 6300 TFLOPS (IX-9900 Ultimate).'
+        answer: 'TFLOPS (Tera Floating-point Operations Per Second) è l\'unità di misura della potenza di calcolo di una GPU. Più TFLOPS ha una GPU, maggiore è la sua capacità di elaborazione e quindi la sua produzione di Dollari. Le nostre GPU vanno da 4 TFLOPS (X-120) a 6300 TFLOPS (IX-9900 Ultimate).'
       },
       {
         question: 'Quali sono le GPU Ultimate Edition?',
@@ -84,15 +84,15 @@ const faqCategories: FAQCategory[] = [
     items: [
       {
         question: 'Come vengono calcolati i guadagni?',
-        answer: 'I guadagni sono calcolati moltiplicando i TFLOPS della tua GPU per un coefficiente di produzione base (0.05 VX per TFLOPS al minuto). Il sistema aggiorna il calcolo ogni secondo e puoi visualizzare la produzione in tempo reale nella Live Production Bar nella sezione "I Miei Dispositivi".'
+        answer: 'I guadagni sono calcolati moltiplicando i TFLOPS della tua GPU per un coefficiente di produzione base (0.05 $ per TFLOPS al minuto). Il sistema aggiorna il calcolo ogni secondo e puoi visualizzare la produzione in tempo reale nella Live Production Bar nella sezione "I Miei Dispositivi".'
       },
       {
         question: 'Quanto posso guadagnare?',
-        answer: 'I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~12.32 VX/settimana\n• G-700 (68 TF): ~209.94 VX/settimana\n• X-7900 (900 TF): ~3,703 VX/settimana\n• IX-9900 Ultimate (6300 TF): ~31,000 VX/settimana'
+        answer: 'I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~12.32 $/settimana\n• G-700 (68 TF): ~209.94 $/settimana\n• X-7900 (900 TF): ~3,703 $/settimana\n• IX-9900 Ultimate (6300 TF): ~31,000 $/settimana'
       },
       {
         question: 'Quando vengono distribuite le ricompense?',
-        answer: 'La produzione VX viene accreditata automaticamente ogni secondo e visibile istantaneamente nel tuo saldo. I VX generati sono immediatamente disponibili per essere utilizzati per nuove attivazioni, trasferimenti o conversioni.'
+        answer: 'La produzione in Dollari viene accreditata automaticamente ogni secondo e visibile istantaneamente nel tuo saldo. I Dollari generati sono immediatamente disponibili per essere utilizzati per nuove attivazioni, trasferimenti o conversioni.'
       },
       {
         question: 'Posso avere più GPU attive?',
@@ -132,19 +132,19 @@ const faqCategories: FAQCategory[] = [
     items: [
       {
         question: 'Cos\'è il Claim Giornaliero?',
-        answer: 'Ogni giorno puoi riscattare 2.5 VX gratuitamente visitando la sezione Benefici. Questo bonus è progettato per premiare la costanza degli utenti attivi. Se mantieni uno streak di 7 giorni consecutivi, sblocchi un bonus extra di 10 VX.'
+        answer: 'Ogni giorno puoi riscattare 2.5 $ gratuitamente visitando la sezione Benefici. Questo bonus è progettato per premiare la costanza degli utenti attivi. Se mantieni uno streak di 7 giorni consecutivi, sblocchi un bonus extra di 10 $.'
       },
       {
         question: 'Quali missioni giornaliere esistono?',
-        answer: 'Le missioni giornaliere includono:\n• Login giornaliero: +1 VX\n• Claim giornaliero: +2.5 VX\n• Controllo dispositivi: +0.5 VX\n• Invita un amico: +5 VX\nCompletare tutte le missioni garantisce bonus aggiuntivi.'
+        answer: 'Le missioni giornaliere includono:\n• Login giornaliero: +1 $\n• Claim giornaliero: +2.5 $\n• Controllo dispositivi: +0.5 $\n• Invita un amico: +5 $\nCompletare tutte le missioni garantisce bonus aggiuntivi.'
       },
       {
         question: 'Come funzionano i badge?',
-        answer: 'I badge sono riconoscimenti che ottieni raggiungendo obiettivi specifici:\n• "Primo Login" - Accesso alla piattaforma\n• "Primo GPU" - Attivazione primo dispositivo\n• "Team Builder" - Invita 3 membri\n• "Streak 7" - 7 claim consecutivi\n• "Power User" - Raggiungi 100 TFLOPS\n• "Top Earner" - Genera 10,000 VX totali'
+        answer: 'I badge sono riconoscimenti che ottieni raggiungendo obiettivi specifici:\n• "Primo Login" - Accesso alla piattaforma\n• "Primo GPU" - Attivazione primo dispositivo\n• "Team Builder" - Invita 3 membri\n• "Streak 7" - 7 claim consecutivi\n• "Power User" - Raggiungi 100 TFLOPS\n• "Top Earner" - Genera 10,000 $ totali'
       },
       {
         question: 'Cos\'è la classifica?',
-        answer: 'La classifica mostra i top performer della piattaforma basandosi su VX totali e potenza TFLOPS. Essere nei primi 3 posti garantisce visibilità speciale, bonus settimanali, e l\'ambito badge "Crown" che appare nel tuo profilo.'
+        answer: 'La classifica mostra i top performer della piattaforma basandosi su Dollari totali e potenza TFLOPS. Essere nei primi 3 posti garantisce visibilità speciale, bonus settimanali, e l\'ambito badge "Crown" che appare nel tuo profilo.'
       }
     ]
   },

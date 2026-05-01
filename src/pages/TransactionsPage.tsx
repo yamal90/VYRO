@@ -35,6 +35,7 @@ const TransactionsPage: React.FC = () => {
 
   const totalIncome = transactions.filter((t) => t.amount > 0 && t.status === 'completed').reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.amount < 0 && t.status === 'completed').reduce((s, t) => s + t.amount, 0);
+  const currencyLabel = (currency: string) => (currency === 'VX' ? 'Dollaro' : currency);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: 'Tutte' },
@@ -96,7 +97,7 @@ const TransactionsPage: React.FC = () => {
             <p className="font-display font-bold text-green-400 text-xl">
               +{totalIncome.toFixed(2)}
             </p>
-            <p className="text-[10px] text-slate-400">VX token</p>
+            <p className="text-[10px] text-slate-400">Dollaro</p>
           </div>
           <div className="glass-dark rounded-xl p-4 border border-red-500/20">
             <div className="flex items-center gap-2 mb-2">
@@ -106,7 +107,7 @@ const TransactionsPage: React.FC = () => {
             <p className="font-display font-bold text-red-400 text-xl">
               {totalExpense.toFixed(2)}
             </p>
-            <p className="text-[10px] text-slate-400">VX token</p>
+            <p className="text-[10px] text-slate-400">Dollaro</p>
           </div>
         </div>
       </div>
@@ -153,7 +154,7 @@ const TransactionsPage: React.FC = () => {
                     <p className={`text-sm font-bold font-display ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
                     </p>
-                    <p className="text-[10px] text-slate-400">{tx.currency}</p>
+                    <p className="text-[10px] text-slate-400">{currencyLabel(tx.currency)}</p>
                   </div>
                 </button>
 

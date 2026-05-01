@@ -37,8 +37,8 @@ const BenefitsPage: React.FC = () => {
     { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: 'Invita 3 membri', tier: 'silver' },
     { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: '7 claim consecutivi', tier: 'gold' },
     { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: '100 TFLOPS potenza', tier: 'platinum' },
-    { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 VX generati', tier: 'diamond' },
-    { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 VX generati', tier: 'ultimate' },
+    { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 Dollari generati', tier: 'diamond' },
+    { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 Dollari generati', tier: 'ultimate' },
     { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
   ], [currentUser, userDevices, teamMembers, dailyClaims]);
 
@@ -117,7 +117,7 @@ const BenefitsPage: React.FC = () => {
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-white/80 text-xs font-medium mb-1">Claim giornaliero</p>
-              <p className="font-display text-3xl font-bold">2.5 VX</p>
+              <p className="font-display text-3xl font-bold">2.5 $</p>
               <p className="text-white/60 text-[10px] mt-1">Ricompensa giornaliera</p>
             </div>
             <motion.button
@@ -193,7 +193,7 @@ const BenefitsPage: React.FC = () => {
             />
           </div>
           <p className="text-[10px] text-slate-400 mt-2 text-center">
-            {daysCompleted}/7 giorni completati — Bonus settimana: <span className="font-bold text-purple-400">10 VX</span>
+            {daysCompleted}/7 giorni completati — Bonus settimana: <span className="font-bold text-purple-400">10 $</span>
           </p>
         </div>
       </div>
@@ -226,7 +226,7 @@ const BenefitsPage: React.FC = () => {
                   </p>
                 </div>
                 <span className="px-2.5 py-1 bg-purple-500/20 text-purple-400 text-[10px] font-bold rounded-full border border-purple-500/30">
-                  +{mission.reward} VX
+                  +{mission.reward} $
                 </span>
               </motion.div>
             );
@@ -292,7 +292,7 @@ const BenefitsPage: React.FC = () => {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-purple-400 font-display">{entry.vx.toLocaleString()} VX</p>
+                <p className="text-xs font-bold text-purple-400 font-display">{entry.vx.toLocaleString()} $</p>
                 <p className="text-[9px] text-slate-400">{entry.power} TFLOPS</p>
               </div>
             </div>

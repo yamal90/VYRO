@@ -78,7 +78,7 @@ const DashboardPage: React.FC = () => {
       color: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
       onClick: () => {
         navigate('/devices');
-        pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo VX.');
+        pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo Dollaro.');
       },
     },
     {
@@ -220,7 +220,7 @@ const DashboardPage: React.FC = () => {
 
             <div className="flex items-end gap-6">
               <div>
-                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">VX Token</p>
+                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">Dollaro</p>
                 <p className="text-white font-display text-3xl font-bold tracking-wide">
                   {mask(currentUser.vx_balance)}
                 </p>

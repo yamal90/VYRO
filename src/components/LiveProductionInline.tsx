@@ -93,7 +93,7 @@ const LiveProductionInline: React.FC<LiveProductionInlineProps> = ({ className =
               <p className="font-display text-green-400 text-sm font-bold">
                 +{liveIncrement.toFixed(3)}
               </p>
-              <p className="text-[9px] text-slate-500">VX generati</p>
+              <p className="text-[9px] text-slate-500">Dollari generati</p>
             </div>
             <div className="bg-white/5 rounded-lg p-2 text-center">
               <Cpu size={14} className="text-purple-400 mx-auto mb-1" />
@@ -105,7 +105,7 @@ const LiveProductionInline: React.FC<LiveProductionInlineProps> = ({ className =
               <p className="font-display text-cyan-400 text-sm font-bold">
                 {(production * 60 * 24).toFixed(1)}
               </p>
-              <p className="text-[9px] text-slate-500">VX/giorno</p>
+              <p className="text-[9px] text-slate-500">$/giorno</p>
             </div>
           </div>
         </div>

@@ -198,26 +198,26 @@ const DevicesPage: React.FC = () => {
                         <TrendingUp size={12} className="text-green-400" />
                         <p className="text-[10px] text-purple-300 uppercase tracking-wider">3 Giorni</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-purple-400">VX</span></p>
+                      <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-purple-400">$</span></p>
                     </div>
                     <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl p-3 border border-cyan-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <Activity size={12} className="text-cyan-400" />
                         <p className="text-[10px] text-cyan-300 uppercase tracking-wider">7 Giorni</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-cyan-400">VX</span></p>
+                      <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-cyan-400">$</span></p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between mb-4 p-3 bg-slate-800/50 rounded-xl">
                     <div>
                       <p className="text-[10px] text-purple-300 uppercase tracking-wider mb-1">Prezzo attivazione</p>
-                      <p className="text-2xl font-display font-bold text-neon-purple">{device.price.toLocaleString()} VX</p>
+                      <p className="text-2xl font-display font-bold text-neon-purple">{device.price.toLocaleString()} $</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] text-slate-400 mb-1">Il tuo saldo</p>
                       <p className={`text-sm font-bold font-display ${(currentUser?.vx_balance ?? 0) >= device.price ? 'text-green-400' : 'text-red-400'}`}>
-                        {currentUser?.vx_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })} VX
+                        {currentUser?.vx_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })} $
                       </p>
                     </div>
                   </div>
@@ -237,7 +237,7 @@ const DevicesPage: React.FC = () => {
                     ) : (
                       <>
                         <Zap size={18} />
-                        {(currentUser?.vx_balance ?? 0) >= device.price ? 'Attiva GPU' : 'Saldo insufficiente'}
+                        {(currentUser?.vx_balance ?? 0) >= device.price ? 'Attiva GPU' : 'Saldo Dollaro insufficiente'}
                       </>
                     )}
                   </motion.button>
@@ -308,7 +308,7 @@ const DevicesPage: React.FC = () => {
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Generato</p>
-                          <p className="text-sm font-bold text-green-400 font-display">{ud.total_generated} VX</p>
+                          <p className="text-sm font-bold text-green-400 font-display">{ud.total_generated} $</p>
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Avviato</p>

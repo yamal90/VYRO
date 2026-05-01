@@ -139,7 +139,7 @@ const TeamPage: React.FC = () => {
           <div className="glass-dark rounded-xl p-3 text-center border border-purple-500/20">
             <Zap size={16} className="text-purple-400 mx-auto mb-1" />
             <p className="font-display font-bold text-purple-400">{teamEarnings.toFixed(2)}</p>
-            <p className="text-[9px] text-slate-400 mt-0.5">Guadagni VX</p>
+            <p className="text-[9px] text-slate-400 mt-0.5">Guadagni Dollaro</p>
           </div>
           <div className="glass-dark rounded-xl p-3 text-center border border-purple-500/20">
             <Cpu size={16} className="text-cyan-400 mx-auto mb-1" />
@@ -232,7 +232,7 @@ const TeamPage: React.FC = () => {
                         {member.device_active ? '🟢 GPU attiva' : '⚫ Nessun GPU'}
                       </span>
                       <span className="text-[10px] text-purple-400 font-semibold">
-                        {member.production} VX
+                        {member.production} $
                       </span>
                     </div>
                   </div>

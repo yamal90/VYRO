@@ -418,59 +418,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const hydrateFromSession = useCallback(
     async (session: Session | null) => {
-      if (!supabase) {
-        resetData();
-        setBootstrapped(true);
-        return;
-      }
-
-      let effectiveSession: Session | null = session;
-      if (!effectiveSession?.user) {
-        const retry = await supabase.auth.getSession();
-        effectiveSession = retry.data.session ?? null;
-      }
-      if (!effectiveSession?.user) {
-        resetData();
-        setBootstrapped(true);
-        return;
-      }
-
-      let { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', effectiveSession.user.id)
-        .single<ProfileRow>();
-      if (error || !data) {
-        try {
-          data = await ensureProfileFromSession(effectiveSession);
-        } catch {
-          data = null;
+      try {
+        if (!supabase) {
+          resetData();
+          return;
         }
-      }
-      if (!data) {
+
+        let effectiveSession: Session | null = session;
+        if (!effectiveSession?.user) {
+          const retry = await supabase.auth.getSession();
+          effectiveSession = retry.data.session ?? null;
+        }
+        if (!effectiveSession?.user) {
+          resetData();
+          return;
+        }
+
+        let { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', effectiveSession.user.id)
+          .single<ProfileRow>();
+        if (error || !data) {
+          try {
+            data = await ensureProfileFromSession(effectiveSession);
+          } catch {
+            data = null;
+          }
+        }
+        if (!data) {
+          resetData();
+          pushNotice('error', 'Profilo utente non disponibile. Riprova tra pochi secondi.');
+          return;
+        }
+
+        const referralFromMetadata = String(
+          effectiveSession.user.user_metadata?.referred_by ??
+            effectiveSession.user.user_metadata?.referralCode ??
+            effectiveSession.user.user_metadata?.referral_code ??
+            '',
+        ).trim();
+        const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
+        const referralFromProfile = String(data.referred_by ?? '').trim();
+        const referralForSync = referralFromMetadata || referralFromUrl || referralFromProfile;
+        if (referralForSync) {
+          await syncReferral(data, referralForSync);
+        }
+
+        await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user', {
+          includeAdminData: window.location.pathname.startsWith('/admin'),
+        });
+      } catch (err) {
         resetData();
-        pushNotice('error', 'Profilo utente non disponibile. Riprova tra pochi secondi.');
+        pushNotice(
+          'error',
+          err instanceof Error ? `Errore connessione account: ${err.message}` : 'Errore connessione account.',
+        );
+      } finally {
         setBootstrapped(true);
-        return;
       }
-
-      const referralFromMetadata = String(
-        effectiveSession.user.user_metadata?.referred_by ??
-          effectiveSession.user.user_metadata?.referralCode ??
-          effectiveSession.user.user_metadata?.referral_code ??
-          '',
-      ).trim();
-      const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
-      const referralFromProfile = String(data.referred_by ?? '').trim();
-      const referralForSync = referralFromMetadata || referralFromUrl || referralFromProfile;
-      if (referralForSync) {
-        await syncReferral(data, referralForSync);
-      }
-
-      await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user', {
-        includeAdminData: window.location.pathname.startsWith('/admin'),
-      });
-      setBootstrapped(true);
     },
     [ensureProfileFromSession, fetchAppData, loadTeamMembers, pushNotice, resetData, syncReferral],
   );
@@ -493,7 +499,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           await hydrateFromSession(data.session);
         }
       } catch (err) {
-        throw err;
+        if (active) {
+          resetData();
+          setBootstrapped(true);
+          pushNotice(
+            'error',
+            err instanceof Error ? `Errore iniziale connessione: ${err.message}` : 'Errore iniziale connessione.',
+          );
+        }
       } finally {
         if (active) setAuthLoading(false);
       }
@@ -776,7 +789,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (!supabase || !currentUser) return emptyResult('Non autenticato');
       const device = gpuDevices.find((e) => e.id === deviceId);
       if (!device) return emptyResult('Dispositivo non trovato');
-      if (currentUser.vx_balance < device.price) return emptyResult('Saldo VX insufficiente');
+      if (currentUser.vx_balance < device.price) return emptyResult('Saldo Dollaro insufficiente');
 
       try {
         const { data, error } = await supabase.rpc('purchase_device', {

@@ -75,7 +75,7 @@ const LiveProductionBar: React.FC = () => {
                     +{liveIncrement.toFixed(3)}
                   </span>
                 </div>
-                <span className="text-[9px] text-slate-500">VX</span>
+                <span className="text-[9px] text-slate-500">$</span>
               </div>
             </div>
           </motion.div>
@@ -106,7 +106,7 @@ const LiveProductionBar: React.FC = () => {
                     <p className="font-display text-cyan-400 text-xs font-bold">
                       {(production * 60 * 24).toFixed(1)}
                     </p>
-                    <p className="text-[8px] text-slate-500">VX/giorno</p>
+                    <p className="text-[8px] text-slate-500">$/giorno</p>
                   </div>
                 </div>
               </motion.div>

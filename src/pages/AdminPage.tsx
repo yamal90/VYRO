@@ -242,7 +242,7 @@ const AdminPage: React.FC = () => {
                         setEditBalance(user.vx_balance.toString());
                       }}
                       className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/30"
-                      title="Modifica saldo VX"
+                      title="Modifica saldo Dollaro"
                     >
                       <Edit3 size={12} />
                     </button>
@@ -279,7 +279,7 @@ const AdminPage: React.FC = () => {
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-white/5 rounded-lg p-2">
-                    <p className="text-[9px] text-white/40">VX</p>
+                    <p className="text-[9px] text-white/40">Dollaro</p>
                     <p className="text-xs font-bold text-purple-400">{user.vx_balance.toLocaleString()}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
@@ -305,7 +305,7 @@ const AdminPage: React.FC = () => {
                       value={editBalance}
                       onChange={(e) => setEditBalance(e.target.value)}
                       className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm"
-                      placeholder="Nuovo saldo VX"
+                      placeholder="Nuovo saldo Dollaro"
                     />
                     <button
                       onClick={() => void handleSaveBalance(user.id)}
