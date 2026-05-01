@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Zap, Clock, Check, AlertCircle, Loader2, Activity, Power, TrendingUp } from 'lucide-react';
 import { useApp } from '../store/AppContext';
@@ -24,11 +24,36 @@ const statusConfig = {
   completed: { label: 'Completato', color: 'bg-slate-100 text-slate-600', icon: Check },
 };
 
+const CYCLE_DAYS = 7;
+const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
+
 const DevicesPage: React.FC = () => {
   const { gpuDevices, userDevices, activateDevice, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState<'center' | 'my'>('center');
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const liveGeneratedById = useMemo(() => {
+    const result = new Map<string, number>();
+    for (const ud of userDevices) {
+      const cycleTarget = Number(ud.device?.reward_7_days ?? 0);
+      const startMs = Date.parse(ud.start_date);
+      if (!Number.isFinite(cycleTarget) || cycleTarget <= 0 || !Number.isFinite(startMs) || startMs <= 0) {
+        result.set(ud.id, Number(ud.total_generated ?? 0));
+        continue;
+      }
+      const elapsedMs = Math.max(0, nowMs - startMs);
+      const elapsedInCycleMs = elapsedMs % CYCLE_MS;
+      result.set(ud.id, Number((cycleTarget * (elapsedInCycleMs / CYCLE_MS)).toFixed(2)));
+    }
+    return result;
+  }, [userDevices, nowMs]);
 
   const handleActivate = async (device: GPUDevice) => {
     setActivatingId(device.id);
@@ -266,6 +291,11 @@ const DevicesPage: React.FC = () => {
               userDevices.map((ud, i) => {
                 const sc = statusConfig[ud.status];
                 const StatusIcon = sc.icon;
+                const liveGenerated = liveGeneratedById.get(ud.id) ?? Number(ud.total_generated ?? 0);
+                const livePercent = Math.min(
+                  100,
+                  Math.round((liveGenerated / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
+                );
                 return (
                   <motion.div
                     key={ud.id}
@@ -308,7 +338,7 @@ const DevicesPage: React.FC = () => {
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Generato</p>
-                          <p className="text-sm font-bold text-green-400 font-display">{ud.total_generated} $</p>
+                          <p className="text-sm font-bold text-green-400 font-display">{liveGenerated.toFixed(2)} $</p>
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Avviato</p>
@@ -328,23 +358,12 @@ const DevicesPage: React.FC = () => {
                           <div className="mt-2">
                             <div className="flex items-center justify-between text-[10px] text-green-300 mb-1">
                               <span>Produzione live</span>
-                              <span>
-                                {Math.min(
-                                  100,
-                                  Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
-                                )}
-                                %
-                              </span>
+                              <span>{livePercent}%</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-slate-900/40 overflow-hidden">
                               <div
                                 className="h-full bg-gradient-to-r from-violet-500 to-cyan-500"
-                                style={{
-                                  width: `${Math.min(
-                                    100,
-                                    Math.round((Number(ud.total_generated ?? 0) / Math.max(Number(ud.device?.reward_7_days ?? 1), 1)) * 100),
-                                  )}%`,
-                                }}
+                                style={{ width: `${livePercent}%` }}
                               />
                             </div>
                           </div>

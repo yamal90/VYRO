@@ -43,6 +43,34 @@ using (public.is_admin(auth.uid()))
 with check (public.is_admin(auth.uid()));
 
 -- ============================================================
+-- Portfolio cycle metadata (7-day production loop)
+-- ============================================================
+
+alter table public.portfolio_entries
+  add column if not exists cycle_reward numeric(18,2) not null default 0,
+  add column if not exists cycle_days integer not null default 7 check (cycle_days > 0),
+  add column if not exists last_cycle_reset_at timestamptz;
+
+create index if not exists idx_portfolio_entries_cycle_reset
+  on public.portfolio_entries (owner_id, last_cycle_reset_at desc);
+
+update public.portfolio_entries pe
+set cycle_reward = greatest(pe.change, gc.reward_7_days, 0),
+    cycle_days = case when pe.cycle_days is null or pe.cycle_days <= 0 then 7 else pe.cycle_days end,
+    last_cycle_reset_at = coalesce(pe.last_cycle_reset_at, pe.created_at)
+from public.gpu_catalog gc
+where pe.name = gc.name
+  and (pe.cycle_reward is null or pe.cycle_reward <= 0 or pe.last_cycle_reset_at is null);
+
+update public.portfolio_entries
+set cycle_reward = greatest(change, 0),
+    cycle_days = case when cycle_days is null or cycle_days <= 0 then 7 else cycle_days end,
+    last_cycle_reset_at = coalesce(last_cycle_reset_at, created_at)
+where cycle_reward is null
+   or cycle_reward <= 0
+   or last_cycle_reset_at is null;
+
+-- ============================================================
 -- Team members hardening: stable member link for nickname sync
 -- ============================================================
 
@@ -122,8 +150,12 @@ begin
 
   -- Create portfolio entry
   v_entry_id := gen_random_uuid();
-  insert into public.portfolio_entries (id, owner_id, name, allocation, value, change, position)
-  values (v_entry_id, v_user_id, v_device.name, v_device.compute_power, v_device.price, 0, 1);
+  insert into public.portfolio_entries (
+    id, owner_id, name, allocation, value, change, cycle_reward, cycle_days, last_cycle_reset_at, position
+  )
+  values (
+    v_entry_id, v_user_id, v_device.name, v_device.compute_power, v_device.price, 0, v_device.reward_7_days, 7, now(), 1
+  );
 
   -- Log activity
   insert into public.activity_logs (owner_id, type, description, amount)

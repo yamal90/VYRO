@@ -47,6 +47,9 @@ export type PortfolioEntryRow = {
   allocation: number;
   value: number;
   change: number;
+  cycle_reward?: number | null;
+  cycle_days?: number | null;
+  last_cycle_reset_at?: string | null;
   position: number;
   created_at: string;
   updated_at: string;

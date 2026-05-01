@@ -52,6 +52,9 @@ create table if not exists public.portfolio_entries (
   allocation numeric(18,2) not null default 0,
   value numeric(18,2) not null default 0,
   change numeric(18,2) not null default 0,
+  cycle_reward numeric(18,2) not null default 0,
+  cycle_days integer not null default 7 check (cycle_days > 0),
+  last_cycle_reset_at timestamptz,
   position integer not null default 1,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -59,6 +62,7 @@ create table if not exists public.portfolio_entries (
 
 create index if not exists idx_portfolio_entries_owner_id on public.portfolio_entries (owner_id);
 create index if not exists idx_portfolio_entries_created_at on public.portfolio_entries (created_at desc);
+create index if not exists idx_portfolio_entries_cycle_reset on public.portfolio_entries (owner_id, last_cycle_reset_at desc);
 
 drop trigger if exists trg_portfolio_entries_set_updated_at on public.portfolio_entries;
 create trigger trg_portfolio_entries_set_updated_at

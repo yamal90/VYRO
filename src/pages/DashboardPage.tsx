@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -15,6 +15,9 @@ const fadeIn = {
   hidden: { opacity: 0, y: 15 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }),
 };
+
+const CYCLE_DAYS = 7;
+const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DashboardPage: React.FC = () => {
   const {
@@ -37,6 +40,12 @@ const DashboardPage: React.FC = () => {
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [transferModal, setTransferModal] = useState<'deposit' | 'withdrawal' | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const todayIncome = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -48,8 +57,17 @@ const DashboardPage: React.FC = () => {
   const personalProd = useMemo(() => {
     return userDevices
       .filter((d) => d.status === 'active')
-      .reduce((sum, d) => sum + d.total_generated, 0);
-  }, [userDevices]);
+      .reduce((sum, d) => {
+        const cycleTarget = Number(d.device?.reward_7_days ?? 0);
+        const startMs = Date.parse(d.start_date);
+        if (!Number.isFinite(cycleTarget) || cycleTarget <= 0 || !Number.isFinite(startMs) || startMs <= 0) {
+          return sum + Number(d.total_generated ?? 0);
+        }
+        const elapsedMs = Math.max(0, nowMs - startMs);
+        const elapsedInCycleMs = elapsedMs % CYCLE_MS;
+        return sum + cycleTarget * (elapsedInCycleMs / CYCLE_MS);
+      }, 0);
+  }, [userDevices, nowMs]);
 
   const teamProd = useMemo(() => {
     return teamMembers.reduce((sum, m) => sum + m.production * (m.level === 1 ? 0.03 : 0.02), 0);

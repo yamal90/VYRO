@@ -21,6 +21,16 @@ const LEGACY_DEVICE_NAME_MAP: Record<string, string> = {
   'IX-9900': 'AMD Ryzen 9 7950X3D',
 };
 
+const DEFAULT_CYCLE_DAYS = 7;
+
+const parseTimestamp = (value: string | null | undefined) => {
+  if (!value) return NaN;
+  const direct = Date.parse(value);
+  if (Number.isFinite(direct)) return direct;
+  const normalized = value.replace(' ', 'T');
+  return Date.parse(normalized);
+};
+
 export const mapProfileToUser = (
   profile: ProfileRow,
   computePower: number,
@@ -53,29 +63,36 @@ export const mapTeamMember = (row: TeamMemberRow): TeamMember => ({
 });
 
 const computeGeneratedValue = (entry: PortfolioEntryRow, fallbackWeekly: number) => {
-  const persisted = Number(entry.change ?? 0);
-  if (persisted > 0) return persisted;
+  const cycleDays = Math.max(Number(entry.cycle_days ?? DEFAULT_CYCLE_DAYS), 1);
+  const cycleReward = Math.max(
+    Number(entry.cycle_reward ?? 0),
+    Number(fallbackWeekly ?? 0),
+    Number(entry.change ?? 0),
+    0,
+  );
+  if (cycleReward <= 0) return 0;
 
-  const weekly = Math.max(Number(fallbackWeekly ?? 0), 0);
-  if (weekly <= 0) return 0;
+  const cycleStart = parseTimestamp(entry.last_cycle_reset_at ?? entry.created_at);
+  if (!Number.isFinite(cycleStart) || cycleStart <= 0) return 0;
 
-  const createdAt = new Date(entry.created_at).getTime();
-  if (!Number.isFinite(createdAt) || createdAt <= 0) return 0;
-  const elapsedHours = Math.max(0, (Date.now() - createdAt) / 36e5);
-  const hourlyRate = weekly / (7 * 24);
-  return Number((hourlyRate * elapsedHours).toFixed(2));
+  const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
+  const elapsedMs = Math.max(0, Date.now() - cycleStart);
+  const elapsedInCycleMs = elapsedMs % cycleMs;
+  const generated = cycleReward * (elapsedInCycleMs / cycleMs);
+  return Number(generated.toFixed(2));
 };
 
 export const mapPortfolioEntryToUserDevice = (entry: PortfolioEntryRow): UserDevice => {
   const normalizedName = LEGACY_DEVICE_NAME_MAP[entry.name] ?? entry.name;
+  const cycleReward = Math.max(Number(entry.cycle_reward ?? 0), Number(entry.change ?? 0), 0);
   const matchingDevice = GPU_DEVICES.find(
     (device) => device.name === normalizedName || device.name === entry.name,
   ) ?? {
     id: `portfolio-${entry.id}`,
     name: normalizedName,
     price: Number(entry.value ?? 0),
-    reward_3_days: Number((entry.change ?? 0) * 0.42),
-    reward_7_days: Number(entry.change ?? 0),
+    reward_3_days: Number((cycleReward * 3 / 7).toFixed(2)),
+    reward_7_days: Number(cycleReward.toFixed(2)),
     compute_power: Math.max(1, Math.round(Number(entry.allocation ?? 0))),
     image_url: undefined,
     active: true,
@@ -87,7 +104,7 @@ export const mapPortfolioEntryToUserDevice = (entry: PortfolioEntryRow): UserDev
     device_id: matchingDevice.id,
     device: matchingDevice,
     status: 'active',
-    start_date: entry.created_at,
+    start_date: entry.last_cycle_reset_at ?? entry.created_at,
     end_date: null,
     total_generated: computeGeneratedValue(entry, matchingDevice.reward_7_days),
     created_at: entry.created_at,

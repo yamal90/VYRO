@@ -91,7 +91,7 @@ const LiveProductionInline: React.FC<LiveProductionInlineProps> = ({ className =
             <div className="bg-white/5 rounded-lg p-2 text-center">
               <Activity size={14} className="text-green-400 mx-auto mb-1" />
               <p className="font-display text-green-400 text-sm font-bold">
-                +{liveIncrement.toFixed(3)}
+                +{liveIncrement.toFixed(2)}
               </p>
               <p className="text-[9px] text-slate-500">Dollari generati</p>
             </div>
