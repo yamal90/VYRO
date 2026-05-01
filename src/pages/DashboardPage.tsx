@@ -9,6 +9,7 @@ import {
 import { useApp } from '../store/AppContext';
 import NicknameModal from '../components/ui/NicknameModal';
 import TransferModal from '../components/ui/TransferModal';
+import AvatarModal from '../components/ui/AvatarModal';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 15 },
@@ -30,9 +31,11 @@ const DashboardPage: React.FC = () => {
     platformSettings,
     requestDeposit,
     requestWithdrawal,
+    updateAvatar,
   } = useApp();
   const navigate = useNavigate();
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [transferModal, setTransferModal] = useState<'deposit' | 'withdrawal' | null>(null);
 
   const todayIncome = useMemo(() => {
@@ -139,6 +142,12 @@ const DashboardPage: React.FC = () => {
                 />
                 <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-slate-900" />
               </div>
+              <button
+                onClick={() => setAvatarModalOpen(true)}
+                className="px-2 py-1 rounded-lg bg-white/10 text-[10px] text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
+              >
+                Foto
+              </button>
               <div>
                 <p className="text-white font-bold text-base flex items-center gap-2">
                   {currentUser.username}
@@ -398,6 +407,17 @@ const DashboardPage: React.FC = () => {
           void updateNickname(nickname).then((result) => {
             pushNotice(result.success ? 'success' : 'error', result.message);
           });
+        }}
+      />
+
+      <AvatarModal
+        isOpen={avatarModalOpen}
+        currentAvatarUrl={currentUser.avatar_url}
+        onClose={() => setAvatarModalOpen(false)}
+        onSave={async (file) => {
+          const result = await updateAvatar(file);
+          pushNotice(result.success ? 'success' : 'error', result.message);
+          return result;
         }}
       />
 

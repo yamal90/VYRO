@@ -76,6 +76,31 @@ export interface AdminLog {
   created_at: string;
 }
 
+export interface AdminDepositRequest {
+  id: string;
+  owner_id: string;
+  username: string;
+  email: string;
+  amount: number;
+  asset: string;
+  network: string;
+  tx_hash: string | null;
+  status: 'pending' | 'approved' | 'completed' | 'rejected';
+  created_at: string;
+}
+
+export interface AdminWithdrawalRequest {
+  id: string;
+  owner_id: string;
+  username: string;
+  email: string;
+  amount: number;
+  wallet_address: string | null;
+  tx_hash: string | null;
+  status: 'pending' | 'approved' | 'completed' | 'rejected';
+  created_at: string;
+}
+
 export interface ActionResult {
   success: boolean;
   message: string;

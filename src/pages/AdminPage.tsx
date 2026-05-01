@@ -10,11 +10,13 @@ import {
   Cpu,
   Edit3,
   Eye,
+  ExternalLink,
   Lock,
   LockOpen,
   RefreshCw,
   Shield,
   Users,
+  Wallet,
   X,
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
@@ -28,8 +30,12 @@ const AdminPage: React.FC = () => {
     adminUserDevices,
     adminTransactions,
     adminLogs,
+    adminDepositRequests,
+    adminWithdrawalRequests,
     platformSettings,
     refreshAppData,
+    updateDepositRequestStatus,
+    updateWithdrawalRequestStatus,
     updateUserBalance,
     blockUser,
     unblockUser,
@@ -42,6 +48,8 @@ const AdminPage: React.FC = () => {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
   const [logFilter, setLogFilter] = useState<'all' | 'error' | 'activity'>('all');
+  const [depositTxDraft, setDepositTxDraft] = useState<Record<string, string>>({});
+  const [withdrawTxDraft, setWithdrawTxDraft] = useState<Record<string, string>>({});
   const [settingsDraft, setSettingsDraft] = useState({
     maintenance_mode: false,
     deposits_enabled: true,
@@ -79,6 +87,21 @@ const AdminPage: React.FC = () => {
     if (logFilter === 'error') return adminLogs.filter((log) => log.action.toLowerCase().includes('error_'));
     return adminLogs.filter((log) => !log.action.toLowerCase().includes('error_'));
   }, [adminLogs, logFilter]);
+
+  const pendingDeposits = useMemo(
+    () => adminDepositRequests.filter((item) => item.status === 'pending'),
+    [adminDepositRequests],
+  );
+
+  const pendingWithdrawals = useMemo(
+    () => adminWithdrawalRequests.filter((item) => item.status === 'pending'),
+    [adminWithdrawalRequests],
+  );
+
+  React.useEffect(() => {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    void refreshAppData();
+  }, [currentUser, refreshAppData]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (
@@ -157,12 +180,12 @@ const AdminPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-4 gap-2 mb-4">
-          {[
-            { label: 'Utenti', value: allUsers.length, color: 'from-purple-500 to-violet-600' },
-            { label: 'Bloccati', value: allUsers.filter((u) => u.status === 'blocked').length, color: 'from-red-500 to-rose-600' },
-            { label: 'Dispositivi', value: adminUserDevices.length, color: 'from-blue-500 to-indigo-600' },
-            { label: 'Errori', value: errorLogsCount, color: 'from-amber-500 to-orange-600' },
-          ].map((stat) => (
+            {[
+              { label: 'Utenti', value: allUsers.length, color: 'from-purple-500 to-violet-600' },
+              { label: 'Bloccati', value: allUsers.filter((u) => u.status === 'blocked').length, color: 'from-red-500 to-rose-600' },
+              { label: 'Dispositivi', value: adminUserDevices.length, color: 'from-blue-500 to-indigo-600' },
+              { label: 'Richieste', value: pendingDeposits.length + pendingWithdrawals.length, color: 'from-amber-500 to-orange-600' },
+            ].map((stat) => (
             <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-xl p-3 text-center`}>
               <p className="font-display text-lg font-bold text-white">{stat.value}</p>
               <p className="text-[9px] text-white/75">{stat.label}</p>
@@ -328,6 +351,125 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'transactions' && (
           <div className="space-y-2">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <p className="text-white text-xs font-semibold mb-1">Gestione richieste</p>
+              <p className="text-[10px] text-white/55">
+                Pending depositi: {pendingDeposits.length} • Pending prelievi: {pendingWithdrawals.length}
+              </p>
+            </div>
+
+            {pendingDeposits.map((item) => (
+              <div key={item.id} className="bg-white/5 border border-emerald-500/30 rounded-xl p-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-semibold truncate">Deposito {item.amount.toFixed(2)} {item.asset}</p>
+                    <p className="text-[10px] text-white/50 truncate">{item.username} • {item.email}</p>
+                    <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                  </div>
+                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300">
+                    {item.status}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
+                  <input
+                    type="text"
+                    value={depositTxDraft[item.id] ?? item.tx_hash ?? ''}
+                    onChange={(e) => setDepositTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                    placeholder="TX hash (opzionale)"
+                    className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        const result = await updateDepositRequestStatus(item.id, 'approved', depositTxDraft[item.id]);
+                        pushNotice(result.success ? 'success' : 'error', result.message);
+                      }}
+                      className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
+                    >
+                      Approva
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const result = await updateDepositRequestStatus(item.id, 'rejected', depositTxDraft[item.id]);
+                        pushNotice(result.success ? 'success' : 'error', result.message);
+                      }}
+                      className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
+                    >
+                      Rifiuta
+                    </button>
+                    {item.tx_hash ? (
+                      <a
+                        href={`https://bscscan.com/tx/${item.tx_hash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                      >
+                        BscScan <ExternalLink size={12} />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {pendingWithdrawals.map((item) => (
+              <div key={item.id} className="bg-white/5 border border-blue-500/30 rounded-xl p-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-semibold truncate">Prelievo {item.amount.toFixed(2)} USDT</p>
+                    <p className="text-[10px] text-white/50 truncate">{item.username} • {item.email}</p>
+                    <p className="text-[10px] text-blue-200/70 truncate inline-flex items-center gap-1">
+                      <Wallet size={11} />
+                      {item.wallet_address ?? 'Wallet non impostato'}
+                    </p>
+                    <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                  </div>
+                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300">
+                    {item.status}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
+                  <input
+                    type="text"
+                    value={withdrawTxDraft[item.id] ?? item.tx_hash ?? ''}
+                    onChange={(e) => setWithdrawTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                    placeholder="TX hash payout (opzionale)"
+                    className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        const result = await updateWithdrawalRequestStatus(item.id, 'approved', withdrawTxDraft[item.id]);
+                        pushNotice(result.success ? 'success' : 'error', result.message);
+                      }}
+                      className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
+                    >
+                      Approva
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const result = await updateWithdrawalRequestStatus(item.id, 'rejected', withdrawTxDraft[item.id]);
+                        pushNotice(result.success ? 'success' : 'error', result.message);
+                      }}
+                      className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
+                    >
+                      Rifiuta
+                    </button>
+                    {item.tx_hash ? (
+                      <a
+                        href={`https://bscscan.com/tx/${item.tx_hash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                      >
+                        BscScan <ExternalLink size={12} />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+
             {adminTransactions.slice(0, 30).map((tx) => (
               <div key={tx.id} className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${
@@ -354,6 +496,9 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'logs' && (
           <div className="space-y-2">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <p className="text-white text-xs font-semibold">Errori tracciati: {errorLogsCount}</p>
+            </div>
             <div className="flex items-center gap-2 mb-2">
               {[
                 { key: 'all' as const, label: 'Tutti' },

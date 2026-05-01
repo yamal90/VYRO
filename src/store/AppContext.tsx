@@ -2,7 +2,9 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import type { Session } from '@supabase/supabase-js';
 import type {
   ActionResult,
+  AdminDepositRequest,
   AdminLog,
+  AdminWithdrawalRequest,
   AppNotice,
   AuthMode,
   DailyClaim,
@@ -53,6 +55,8 @@ interface AppState {
   adminUserDevices: UserDevice[];
   adminTransactions: Transaction[];
   adminLogs: AdminLog[];
+  adminDepositRequests: AdminDepositRequest[];
+  adminWithdrawalRequests: AdminWithdrawalRequest[];
   platformSettings: PlatformSettingsRow | null;
   balanceVisible: boolean;
   notice: AppNotice | null;
@@ -62,6 +66,7 @@ interface AppState {
   completePasswordReset: (newPassword: string, confirmPassword: string) => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
   updateNickname: (nickname: string) => Promise<ActionResult>;
+  updateAvatar: (file: File) => Promise<ActionResult>;
   logout: () => Promise<void>;
   setAuthMode: (mode: AuthMode) => void;
   toggleBalanceVisibility: () => void;
@@ -69,6 +74,16 @@ interface AppState {
   claimDailyReward: () => Promise<ActionResult>;
   requestDeposit: (amount: number, txHash?: string) => Promise<ActionResult>;
   requestWithdrawal: (amount: number, walletAddress: string) => Promise<ActionResult>;
+  updateDepositRequestStatus: (
+    depositId: string,
+    status: 'pending' | 'approved' | 'completed' | 'rejected',
+    txHash?: string,
+  ) => Promise<ActionResult>;
+  updateWithdrawalRequestStatus: (
+    withdrawalId: string,
+    status: 'pending' | 'approved' | 'completed' | 'rejected',
+    txHash?: string,
+  ) => Promise<ActionResult>;
   updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => Promise<ActionResult>;
   updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => Promise<ActionResult>;
   blockUser: (userId: string) => Promise<ActionResult>;
@@ -104,6 +119,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [adminUserDevices, setAdminUserDevices] = useState<UserDevice[]>([]);
   const [adminTransactions, setAdminTransactions] = useState<Transaction[]>([]);
   const [adminLogs, setAdminLogs] = useState<AdminLog[]>([]);
+  const [adminDepositRequests, setAdminDepositRequests] = useState<AdminDepositRequest[]>([]);
+  const [adminWithdrawalRequests, setAdminWithdrawalRequests] = useState<AdminWithdrawalRequest[]>([]);
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [notice, setNotice] = useState<AppNotice | null>(null);
   const [platformSettings, setPlatformSettings] = useState<PlatformSettingsRow | null>(null);
@@ -141,6 +158,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAdminUserDevices([]);
     setAdminTransactions([]);
     setAdminLogs([]);
+    setAdminDepositRequests([]);
+    setAdminWithdrawalRequests([]);
     setPlatformSettings(null);
   }, []);
 
@@ -165,9 +184,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [],
   );
 
+  const validateReferralCode = useCallback(
+    async (rawCode: string): Promise<{ valid: boolean; normalized: string; message: string }> => {
+      if (!supabase) return { valid: false, normalized: '', message: 'Configura Supabase prima della registrazione.' };
+      const normalized = rawCode.trim().toUpperCase();
+      if (!normalized) return { valid: false, normalized: '', message: 'Il referral code è obbligatorio.' };
+
+      const { data, error } = await supabase.rpc('validate_referral_code', { p_referral_code: normalized });
+      if (error) throw error;
+
+      const payload = (data ?? null) as { valid?: boolean; message?: string } | null;
+      if (!payload?.valid) {
+        return {
+          valid: false,
+          normalized,
+          message: payload?.message ?? 'Referral code non valido.',
+        };
+      }
+
+      return { valid: true, normalized, message: 'ok' };
+    },
+    [],
+  );
+
   /* ── Fetch all data for a user ── */
 
-  const fetchAppData = useCallback(async (profileId: string, role: User['role']) => {
+  const fetchAppData = useCallback(async (
+    profileId: string,
+    role: User['role'],
+    options?: { includeAdminData?: boolean },
+  ) => {
     if (!supabase) return null;
 
     const [profileRes, settingsRes, portfolioRes, depositsRes, withdrawalsRes, activitiesRes] =
@@ -206,7 +252,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTeamMembers(teamRows.map(mapTeamMember));
     setDailyClaims(makeDailyClaims(profileRes.data as ProfileRow));
 
-    if (role === 'admin') {
+    const includeAdminData = Boolean(options?.includeAdminData);
+    if (role === 'admin' && includeAdminData) {
       const [profilesAllRes, portfolioAllRes, depositsAllRes, withdrawalsAllRes, activitiesAllRes] =
         await Promise.all([
           supabase.from('profiles').select('*').order('created_at', { ascending: false }),
@@ -245,6 +292,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAllUsers(allProfileRows.map((r) => mapProfileToUser(r, computeByUser.get(r.id) ?? 0, usdtByUser.get(r.id) ?? 0)));
       setAdminUserDevices(allPortfolioRows.map(mapPortfolioEntryToUserDevice));
       setAdminTransactions(mapLogsToTransactions(allDepositRows, allWithdrawalRows, allActivityRows));
+      const profileById = new Map(allProfileRows.map((row) => [row.id, row]));
+      setAdminDepositRequests(
+        allDepositRows.map((row) => ({
+          id: row.id,
+          owner_id: row.owner_id,
+          username: profileById.get(row.owner_id)?.username ?? 'unknown',
+          email: profileById.get(row.owner_id)?.email ?? '',
+          amount: Number(row.amount ?? 0),
+          asset: row.asset,
+          network: row.network,
+          tx_hash: row.tx_hash,
+          status: row.status as AdminDepositRequest['status'],
+          created_at: row.created_at,
+        })),
+      );
+      setAdminWithdrawalRequests(
+        allWithdrawalRows.map((row) => ({
+          id: row.id,
+          owner_id: row.owner_id,
+          username: profileById.get(row.owner_id)?.username ?? 'unknown',
+          email: profileById.get(row.owner_id)?.email ?? '',
+          amount: Number(row.amount ?? 0),
+          wallet_address: row.wallet_address,
+          tx_hash: row.tx_hash,
+          status: row.status as AdminWithdrawalRequest['status'],
+          created_at: row.created_at,
+        })),
+      );
       setAdminLogs(
         allActivityRows.slice(0, 40).map((row) => ({
           id: row.id,
@@ -259,6 +334,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAdminUserDevices([]);
       setAdminTransactions([]);
       setAdminLogs([]);
+      setAdminDepositRequests([]);
+      setAdminWithdrawalRequests([]);
     }
 
     return profile;
@@ -276,90 +353,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ) {
       return;
     }
-
-    const { data: referrer, error: referrerError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('referral_code', normalized)
-      .single<ProfileRow>();
-
-    if (referrerError || !referrer) return;
-
-    await supabase
-      .from('profiles')
-      .update({ referred_by: normalized, updated_at: new Date().toISOString() })
-      .eq('id', profile.id);
-
-    let existingMemberById: { id: string } | null = null;
-    let supportsStableMemberId = true;
-    {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('owner_id', referrer.id)
-        .eq('member_user_id', profile.id)
-        .maybeSingle();
-      if (error) {
-        supportsStableMemberId = !/member_user_id|column .* does not exist/i.test(error.message);
-      } else {
-        existingMemberById = data;
-      }
+    const { data, error } = await supabase.rpc('apply_referral_link', {
+      p_referral_code: normalized,
+      p_target_user_id: profile.id,
+    });
+    if (error) throw error;
+    const result = data as { success?: boolean; message?: string } | null;
+    if (result?.success === false) {
+      throw new Error(result.message ?? 'Sync referral non riuscito.');
     }
-
-    let existingMemberByName = null;
-    if (!existingMemberById && !supportsStableMemberId) {
-      const { data } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('owner_id', referrer.id)
-        .eq('username', profile.username)
-        .maybeSingle();
-      existingMemberByName = data;
-    }
-
-    if (!existingMemberById && !existingMemberByName) {
-      const insertPayload: Record<string, unknown> = {
-        owner_id: referrer.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url || '',
-        tier: profile.role === 'admin' ? 'ADMIN' : 'ZYRA',
-        joined: profile.joined_at,
-        contribution: 0,
-        active_balance: Number(profile.balance ?? 0),
-        active_sub_count: 0,
-        account_blocked: profile.account_blocked,
-        claim_eligible: profile.claim_eligible,
-        is_test_bot: false,
-      };
-
-      if (supportsStableMemberId) {
-        insertPayload.member_user_id = profile.id;
-      }
-
-      const { error: insertError } = await supabase.from('team_members').insert(insertPayload);
-      if (insertError && supportsStableMemberId && /member_user_id|column .* does not exist/i.test(insertError.message)) {
-        await supabase.from('team_members').insert({
-          owner_id: referrer.id,
-          username: profile.username,
-          avatar_url: profile.avatar_url || '',
-          tier: profile.role === 'admin' ? 'ADMIN' : 'ZYRA',
-          joined: profile.joined_at,
-          contribution: 0,
-          active_balance: Number(profile.balance ?? 0),
-          active_sub_count: 0,
-          account_blocked: profile.account_blocked,
-          claim_eligible: profile.claim_eligible,
-          is_test_bot: false,
-        });
-      } else if (insertError) {
-        throw insertError;
-      }
-    }
-
-    await supabase
-      .from('profiles')
-      .update({ team_size: Number(referrer.team_size ?? 0) + 1, updated_at: new Date().toISOString() })
-      .eq('id', referrer.id);
   }, []);
 
   /* ── Ensure profile exists on first login ── */
@@ -465,7 +467,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await syncReferral(data, referralForSync);
       }
 
-      await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user');
+      await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user', {
+        includeAdminData: window.location.pathname.startsWith('/admin'),
+      });
       setBootstrapped(true);
     },
     [ensureProfileFromSession, fetchAppData, loadTeamMembers, pushNotice, resetData, syncReferral],
@@ -518,7 +522,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!supabase || !currentUser) return;
     setAuthLoading(true);
     try {
-      await fetchAppData(currentUser.id, currentUser.role);
+      await fetchAppData(currentUser.id, currentUser.role, {
+        includeAdminData: window.location.pathname.startsWith('/admin'),
+      });
     } catch (err) {
       pushNotice('error', err instanceof Error ? err.message : 'Aggiornamento dati non riuscito');
     } finally {
@@ -606,13 +612,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const normalizedReferral = String(referralCode ?? '').trim().toUpperCase();
         if (normalizedReferral) {
-          const { data: referrer, error: referrerError } = await supabase
-            .from('profiles')
-            .select('id, account_blocked')
-            .eq('referral_code', normalizedReferral)
-            .maybeSingle();
-          if (referrerError) throw referrerError;
-          if (!referrer || referrer.account_blocked) return emptyResult('Referral code non valido.');
+          const referralCheck = await validateReferralCode(normalizedReferral);
+          if (!referralCheck.valid) return emptyResult(referralCheck.message);
         }
         const appBaseUrl = getAppBaseUrl();
         const redirectUrl = normalizedReferral
@@ -632,7 +633,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAuthLoading(false);
       }
     },
-    [clearNotice, pushNotice],
+    [clearNotice, pushNotice, validateReferralCode],
   );
 
   const register = useCallback(
@@ -650,14 +651,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       setAuthLoading(true);
       try {
-        const { data: referrer, error: referrerError } = await supabase
-          .from('profiles')
-          .select('id, account_blocked')
-          .eq('referral_code', referralCode)
-          .maybeSingle();
-
-        if (referrerError) throw referrerError;
-        if (!referrer || referrer.account_blocked) return emptyResult('Referral code non valido.');
+        const referralCheck = await validateReferralCode(referralCode);
+        if (!referralCheck.valid) return emptyResult(referralCheck.message);
 
         const { data, error } = await supabase.auth.signUp({
           email: payload.email.trim().toLowerCase(),
@@ -698,7 +693,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAuthLoading(false);
       }
     },
-    [clearNotice, pushNotice, syncReferral],
+    [clearNotice, pushNotice, syncReferral, validateReferralCode],
   );
 
   const logout = useCallback(async () => {
@@ -728,6 +723,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: true, message: 'Nickname aggiornato.' };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Aggiornamento nickname non riuscito';
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, pushNotice, refreshAppData],
+  );
+
+  const updateAvatar = useCallback(
+    async (file: File): Promise<ActionResult> => {
+      if (!supabase || !currentUser) return emptyResult('Non autenticato');
+      if (!file) return emptyResult('Seleziona un file immagine.');
+      if (!file.type.startsWith('image/')) return emptyResult('Formato non valido. Usa un file immagine.');
+      const maxBytes = 5 * 1024 * 1024;
+      if (file.size > maxBytes) return emptyResult('Immagine troppo grande (max 5MB).');
+
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+      const objectPath = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${safeExt}`;
+
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(objectPath, file, { upsert: true, cacheControl: '3600' });
+        if (uploadError) throw uploadError;
+
+        const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(objectPath);
+        const avatarUrl = publicData.publicUrl;
+        if (!avatarUrl) return emptyResult('Upload completato ma URL avatar non disponibile.');
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+          .eq('id', currentUser.id);
+        if (profileError) throw profileError;
+
+        await refreshAppData();
+        return { success: true, message: 'Avatar aggiornato.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Aggiornamento avatar non riuscito';
         pushNotice('error', message);
         return emptyResult(message);
       }
@@ -860,6 +894,70 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     },
     [currentUser, logOperationalError, platformSettings, pushNotice, refreshAppData],
+  );
+
+  const updateDepositRequestStatus = useCallback(
+    async (
+      depositId: string,
+      status: 'pending' | 'approved' | 'completed' | 'rejected',
+      txHash?: string,
+    ): Promise<ActionResult> => {
+      if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+      const normalizedStatus = String(status).trim().toLowerCase();
+      if (!['pending', 'approved', 'completed', 'rejected'].includes(normalizedStatus)) {
+        return emptyResult('Stato deposito non valido.');
+      }
+      try {
+        const { data, error } = await supabase.rpc('admin_manage_deposit', {
+          p_deposit_id: depositId,
+          p_status: normalizedStatus,
+          p_tx_hash: String(txHash ?? '').trim() || null,
+        });
+        if (error) throw error;
+        const result = data as { success?: boolean; message?: string } | null;
+        if (!result?.success) return emptyResult(result?.message ?? 'Aggiornamento deposito non riuscito.');
+        await refreshAppData();
+        return { success: true, message: result.message ?? 'Deposito aggiornato.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Aggiornamento deposito non riuscito';
+        void logOperationalError('admin_manage_deposit', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, pushNotice, refreshAppData],
+  );
+
+  const updateWithdrawalRequestStatus = useCallback(
+    async (
+      withdrawalId: string,
+      status: 'pending' | 'approved' | 'completed' | 'rejected',
+      txHash?: string,
+    ): Promise<ActionResult> => {
+      if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+      const normalizedStatus = String(status).trim().toLowerCase();
+      if (!['pending', 'approved', 'completed', 'rejected'].includes(normalizedStatus)) {
+        return emptyResult('Stato prelievo non valido.');
+      }
+      try {
+        const { data, error } = await supabase.rpc('admin_manage_withdrawal', {
+          p_withdrawal_id: withdrawalId,
+          p_status: normalizedStatus,
+          p_tx_hash: String(txHash ?? '').trim() || null,
+        });
+        if (error) throw error;
+        const result = data as { success?: boolean; message?: string } | null;
+        if (!result?.success) return emptyResult(result?.message ?? 'Aggiornamento prelievo non riuscito.');
+        await refreshAppData();
+        return { success: true, message: result.message ?? 'Prelievo aggiornato.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Aggiornamento prelievo non riuscito';
+        void logOperationalError('admin_manage_withdrawal', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, pushNotice, refreshAppData],
   );
 
   const updateUserBalance = useCallback(
@@ -996,6 +1094,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminUserDevices,
         adminTransactions,
         adminLogs,
+        adminDepositRequests,
+        adminWithdrawalRequests,
         platformSettings,
         balanceVisible,
         notice,
@@ -1005,6 +1105,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         completePasswordReset,
         register,
         updateNickname,
+        updateAvatar,
         logout,
         setAuthMode,
         toggleBalanceVisibility,
@@ -1012,6 +1113,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         claimDailyReward,
         requestDeposit,
         requestWithdrawal,
+        updateDepositRequestStatus,
+        updateWithdrawalRequestStatus,
         updateUserBalance,
         updateDeviceStatus,
         blockUser,

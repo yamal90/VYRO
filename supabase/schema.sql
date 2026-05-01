@@ -111,6 +111,9 @@ create table if not exists public.deposits (
 
 create index if not exists idx_deposits_owner_id on public.deposits (owner_id);
 create index if not exists idx_deposits_created_at on public.deposits (created_at desc);
+create unique index if not exists idx_deposits_tx_hash_unique
+  on public.deposits (lower(tx_hash))
+  where tx_hash is not null and length(trim(tx_hash)) > 0;
 
 create table if not exists public.withdrawals (
   id uuid primary key default gen_random_uuid(),
@@ -124,6 +127,9 @@ create table if not exists public.withdrawals (
 
 create index if not exists idx_withdrawals_owner_id on public.withdrawals (owner_id);
 create index if not exists idx_withdrawals_created_at on public.withdrawals (created_at desc);
+create unique index if not exists idx_withdrawals_tx_hash_unique
+  on public.withdrawals (lower(tx_hash))
+  where tx_hash is not null and length(trim(tx_hash)) > 0;
 
 create table if not exists public.activity_logs (
   id uuid primary key default gen_random_uuid(),
@@ -215,6 +221,40 @@ begin
     candidate := 'VYRO-' || substring(upper(md5(gen_random_uuid()::text || clock_timestamp()::text)) from 1 for 8);
   end loop;
   return candidate;
+end;
+$$;
+
+create or replace function public.validate_referral_code(
+  p_referral_code text
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_code text := upper(trim(coalesce(p_referral_code, '')));
+  v_profile public.profiles;
+begin
+  if v_code = '' then
+    return json_build_object('valid', false, 'message', 'Referral code obbligatorio');
+  end if;
+
+  select * into v_profile
+  from public.profiles
+  where referral_code = v_code
+  limit 1;
+
+  if v_profile is null or v_profile.account_blocked then
+    return json_build_object('valid', false, 'message', 'Referral code non valido');
+  end if;
+
+  return json_build_object(
+    'valid', true,
+    'message', 'ok',
+    'code', v_profile.referral_code,
+    'referrer_id', v_profile.id
+  );
 end;
 $$;
 
@@ -617,8 +657,274 @@ begin
 end;
 $$;
 
+create or replace function public.apply_referral_link(
+  p_referral_code text,
+  p_target_user_id uuid default auth.uid()
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_target_id uuid := coalesce(p_target_user_id, auth.uid());
+  v_code text := upper(trim(coalesce(p_referral_code, '')));
+  v_target public.profiles;
+  v_referrer public.profiles;
+  v_exists boolean := false;
+begin
+  if v_target_id is null then
+    return json_build_object('success', false, 'message', 'Utente non autenticato');
+  end if;
+  if v_code = '' then
+    return json_build_object('success', false, 'message', 'Referral code obbligatorio');
+  end if;
+
+  select * into v_target from public.profiles where id = v_target_id;
+  if v_target is null then
+    return json_build_object('success', false, 'message', 'Profilo target non trovato');
+  end if;
+
+  select * into v_referrer
+  from public.profiles
+  where referral_code = v_code
+    and account_blocked = false
+  limit 1;
+
+  if v_referrer is null then
+    return json_build_object('success', false, 'message', 'Referral code non valido');
+  end if;
+  if v_referrer.id = v_target.id then
+    return json_build_object('success', false, 'message', 'Non puoi usare il tuo referral');
+  end if;
+
+  if coalesce(v_target.referred_by, 'SYSTEM') <> 'SYSTEM' and v_target.referred_by <> v_code then
+    return json_build_object('success', true, 'message', 'Referral già assegnato');
+  end if;
+
+  update public.profiles
+  set referred_by = v_code,
+      updated_at = now()
+  where id = v_target.id;
+
+  select exists (
+    select 1
+    from public.team_members tm
+    where tm.owner_id = v_referrer.id
+      and (tm.member_user_id = v_target.id or tm.username = v_target.username)
+  ) into v_exists;
+
+  if not v_exists then
+    insert into public.team_members (
+      owner_id,
+      member_user_id,
+      username,
+      avatar_url,
+      tier,
+      joined,
+      contribution,
+      active_balance,
+      active_sub_count,
+      account_blocked,
+      claim_eligible,
+      is_test_bot
+    ) values (
+      v_referrer.id,
+      v_target.id,
+      v_target.username,
+      coalesce(v_target.avatar_url, ''),
+      case when v_target.role = 'admin' then 'ADMIN' else 'ZYRA' end,
+      v_target.joined_at,
+      0,
+      coalesce(v_target.balance, 0),
+      0,
+      coalesce(v_target.account_blocked, false),
+      coalesce(v_target.claim_eligible, true),
+      false
+    );
+
+    update public.profiles
+    set team_size = coalesce(team_size, 0) + 1,
+        updated_at = now()
+    where id = v_referrer.id;
+  end if;
+
+  return json_build_object('success', true, 'message', 'Referral applicato');
+end;
+$$;
+
+create or replace function public.admin_manage_deposit(
+  p_deposit_id uuid,
+  p_status text,
+  p_tx_hash text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin_id uuid := auth.uid();
+  v_status text := lower(trim(coalesce(p_status, '')));
+  v_tx_hash text := nullif(trim(coalesce(p_tx_hash, '')), '');
+  v_row public.deposits;
+begin
+  if v_admin_id is null or not public.is_admin(v_admin_id) then
+    return json_build_object('success', false, 'message', 'Non autorizzato');
+  end if;
+  if v_status not in ('pending', 'approved', 'completed', 'rejected') then
+    return json_build_object('success', false, 'message', 'Stato non valido');
+  end if;
+
+  select * into v_row from public.deposits where id = p_deposit_id for update;
+  if v_row is null then
+    return json_build_object('success', false, 'message', 'Deposito non trovato');
+  end if;
+
+  if v_tx_hash is not null then
+    if exists (
+      select 1 from public.deposits d
+      where d.id <> v_row.id
+        and lower(coalesce(d.tx_hash, '')) = lower(v_tx_hash)
+    ) or exists (
+      select 1 from public.withdrawals w
+      where lower(coalesce(w.tx_hash, '')) = lower(v_tx_hash)
+    ) then
+      return json_build_object('success', false, 'message', 'TX hash già usato');
+    end if;
+  end if;
+
+  update public.deposits
+  set status = v_status,
+      tx_hash = coalesce(v_tx_hash, tx_hash)
+  where id = v_row.id;
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_admin_id,
+    'admin_manage_deposit',
+    format('Deposito %s -> %s', v_row.id::text, v_status),
+    coalesce(v_row.amount, 0)
+  );
+
+  return json_build_object('success', true, 'message', 'Deposito aggiornato');
+end;
+$$;
+
+create or replace function public.admin_manage_withdrawal(
+  p_withdrawal_id uuid,
+  p_status text,
+  p_tx_hash text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin_id uuid := auth.uid();
+  v_status text := lower(trim(coalesce(p_status, '')));
+  v_tx_hash text := nullif(trim(coalesce(p_tx_hash, '')), '');
+  v_row public.withdrawals;
+begin
+  if v_admin_id is null or not public.is_admin(v_admin_id) then
+    return json_build_object('success', false, 'message', 'Non autorizzato');
+  end if;
+  if v_status not in ('pending', 'approved', 'completed', 'rejected') then
+    return json_build_object('success', false, 'message', 'Stato non valido');
+  end if;
+
+  select * into v_row from public.withdrawals where id = p_withdrawal_id for update;
+  if v_row is null then
+    return json_build_object('success', false, 'message', 'Prelievo non trovato');
+  end if;
+
+  if v_tx_hash is not null then
+    if exists (
+      select 1 from public.withdrawals w
+      where w.id <> v_row.id
+        and lower(coalesce(w.tx_hash, '')) = lower(v_tx_hash)
+    ) or exists (
+      select 1 from public.deposits d
+      where lower(coalesce(d.tx_hash, '')) = lower(v_tx_hash)
+    ) then
+      return json_build_object('success', false, 'message', 'TX hash già usato');
+    end if;
+  end if;
+
+  update public.withdrawals
+  set status = v_status,
+      tx_hash = coalesce(v_tx_hash, tx_hash)
+  where id = v_row.id;
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_admin_id,
+    'admin_manage_withdrawal',
+    format('Prelievo %s -> %s', v_row.id::text, v_status),
+    coalesce(v_row.amount, 0)
+  );
+
+  return json_build_object('success', true, 'message', 'Prelievo aggiornato');
+end;
+$$;
+
 grant execute on function public.request_deposit(numeric, text) to authenticated;
 grant execute on function public.request_withdrawal(numeric, text) to authenticated;
+grant execute on function public.validate_referral_code(text) to anon, authenticated;
+grant execute on function public.apply_referral_link(text, uuid) to authenticated;
+grant execute on function public.admin_manage_deposit(uuid, text, text) to authenticated;
+grant execute on function public.admin_manage_withdrawal(uuid, text, text) to authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "avatars_upload_own" on storage.objects;
+create policy "avatars_upload_own"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'avatars'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists "avatars_update_own" on storage.objects;
+create policy "avatars_update_own"
+on storage.objects for update
+to authenticated
+using (
+  bucket_id = 'avatars'
+  and (storage.foldername(name))[1] = auth.uid()::text
+)
+with check (
+  bucket_id = 'avatars'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists "avatars_delete_own" on storage.objects;
+create policy "avatars_delete_own"
+on storage.objects for delete
+to authenticated
+using (
+  bucket_id = 'avatars'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists "avatars_read_all" on storage.objects;
+create policy "avatars_read_all"
+on storage.objects for select
+to authenticated
+using (bucket_id = 'avatars');
 
 alter table public.profiles enable row level security;
 alter table public.portfolio_entries enable row level security;
