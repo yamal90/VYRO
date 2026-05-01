@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="120" fill="#050816"/>
+  <rect x="38" y="38" width="436" height="436" rx="96" fill="url(#bg)" stroke="url(#stroke)" stroke-width="4"/>
+  <g filter="url(#glow)">
+    <path d="M130 150H196L256 290L316 150H382L281 362H231L130 150Z" fill="url(#main)"/>
+    <path d="M350 352L392 392" stroke="#22D3EE" stroke-width="14" stroke-linecap="round"/>
+    <path d="M338 387L404 321" stroke="#A78BFA" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <circle cx="394" cy="118" r="16" fill="#22D3EE"/>
+  <text x="256" y="438" text-anchor="middle" fill="#E2E8F0" font-size="44" font-family="Inter, Arial, sans-serif" font-weight="700" letter-spacing="8">VYRO</text>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1024"/>
+      <stop offset="0.52" stop-color="#121938"/>
+      <stop offset="1" stop-color="#0A102A"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="66" y1="70" x2="452" y2="446" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="main" x1="132" y1="152" x2="388" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A78BFA"/>
+      <stop offset="0.54" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <filter id="glow" x="108" y="128" width="318" height="286" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="7" result="effect1_foregroundBlur"/>
+    </filter>
+  </defs>
+</svg>
