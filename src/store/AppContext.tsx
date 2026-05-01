@@ -530,6 +530,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAuthLoading(true);
       try {
         const normalizedReferral = String(referralCode ?? '').trim().toUpperCase();
+        if (normalizedReferral) {
+          const { data: referrer, error: referrerError } = await supabase
+            .from('profiles')
+            .select('id, account_blocked')
+            .eq('referral_code', normalizedReferral)
+            .maybeSingle();
+          if (referrerError) throw referrerError;
+          if (!referrer || referrer.account_blocked) return emptyResult('Referral code non valido.');
+        }
         const redirectUrl = normalizedReferral
           ? `${window.location.origin}?ref=${encodeURIComponent(normalizedReferral)}`
           : window.location.origin;
