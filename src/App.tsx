@@ -12,7 +12,6 @@ import FAQPage from './pages/FAQPage';
 import BottomNav from './components/BottomNav';
 import SupabaseSetupState from './components/SupabaseSetupState';
 import ParticleBackground from './components/ParticleBackground';
-import LiveProductionBar from './components/LiveProductionBar';
 import { isSupabaseConfigured } from './lib/supabase';
 
 const pageVariants = {
@@ -90,9 +89,6 @@ const AppContent: React.FC = () => {
           </motion.button>
         )}
       </AnimatePresence>
-      
-      {/* Live Production Bar */}
-      <LiveProductionBar />
       
       <AnimatePresence mode="wait">
         <motion.div

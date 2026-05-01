@@ -33,10 +33,13 @@ interface AppState {
   adminUserDevices: UserDevice[];
   adminTransactions: Transaction[];
   adminLogs: AdminLog[];
+  platformSettings: PlatformSettingsRow | null;
   balanceVisible: boolean;
   notice: AppNotice | null;
   login: (email: string, password: string) => Promise<ActionResult>;
   loginWithGoogle: (referralCode?: string) => Promise<ActionResult>;
+  requestPasswordReset: (email: string) => Promise<ActionResult>;
+  completePasswordReset: (newPassword: string, confirmPassword: string) => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
   updateNickname: (nickname: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
@@ -48,6 +51,9 @@ interface AppState {
   updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => Promise<ActionResult>;
   updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => Promise<ActionResult>;
   blockUser: (userId: string) => Promise<ActionResult>;
+  unblockUser: (userId: string) => Promise<ActionResult>;
+  setUserClaimEligibility: (userId: string, enabled: boolean) => Promise<ActionResult>;
+  updatePlatformSettings: (patch: Partial<PlatformSettingsRow>) => Promise<ActionResult>;
   refreshAppData: () => Promise<void>;
   pushNotice: (kind: AppNotice['kind'], message: string) => void;
   clearNotice: () => void;
@@ -164,6 +170,7 @@ const mapProfileToUser = (
   invited_by: profile.referred_by || null,
   role: profile.role === 'admin' ? 'admin' : 'user',
   status: profile.account_blocked ? 'blocked' : 'active',
+  claim_eligible: Boolean(profile.claim_eligible),
   vx_balance: Number(profile.balance ?? 0),
   demo_usdt_balance: demoUsdtBalance,
   compute_power: computePower,
@@ -339,6 +346,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const clearNotice = useCallback(() => setNotice(null), []);
 
+  const logOperationalError = useCallback(async (type: string, description: string) => {
+    if (!supabase || !currentUser) return;
+    await supabase.from('activity_logs').insert({
+      owner_id: currentUser.id,
+      type: `error_${type}`,
+      description,
+      amount: 0,
+    });
+  }, [currentUser]);
+
   const resetData = useCallback(() => {
     setCurrentUser(null);
     setCurrentPage('login');
@@ -350,6 +367,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAdminUserDevices([]);
     setAdminTransactions([]);
     setAdminLogs([]);
+    setPlatformSettings(null);
   }, []);
 
   const fetchAppData = useCallback(async (profileId: string, role: User['role']) => {
@@ -553,16 +571,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const hydrateFromSession = useCallback(async (session: Session | null) => {
-    if (!supabase || !session?.user) {
+    if (!supabase) {
       resetData();
       setBootstrapped(true);
       return;
     }
 
-    let { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single<ProfileRow>();
+    let effectiveSession: Session | null = session;
+    if (!effectiveSession?.user) {
+      const retry = await supabase.auth.getSession();
+      effectiveSession = retry.data.session ?? null;
+    }
+    if (!effectiveSession?.user) {
+      resetData();
+      setBootstrapped(true);
+      return;
+    }
+
+    let { data, error } = await supabase.from('profiles').select('*').eq('id', effectiveSession.user.id).single<ProfileRow>();
     if (error || !data) {
       try {
-        data = await ensureProfileFromSession(session);
+        data = await ensureProfileFromSession(effectiveSession);
       } catch {
         data = null;
       }
@@ -574,14 +603,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    const referralFromMetadata = String(session.user.user_metadata?.referralCode ?? session.user.user_metadata?.referral_code ?? '').trim();
+    const referralFromMetadata = String(
+      effectiveSession.user.user_metadata?.referralCode ?? effectiveSession.user.user_metadata?.referral_code ?? '',
+    ).trim();
     const referralFromUrl = String(new URLSearchParams(window.location.search).get('ref') ?? '').trim();
     const referralForSync = referralFromMetadata || referralFromUrl;
     if (referralForSync) {
       await syncReferral(data, referralForSync);
     }
 
-    await fetchAppData(session.user.id, data.role === 'admin' ? 'admin' : 'user');
+    await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user');
     setCurrentPage('home');
     setBootstrapped(true);
   }, [ensureProfileFromSession, fetchAppData, pushNotice, resetData, syncReferral]);
@@ -648,6 +679,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [clearNotice, pushNotice]);
 
+  const requestPasswordReset = useCallback(async (email: string): Promise<ActionResult> => {
+    if (!supabase) return emptyResult('Configura Supabase prima del reset password.');
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return emptyResult('Inserisci una email valida.');
+    clearNotice();
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${window.location.origin}?mode=reset`,
+      });
+      if (error) throw error;
+      return { success: true, message: 'Email di reset inviata. Controlla la posta.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invio reset password non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearNotice, pushNotice]);
+
+  const completePasswordReset = useCallback(async (newPassword: string, confirmPassword: string): Promise<ActionResult> => {
+    if (!supabase) return emptyResult('Configura Supabase prima del reset password.');
+    if (newPassword !== confirmPassword) return emptyResult('Le password non coincidono.');
+    if (newPassword.length < 6) return emptyResult('La password deve avere almeno 6 caratteri.');
+    clearNotice();
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return { success: true, message: 'Password aggiornata con successo.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Aggiornamento password non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearNotice, pushNotice]);
+
   const loginWithGoogle = useCallback(async (referralCode?: string): Promise<ActionResult> => {
     if (!supabase) return emptyResult('Configura Supabase prima del login.');
     clearNotice();
@@ -684,6 +756,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setAuthLoading(true);
     try {
+      const { data: referrer, error: referrerError } = await supabase
+        .from('profiles')
+        .select('id, account_blocked')
+        .eq('referral_code', referralCode)
+        .maybeSingle();
+
+      if (referrerError) throw referrerError;
+      if (!referrer || referrer.account_blocked) {
+        return emptyResult('Referral code non valido.');
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: payload.email.trim().toLowerCase(),
         password: payload.password,
@@ -794,10 +877,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: `${device.name} attivato con successo.` };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Attivazione non riuscita';
+      void logOperationalError('activate_device', message);
       pushNotice('error', message);
       return emptyResult(message);
     }
-  }, [currentUser, gpuDevices, pushNotice, refreshAppData, supabase, userDevices.length]);
+  }, [currentUser, gpuDevices, logOperationalError, pushNotice, refreshAppData, supabase, userDevices.length]);
 
   const claimDailyReward = useCallback(async (): Promise<ActionResult> => {
     if (!supabase || !currentUser) return emptyResult('Non autenticato');
@@ -834,10 +918,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: `+${reward} VX riscossi.` };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Claim non riuscito';
+      void logOperationalError('claim_daily', message);
       pushNotice('error', message);
       return emptyResult(message);
     }
-  }, [currentUser, dailyClaims, pushNotice, refreshAppData, supabase]);
+  }, [currentUser, dailyClaims, logOperationalError, platformSettings, pushNotice, refreshAppData, supabase]);
 
   const updateUserBalance = useCallback(async (
     userId: string,
@@ -860,10 +945,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: 'Saldo aggiornato.' };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Aggiornamento saldo non riuscito';
+      void logOperationalError('admin_update_balance', message);
       pushNotice('error', message);
       return emptyResult(message);
     }
-  }, [currentUser, pushNotice, refreshAppData]);
+  }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
 
   const updateDeviceStatus = useCallback(async (_userDeviceId: string, _status: UserDevice['status']): Promise<ActionResult> => {
     pushNotice('info', 'Lo schema corrente non espone stati separati dei dispositivi. Le posizioni sono considerate attive.');
@@ -882,10 +968,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: 'Utente bloccato.' };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Blocco utente non riuscito';
+      void logOperationalError('admin_block_user', message);
       pushNotice('error', message);
       return emptyResult(message);
     }
-  }, [currentUser, pushNotice, refreshAppData]);
+  }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
+
+  const unblockUser = useCallback(async (userId: string): Promise<ActionResult> => {
+    if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ account_blocked: false, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: 'Utente sbloccato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sblocco utente non riuscito';
+      void logOperationalError('admin_unblock_user', message);
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
+
+  const setUserClaimEligibility = useCallback(async (userId: string, enabled: boolean): Promise<ActionResult> => {
+    if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ claim_eligible: enabled, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: enabled ? 'Claim abilitato.' : 'Claim disabilitato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Aggiornamento claim non riuscito';
+      void logOperationalError('admin_claim_eligibility', message);
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
+
+  const updatePlatformSettings = useCallback(async (patch: Partial<PlatformSettingsRow>): Promise<ActionResult> => {
+    if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+    if (!platformSettings) return emptyResult('Impostazioni piattaforma non disponibili.');
+    try {
+      const { error } = await supabase
+        .from('platform_settings')
+        .update(patch)
+        .eq('id', platformSettings.id);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: 'Impostazioni piattaforma aggiornate.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Aggiornamento impostazioni non riuscito';
+      void logOperationalError('admin_platform_settings', message);
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, logOperationalError, platformSettings, pushNotice, refreshAppData]);
 
   return (
     <AppContext.Provider
@@ -905,10 +1047,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminUserDevices,
         adminTransactions,
         adminLogs,
+        platformSettings,
         balanceVisible,
         notice,
         login,
         loginWithGoogle,
+        requestPasswordReset,
+        completePasswordReset,
         register,
         updateNickname,
         logout,
@@ -920,6 +1065,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserBalance,
         updateDeviceStatus,
         blockUser,
+        unblockUser,
+        setUserClaimEligibility,
+        updatePlatformSettings,
         refreshAppData,
         pushNotice,
         clearNotice,

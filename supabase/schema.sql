@@ -3,74 +3,6 @@ create extension if not exists pgcrypto;
 create schema if not exists private;
 revoke all on schema private from public;
 
-create table if not exists public.profiles (
-  id uuid primary key references auth.users (id) on delete cascade,
-  username text not null,
-  email text not null,
-  invite_code text not null unique,
-  referred_by uuid references public.profiles (id) on delete set null,
-  role text not null default 'user' check (role in ('user', 'admin')),
-  status text not null default 'active' check (status in ('active', 'blocked')),
-  vx_balance numeric(18,2) not null default 0,
-  demo_usdt_balance numeric(18,2) not null default 0,
-  compute_power integer not null default 0,
-  avatar_url text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.gpu_devices (
-  id text primary key,
-  name text not null,
-  price numeric(18,2) not null check (price >= 0),
-  reward_3_days numeric(18,2) not null check (reward_3_days >= 0),
-  reward_7_days numeric(18,2) not null check (reward_7_days >= 0),
-  compute_power integer not null check (compute_power >= 0),
-  image_url text,
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.user_devices (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles (id) on delete cascade,
-  device_id text not null references public.gpu_devices (id),
-  status text not null default 'pending' check (status in ('pending', 'processing', 'active', 'completed')),
-  start_date timestamptz not null default now(),
-  end_date timestamptz,
-  total_generated numeric(18,2) not null default 0,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.transactions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles (id) on delete cascade,
-  type text not null check (type in ('deposit', 'withdrawal', 'device_purchase', 'device_reward', 'team_bonus', 'daily_claim', 'login_bonus')),
-  amount numeric(18,2) not null,
-  currency text not null check (currency in ('VX', 'USDT')),
-  status text not null check (status in ('completed', 'pending', 'rejected')),
-  description text not null,
-  metadata jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.daily_claims (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles (id) on delete cascade,
-  amount numeric(18,2) not null,
-  claim_date date not null,
-  created_at timestamptz not null default now(),
-  unique (user_id, claim_date)
-);
-
-create table if not exists public.admin_logs (
-  id uuid primary key default gen_random_uuid(),
-  admin_id uuid not null references public.profiles (id) on delete cascade,
-  action text not null,
-  metadata jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
-);
-
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -81,64 +13,202 @@ begin
 end;
 $$;
 
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  email text not null default '',
+  username text not null,
+  role text not null default 'user' check (role in ('user', 'admin')),
+  avatar_url text,
+  tier text not null default 'ZYRA',
+  balance numeric(18,2) not null default 0,
+  referral_code text not null unique,
+  referred_by text,
+  streak integer not null default 0,
+  last_claim timestamptz,
+  last_claim_amount numeric(18,2) not null default 0,
+  joined_at timestamptz not null default now(),
+  team_size integer not null default 0,
+  account_blocked boolean not null default false,
+  claim_eligible boolean not null default true,
+  tier_override boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists idx_profiles_referral_code on public.profiles (referral_code);
+create index if not exists idx_profiles_referred_by on public.profiles (referred_by);
+create index if not exists idx_profiles_role on public.profiles (role);
+
 drop trigger if exists trg_profiles_set_updated_at on public.profiles;
 create trigger trg_profiles_set_updated_at
 before update on public.profiles
 for each row
 execute function public.set_updated_at();
 
-create or replace function private.generate_invite_code(seed_text text)
+create table if not exists public.portfolio_entries (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  name text not null,
+  allocation numeric(18,2) not null default 0,
+  value numeric(18,2) not null default 0,
+  change numeric(18,2) not null default 0,
+  position integer not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_portfolio_entries_owner_id on public.portfolio_entries (owner_id);
+create index if not exists idx_portfolio_entries_created_at on public.portfolio_entries (created_at desc);
+
+drop trigger if exists trg_portfolio_entries_set_updated_at on public.portfolio_entries;
+create trigger trg_portfolio_entries_set_updated_at
+before update on public.portfolio_entries
+for each row
+execute function public.set_updated_at();
+
+create table if not exists public.team_members (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  username text not null,
+  avatar_url text,
+  tier text not null default 'ZYRA',
+  joined timestamptz not null default now(),
+  contribution numeric(18,2) not null default 0,
+  active_balance numeric(18,2) not null default 0,
+  active_sub_count integer not null default 0,
+  account_blocked boolean not null default false,
+  claim_eligible boolean not null default true,
+  is_test_bot boolean not null default false,
+  expires_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_team_members_owner_id on public.team_members (owner_id);
+create index if not exists idx_team_members_created_at on public.team_members (created_at desc);
+
+drop trigger if exists trg_team_members_set_updated_at on public.team_members;
+create trigger trg_team_members_set_updated_at
+before update on public.team_members
+for each row
+execute function public.set_updated_at();
+
+create table if not exists public.deposits (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  amount numeric(18,2) not null check (amount >= 0),
+  asset text not null default 'USDT',
+  network text not null default 'TRC20',
+  tx_hash text,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_deposits_owner_id on public.deposits (owner_id);
+create index if not exists idx_deposits_created_at on public.deposits (created_at desc);
+
+create table if not exists public.withdrawals (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  amount numeric(18,2) not null check (amount >= 0),
+  tx_hash text,
+  status text not null default 'pending',
+  wallet_address text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_withdrawals_owner_id on public.withdrawals (owner_id);
+create index if not exists idx_withdrawals_created_at on public.withdrawals (created_at desc);
+
+create table if not exists public.activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  type text not null,
+  description text not null,
+  amount numeric(18,2),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_activity_logs_owner_id on public.activity_logs (owner_id);
+create index if not exists idx_activity_logs_type on public.activity_logs (type);
+create index if not exists idx_activity_logs_created_at on public.activity_logs (created_at desc);
+
+create table if not exists public.platform_settings (
+  id integer primary key,
+  maintenance_mode boolean not null default false,
+  deposits_enabled boolean not null default true,
+  withdrawals_enabled boolean not null default true,
+  daily_claim_enabled boolean not null default true,
+  min_deposit numeric(18,2) not null default 0,
+  min_withdraw numeric(18,2) not null default 0,
+  deposit_asset text not null default 'USDT',
+  deposit_network text not null default 'TRC20',
+  deposit_address text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+insert into public.platform_settings (id)
+values (1)
+on conflict (id) do nothing;
+
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  title text not null,
+  message text not null,
+  seen boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_notifications_owner_id on public.notifications (owner_id);
+create index if not exists idx_notifications_seen on public.notifications (seen);
+
+create table if not exists public.support_tickets (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  subject text not null,
+  message text not null,
+  status text not null default 'open',
+  priority text not null default 'normal',
+  assigned_to uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists trg_support_tickets_set_updated_at on public.support_tickets;
+create trigger trg_support_tickets_set_updated_at
+before update on public.support_tickets
+for each row
+execute function public.set_updated_at();
+
+create or replace function private.is_admin(user_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = user_id
+      and role = 'admin'
+      and account_blocked = false
+  );
+$$;
+
+create or replace function private.generate_referral_code(seed_text text)
 returns text
 language plpgsql
 as $$
 declare
   candidate text;
 begin
-  candidate := 'VYRO-' || substring(upper(md5(coalesce(seed_text, gen_random_uuid()::text) || clock_timestamp()::text)) from 1 for 6);
-  while exists (select 1 from public.profiles where invite_code = candidate) loop
-    candidate := 'VYRO-' || substring(upper(md5(gen_random_uuid()::text || clock_timestamp()::text)) from 1 for 6);
+  candidate := 'VYRO-' || substring(upper(md5(coalesce(seed_text, gen_random_uuid()::text) || clock_timestamp()::text)) from 1 for 8);
+  while exists (select 1 from public.profiles where referral_code = candidate) loop
+    candidate := 'VYRO-' || substring(upper(md5(gen_random_uuid()::text || clock_timestamp()::text)) from 1 for 8);
   end loop;
   return candidate;
 end;
-$$;
-
-create or replace function private.is_admin(check_user uuid)
-returns boolean
-language sql
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = check_user
-      and role = 'admin'
-      and status = 'active'
-  );
-$$;
-
-create or replace function private.is_team_scope(owner_user uuid, target_user uuid)
-returns boolean
-language sql
-security definer
-set search_path = public
-as $$
-  with direct_referrals as (
-    select id
-    from public.profiles
-    where referred_by = owner_user
-  )
-  select exists (
-    select 1
-    from direct_referrals
-    where id = target_user
-  )
-  or exists (
-    select 1
-    from public.profiles p
-    join direct_referrals d on p.referred_by = d.id
-    where p.id = target_user
-  );
 $$;
 
 create or replace function private.handle_new_user()
@@ -148,56 +218,47 @@ security definer
 set search_path = public
 as $$
 declare
-  referrer_id uuid;
-  referral_code text;
-  generated_invite_code text;
+  username_from_meta text;
+  referral_from_meta text;
 begin
-  referral_code := upper(trim(coalesce(new.raw_user_meta_data ->> 'referral_code', '')));
+  username_from_meta := coalesce(
+    nullif(trim(new.raw_user_meta_data ->> 'username'), ''),
+    nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''),
+    split_part(coalesce(new.email, ''), '@', 1),
+    'user'
+  );
 
-  if referral_code = '' then
-    raise exception 'Referral code is required';
-  end if;
-
-  select id
-  into referrer_id
-  from public.profiles
-  where invite_code = referral_code
-    and status = 'active'
-  limit 1;
-
-  if referrer_id is null then
-    raise exception 'Invalid referral code';
-  end if;
-
-  generated_invite_code := private.generate_invite_code(new.id::text);
+  referral_from_meta := upper(trim(coalesce(
+    new.raw_user_meta_data ->> 'referral_code',
+    new.raw_user_meta_data ->> 'referralCode',
+    'SYSTEM'
+  )));
 
   insert into public.profiles (
     id,
-    username,
     email,
-    invite_code,
-    referred_by,
+    username,
     role,
-    status,
-    vx_balance,
-    demo_usdt_balance,
-    compute_power,
-    created_at,
-    updated_at
+    avatar_url,
+    tier,
+    balance,
+    referral_code,
+    referred_by,
+    joined_at,
+    claim_eligible
   )
   values (
     new.id,
-    coalesce(nullif(trim(new.raw_user_meta_data ->> 'username'), ''), split_part(coalesce(new.email, ''), '@', 1), 'user'),
     coalesce(new.email, ''),
-    generated_invite_code,
-    referrer_id,
+    username_from_meta,
     'user',
-    'active',
+    '',
+    'ZYRA',
     0,
-    0,
-    0,
+    private.generate_referral_code(new.id::text),
+    case when referral_from_meta = '' then 'SYSTEM' else referral_from_meta end,
     coalesce(new.created_at, now()),
-    now()
+    true
   )
   on conflict (id) do nothing;
 
@@ -211,337 +272,199 @@ after insert on auth.users
 for each row
 execute function private.handle_new_user();
 
-create or replace function public.purchase_device(p_device_id text)
-returns void
-language plpgsql
-as $$
-declare
-  current_profile public.profiles;
-  selected_device public.gpu_devices;
-begin
-  select *
-  into current_profile
-  from public.profiles
-  where id = auth.uid()
-    and status = 'active';
-
-  if current_profile is null then
-    raise exception 'Profile not available';
-  end if;
-
-  select *
-  into selected_device
-  from public.gpu_devices
-  where id = p_device_id
-    and active = true;
-
-  if selected_device is null then
-    raise exception 'Device not found';
-  end if;
-
-  if current_profile.vx_balance < selected_device.price then
-    raise exception 'Saldo VX insufficiente';
-  end if;
-
-  update public.profiles
-  set vx_balance = vx_balance - selected_device.price,
-      compute_power = compute_power + selected_device.compute_power,
-      updated_at = now()
-  where id = auth.uid();
-
-  insert into public.user_devices (
-    user_id,
-    device_id,
-    status,
-    start_date,
-    total_generated
-  )
-  values (
-    auth.uid(),
-    selected_device.id,
-    'pending',
-    now(),
-    0
-  );
-
-  insert into public.transactions (
-    user_id,
-    type,
-    amount,
-    currency,
-    status,
-    description,
-    metadata
-  )
-  values (
-    auth.uid(),
-    'device_purchase',
-    -selected_device.price,
-    'VX',
-    'completed',
-    'Attivazione ' || selected_device.name,
-    jsonb_build_object('device_id', selected_device.id)
-  );
-end;
-$$;
-
-create or replace function public.claim_daily_reward()
-returns numeric
-language plpgsql
-as $$
-declare
-  reward_amount numeric := 2.5;
-  today_date date := timezone('utc', now())::date;
-begin
-  if exists (
-    select 1
-    from public.daily_claims
-    where user_id = auth.uid()
-      and claim_date = today_date
-  ) then
-    raise exception 'Già riscosso oggi';
-  end if;
-
-  insert into public.daily_claims (user_id, amount, claim_date)
-  values (auth.uid(), reward_amount, today_date);
-
-  update public.profiles
-  set vx_balance = vx_balance + reward_amount,
-      updated_at = now()
-  where id = auth.uid();
-
-  insert into public.transactions (
-    user_id,
-    type,
-    amount,
-    currency,
-    status,
-    description
-  )
-  values (
-    auth.uid(),
-    'daily_claim',
-    reward_amount,
-    'VX',
-    'completed',
-    'Claim giornaliero VX token'
-  );
-
-  return reward_amount;
-end;
-$$;
-
-create or replace function public.admin_update_user_balance(
+create or replace function public.sync_referral_team_member(
   p_user_id uuid,
-  p_field text,
-  p_amount numeric
+  p_referral_code text
 )
 returns void
 language plpgsql
+security definer
+set search_path = public
 as $$
+declare
+  target_profile public.profiles;
+  referrer_profile public.profiles;
 begin
-  if not private.is_admin(auth.uid()) then
-    raise exception 'Not allowed';
+  select * into target_profile from public.profiles where id = p_user_id;
+  if target_profile is null then
+    raise exception 'Profile not found';
   end if;
 
-  if p_field not in ('vx_balance', 'demo_usdt_balance') then
-    raise exception 'Unsupported field';
+  if target_profile.referred_by is not null and target_profile.referred_by <> 'SYSTEM' then
+    return;
   end if;
 
-  if p_field = 'vx_balance' then
-    update public.profiles
-    set vx_balance = p_amount,
-        updated_at = now()
-    where id = p_user_id;
-  else
-    update public.profiles
-    set demo_usdt_balance = p_amount,
-        updated_at = now()
-    where id = p_user_id;
-  end if;
+  select * into referrer_profile
+  from public.profiles
+  where referral_code = upper(trim(p_referral_code))
+  limit 1;
 
-  insert into public.admin_logs (admin_id, action, metadata)
-  values (
-    auth.uid(),
-    'update_user_balance',
-    jsonb_build_object('user_id', p_user_id, 'field', p_field, 'amount', p_amount)
-  );
-end;
-$$;
-
-create or replace function public.admin_update_user_device_status(
-  p_user_device_id uuid,
-  p_status text
-)
-returns void
-language plpgsql
-as $$
-begin
-  if not private.is_admin(auth.uid()) then
-    raise exception 'Not allowed';
-  end if;
-
-  if p_status not in ('pending', 'processing', 'active', 'completed') then
-    raise exception 'Unsupported status';
-  end if;
-
-  update public.user_devices
-  set status = p_status
-  where id = p_user_device_id;
-
-  insert into public.admin_logs (admin_id, action, metadata)
-  values (
-    auth.uid(),
-    'update_user_device_status',
-    jsonb_build_object('user_device_id', p_user_device_id, 'status', p_status)
-  );
-end;
-$$;
-
-create or replace function public.admin_block_user(p_user_id uuid)
-returns void
-language plpgsql
-as $$
-begin
-  if not private.is_admin(auth.uid()) then
-    raise exception 'Not allowed';
+  if referrer_profile is null then
+    raise exception 'Invalid referral code';
   end if;
 
   update public.profiles
-  set status = 'blocked',
+  set referred_by = referrer_profile.referral_code,
       updated_at = now()
-  where id = p_user_id;
+  where id = target_profile.id;
 
-  insert into public.admin_logs (admin_id, action, metadata)
+  insert into public.team_members (
+    owner_id,
+    username,
+    avatar_url,
+    tier,
+    joined,
+    contribution,
+    active_balance,
+    active_sub_count,
+    account_blocked,
+    claim_eligible,
+    is_test_bot
+  )
   values (
-    auth.uid(),
-    'block_user',
-    jsonb_build_object('user_id', p_user_id)
-  );
+    referrer_profile.id,
+    target_profile.username,
+    coalesce(target_profile.avatar_url, ''),
+    coalesce(target_profile.tier, 'ZYRA'),
+    target_profile.joined_at,
+    0,
+    target_profile.balance,
+    0,
+    target_profile.account_blocked,
+    target_profile.claim_eligible,
+    false
+  )
+  on conflict do nothing;
+
+  update public.profiles
+  set team_size = coalesce(team_size, 0) + 1,
+      updated_at = now()
+  where id = referrer_profile.id;
 end;
 $$;
 
 alter table public.profiles enable row level security;
-alter table public.gpu_devices enable row level security;
-alter table public.user_devices enable row level security;
-alter table public.transactions enable row level security;
-alter table public.daily_claims enable row level security;
-alter table public.admin_logs enable row level security;
+alter table public.portfolio_entries enable row level security;
+alter table public.team_members enable row level security;
+alter table public.deposits enable row level security;
+alter table public.withdrawals enable row level security;
+alter table public.activity_logs enable row level security;
+alter table public.platform_settings enable row level security;
+alter table public.notifications enable row level security;
+alter table public.support_tickets enable row level security;
 
-drop policy if exists "profiles_select_scope" on public.profiles;
-create policy "profiles_select_scope"
-on public.profiles
-for select
+drop policy if exists "profiles_select_own_or_admin" on public.profiles;
+create policy "profiles_select_own_or_admin"
+on public.profiles for select
 to authenticated
-using (
-  id = auth.uid()
-  or private.is_team_scope(auth.uid(), id)
-  or private.is_admin(auth.uid())
-);
+using (auth.uid() = id or private.is_admin(auth.uid()));
 
-drop policy if exists "profiles_insert_self" on public.profiles;
-create policy "profiles_insert_self"
-on public.profiles
-for insert
+drop policy if exists "profiles_update_own_or_admin" on public.profiles;
+create policy "profiles_update_own_or_admin"
+on public.profiles for update
 to authenticated
-with check (id = auth.uid());
+using (auth.uid() = id or private.is_admin(auth.uid()))
+with check (auth.uid() = id or private.is_admin(auth.uid()));
 
-drop policy if exists "profiles_update_self_or_admin" on public.profiles;
-create policy "profiles_update_self_or_admin"
-on public.profiles
-for update
+drop policy if exists "portfolio_entries_read_own_or_admin" on public.portfolio_entries;
+create policy "portfolio_entries_read_own_or_admin"
+on public.portfolio_entries for select
 to authenticated
-using (id = auth.uid() or private.is_admin(auth.uid()))
-with check (id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "gpu_devices_read_all" on public.gpu_devices;
-create policy "gpu_devices_read_all"
-on public.gpu_devices
-for select
-to anon, authenticated
-using (true);
-
-drop policy if exists "user_devices_select_scope" on public.user_devices;
-create policy "user_devices_select_scope"
-on public.user_devices
-for select
+drop policy if exists "portfolio_entries_write_own_or_admin" on public.portfolio_entries;
+create policy "portfolio_entries_write_own_or_admin"
+on public.portfolio_entries for all
 to authenticated
-using (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()))
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "user_devices_insert_scope" on public.user_devices;
-create policy "user_devices_insert_scope"
-on public.user_devices
-for insert
+drop policy if exists "team_members_read_own_or_admin" on public.team_members;
+create policy "team_members_read_own_or_admin"
+on public.team_members for select
 to authenticated
-with check (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "user_devices_update_admin" on public.user_devices;
-create policy "user_devices_update_admin"
-on public.user_devices
-for update
+drop policy if exists "team_members_write_admin_only" on public.team_members;
+create policy "team_members_write_admin_only"
+on public.team_members for all
 to authenticated
 using (private.is_admin(auth.uid()))
 with check (private.is_admin(auth.uid()));
 
-drop policy if exists "transactions_select_scope" on public.transactions;
-create policy "transactions_select_scope"
-on public.transactions
-for select
+drop policy if exists "deposits_read_own_or_admin" on public.deposits;
+create policy "deposits_read_own_or_admin"
+on public.deposits for select
 to authenticated
-using (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "transactions_insert_scope" on public.transactions;
-create policy "transactions_insert_scope"
-on public.transactions
-for insert
+drop policy if exists "deposits_write_own_or_admin" on public.deposits;
+create policy "deposits_write_own_or_admin"
+on public.deposits for all
 to authenticated
-with check (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()))
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "daily_claims_select_scope" on public.daily_claims;
-create policy "daily_claims_select_scope"
-on public.daily_claims
-for select
+drop policy if exists "withdrawals_read_own_or_admin" on public.withdrawals;
+create policy "withdrawals_read_own_or_admin"
+on public.withdrawals for select
 to authenticated
-using (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "daily_claims_insert_scope" on public.daily_claims;
-create policy "daily_claims_insert_scope"
-on public.daily_claims
-for insert
+drop policy if exists "withdrawals_write_own_or_admin" on public.withdrawals;
+create policy "withdrawals_write_own_or_admin"
+on public.withdrawals for all
 to authenticated
-with check (user_id = auth.uid() or private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()))
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "admin_logs_select_admin" on public.admin_logs;
-create policy "admin_logs_select_admin"
-on public.admin_logs
-for select
+drop policy if exists "activity_logs_read_own_or_admin" on public.activity_logs;
+create policy "activity_logs_read_own_or_admin"
+on public.activity_logs for select
 to authenticated
-using (private.is_admin(auth.uid()));
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
-drop policy if exists "admin_logs_insert_admin" on public.admin_logs;
-create policy "admin_logs_insert_admin"
-on public.admin_logs
-for insert
+drop policy if exists "activity_logs_insert_own_or_admin" on public.activity_logs;
+create policy "activity_logs_insert_own_or_admin"
+on public.activity_logs for insert
 to authenticated
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
+
+drop policy if exists "platform_settings_read_authenticated" on public.platform_settings;
+create policy "platform_settings_read_authenticated"
+on public.platform_settings for select
+to authenticated
+using (true);
+
+drop policy if exists "platform_settings_update_admin_only" on public.platform_settings;
+create policy "platform_settings_update_admin_only"
+on public.platform_settings for update
+to authenticated
+using (private.is_admin(auth.uid()))
 with check (private.is_admin(auth.uid()));
 
-insert into public.gpu_devices (id, name, price, reward_3_days, reward_7_days, compute_power, image_url, active)
-values
-  ('gpu-1', 'X-120', 80, 5.04, 12.32, 4, '/images/gpu-x120.jpg', true),
-  ('gpu-2', 'G-88', 160, 10.99, 26.80, 8, '/images/gpu-g88.jpg', true),
-  ('gpu-3', 'G-100', 480, 33.69, 82.19, 24, '/images/gpu-g100.jpg', true),
-  ('gpu-4', 'G-700', 1200, 86.06, 209.94, 68, '/images/gpu-g700.jpg', true),
-  ('gpu-5', 'G-900', 3000, 224.99, 548.84, 160, '/images/gpu-g900.jpg', true),
-  ('gpu-6', 'X-5700', 7200, 565.69, 1379.93, 360, '/images/gpu-x5700.jpg', true),
-  ('gpu-7', 'X-7900', 18000, 1507.00, 3703.00, 900, '/images/gpu-x7900.jpg', true),
-  ('gpu-8', 'X-8900', 34000, 3125.00, 7677.00, 1800, '/images/gpu-x8900.jpg', true),
-  ('gpu-9', 'IX-9900', 72000, 7600.00, 18666.00, 4200, '/images/gpu-ix9900.jpg', true)
-on conflict (id) do update
-set
-  name = excluded.name,
-  price = excluded.price,
-  reward_3_days = excluded.reward_3_days,
-  reward_7_days = excluded.reward_7_days,
-  compute_power = excluded.compute_power,
-  image_url = excluded.image_url,
-  active = excluded.active;
+drop policy if exists "notifications_read_own_or_admin" on public.notifications;
+create policy "notifications_read_own_or_admin"
+on public.notifications for select
+to authenticated
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
+
+drop policy if exists "notifications_write_own_or_admin" on public.notifications;
+create policy "notifications_write_own_or_admin"
+on public.notifications for all
+to authenticated
+using (owner_id = auth.uid() or private.is_admin(auth.uid()))
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
+
+drop policy if exists "support_tickets_read_own_or_admin" on public.support_tickets;
+create policy "support_tickets_read_own_or_admin"
+on public.support_tickets for select
+to authenticated
+using (owner_id = auth.uid() or private.is_admin(auth.uid()));
+
+drop policy if exists "support_tickets_write_own_or_admin" on public.support_tickets;
+create policy "support_tickets_write_own_or_admin"
+on public.support_tickets for all
+to authenticated
+using (owner_id = auth.uid() or private.is_admin(auth.uid()))
+with check (owner_id = auth.uid() or private.is_admin(auth.uid()));

@@ -6,6 +6,7 @@ export interface User {
   invited_by: string | null;
   role: 'user' | 'admin';
   status: 'active' | 'blocked';
+  claim_eligible: boolean;
   vx_balance: number;
   demo_usdt_balance: number;
   compute_power: number;

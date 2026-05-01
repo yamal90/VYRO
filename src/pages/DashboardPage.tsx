@@ -122,10 +122,6 @@ const DashboardPage: React.FC = () => {
               </button>
               <button
                 onClick={() => {
-                  if (currentUser.role === 'admin') {
-                    setPage('admin');
-                    return;
-                  }
                   const nextNickname = window.prompt('Inserisci nuovo nickname', currentUser.username);
                   if (!nextNickname || nextNickname.trim() === currentUser.username) return;
                   void updateNickname(nextNickname).then((result) => {
@@ -134,8 +130,16 @@ const DashboardPage: React.FC = () => {
                 }}
                 className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
               >
-                {currentUser.role === 'admin' ? <Shield size={16} className="text-yellow-400" /> : <Settings size={16} className="text-purple-300" />}
+                <Settings size={16} className="text-purple-300" />
               </button>
+              {currentUser.role === 'admin' && (
+                <button
+                  onClick={() => setPage('admin')}
+                  className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-yellow-500/30"
+                >
+                  <Shield size={16} className="text-yellow-400" />
+                </button>
+              )}
               <button
                 onClick={() => { void logout(); }}
                 className="w-10 h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-red-500/30"
