@@ -39,8 +39,8 @@ drop policy if exists "gpu_catalog_write_admin_only" on public.gpu_catalog;
 create policy "gpu_catalog_write_admin_only"
 on public.gpu_catalog for all
 to authenticated
-using (private.is_admin(auth.uid()))
-with check (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
 
 -- ============================================================
 -- RPC: purchase_device
@@ -227,18 +227,18 @@ drop policy if exists "portfolio_entries_write_own_or_admin" on public.portfolio
 create policy "portfolio_entries_insert_admin_only"
 on public.portfolio_entries for insert
 to authenticated
-with check (private.is_admin(auth.uid()));
+with check (public.is_admin(auth.uid()));
 
 create policy "portfolio_entries_update_admin_only"
 on public.portfolio_entries for update
 to authenticated
-using (private.is_admin(auth.uid()))
-with check (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
 
 create policy "portfolio_entries_delete_admin_only"
 on public.portfolio_entries for delete
 to authenticated
-using (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()));
 
 -- ============================================================
 -- Tighten RLS: deposits — insert only via RPC / admin
@@ -249,18 +249,18 @@ drop policy if exists "deposits_write_own_or_admin" on public.deposits;
 create policy "deposits_insert_admin_only"
 on public.deposits for insert
 to authenticated
-with check (private.is_admin(auth.uid()));
+with check (public.is_admin(auth.uid()));
 
 create policy "deposits_update_admin_only"
 on public.deposits for update
 to authenticated
-using (private.is_admin(auth.uid()))
-with check (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
 
 create policy "deposits_delete_admin_only"
 on public.deposits for delete
 to authenticated
-using (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()));
 
 -- ============================================================
 -- Tighten RLS: withdrawals — insert only via RPC / admin
@@ -271,15 +271,15 @@ drop policy if exists "withdrawals_write_own_or_admin" on public.withdrawals;
 create policy "withdrawals_insert_admin_only"
 on public.withdrawals for insert
 to authenticated
-with check (private.is_admin(auth.uid()));
+with check (public.is_admin(auth.uid()));
 
 create policy "withdrawals_update_admin_only"
 on public.withdrawals for update
 to authenticated
-using (private.is_admin(auth.uid()))
-with check (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
 
 create policy "withdrawals_delete_admin_only"
 on public.withdrawals for delete
 to authenticated
-using (private.is_admin(auth.uid()));
+using (public.is_admin(auth.uid()));
