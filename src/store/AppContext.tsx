@@ -37,6 +37,7 @@ interface AppState {
   notice: AppNotice | null;
   login: (email: string, password: string) => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
+  updateNickname: (nickname: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
   setPage: (page: Page) => void;
   setAuthMode: (mode: AuthMode) => void;
@@ -577,16 +578,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (payload.password !== payload.confirmPassword) return emptyResult('Le password non coincidono.');
     if (payload.password.length < 6) return emptyResult('La password deve avere almeno 6 caratteri.');
 
-    const { data: referrer, error: referrerError } = await supabase
-      .from('profiles')
-      .select('id,referral_code')
-      .eq('referral_code', referralCode)
-      .maybeSingle();
-
-    if (referrerError || !referrer) {
-      return emptyResult('Referral code non valido.');
-    }
-
     setAuthLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -597,6 +588,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           data: {
             username: payload.username.trim(),
             referralCode,
+            referral_code: referralCode,
           },
         },
       });
@@ -614,7 +606,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pushNotice('success', 'Registrazione completata. Controlla la mail di conferma.');
       return { success: true, message: 'Registrazione completata. Conferma la mail.' };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Registrazione non riuscita';
+      const rawMessage = error instanceof Error ? error.message : 'Registrazione non riuscita';
+      const message = /invalid referral code|referral code is required/i.test(rawMessage)
+        ? 'Referral code non valido.'
+        : rawMessage;
       pushNotice('error', message);
       return emptyResult(message);
     } finally {
@@ -631,6 +626,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     resetData();
     setAuthMode('login');
   }, [resetData]);
+
+  const updateNickname = useCallback(async (nickname: string): Promise<ActionResult> => {
+    if (!supabase || !currentUser) return emptyResult('Non autenticato');
+    const normalized = nickname.trim();
+    if (!normalized) return emptyResult('Nickname obbligatorio.');
+    if (normalized.length < 3) return emptyResult('Nickname troppo corto (min 3 caratteri).');
+    if (normalized.length > 24) return emptyResult('Nickname troppo lungo (max 24 caratteri).');
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username: normalized, updated_at: new Date().toISOString() })
+        .eq('id', currentUser.id);
+      if (error) throw error;
+      await refreshAppData();
+      return { success: true, message: 'Nickname aggiornato.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Aggiornamento nickname non riuscito';
+      pushNotice('error', message);
+      return emptyResult(message);
+    }
+  }, [currentUser, pushNotice, refreshAppData]);
 
   const setPage = useCallback((page: Page) => setCurrentPage(page), []);
   const toggleBalanceVisibility = useCallback(() => setBalanceVisible((value) => !value), []);
@@ -788,6 +805,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         notice,
         login,
         register,
+        updateNickname,
         logout,
         setPage,
         setAuthMode,

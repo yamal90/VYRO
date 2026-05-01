@@ -13,7 +13,7 @@ const fadeIn = {
 };
 
 const DashboardPage: React.FC = () => {
-  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice } = useApp();
+  const { currentUser, balanceVisible, toggleBalanceVisibility, setPage, transactions, refreshAppData, pushNotice, updateNickname } = useApp();
   if (!currentUser) return null;
 
   const todayIncome = 18.54;
@@ -115,7 +115,11 @@ const DashboardPage: React.FC = () => {
                     setPage('admin');
                     return;
                   }
-                  pushNotice('info', 'Area impostazioni in arrivo. Per ora puoi gestire tutto da Team e Transazioni.');
+                  const nextNickname = window.prompt('Inserisci nuovo nickname', currentUser.username);
+                  if (!nextNickname || nextNickname.trim() === currentUser.username) return;
+                  void updateNickname(nextNickname).then((result) => {
+                    pushNotice(result.success ? 'success' : 'error', result.message);
+                  });
                 }}
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
               >
@@ -290,8 +294,8 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-[10px] text-amber-700 leading-relaxed text-center">
-            VYRO GPU ti offre un ambiente dinamico per seguire risultati, crescita del team
-            e progressione della tua attivita in un'esperienza sempre fluida e aggiornata.
+            VYRO GPU integra strumenti di monitoraggio, protezione account e controllo operativo
+            per offrire un'esperienza stabile, chiara e orientata alla continuita della piattaforma.
           </p>
         </div>
       </div>

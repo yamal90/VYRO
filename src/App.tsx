@@ -26,14 +26,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!bootstrapped) {
-    return (
-      <div className="min-h-screen gradient-dark flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="w-12 h-12 border-4 border-white/15 border-t-white rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-white/70">Connessione a Supabase...</p>
-        </div>
-      </div>
-    );
+    return <LoginPage />;
   }
 
   if (!isLoggedIn) {
