@@ -181,10 +181,37 @@ const mapTeamMember = (row: TeamMemberRow, index: number): TeamMember => ({
   level: index % 2 === 0 ? 1 : 2,
 });
 
+const LEGACY_DEVICE_NAME_MAP: Record<string, string> = {
+  'X-120': 'Intel Core i3-12100',
+  'G-88': 'Intel Core i5-12400F',
+  'G-100': 'AMD Ryzen 5 5600',
+  'G-700': 'Intel Core i5-13400F',
+  'G-900': 'AMD Ryzen 5 7600',
+  'X-5700': 'Intel Core i7-13700KF',
+  'X-7900': 'AMD Ryzen 7 7800X3D',
+  'X-8900': 'Intel Core i9-14900K',
+  'IX-9900': 'AMD Ryzen 9 7950X3D',
+};
+
+const computeGeneratedValue = (entry: PortfolioEntryRow, fallbackWeekly: number) => {
+  const persisted = Number(entry.change ?? 0);
+  if (persisted > 0) return persisted;
+
+  const weekly = Math.max(Number(fallbackWeekly ?? 0), 0);
+  if (weekly <= 0) return 0;
+
+  const createdAt = new Date(entry.created_at).getTime();
+  if (!Number.isFinite(createdAt) || createdAt <= 0) return 0;
+  const elapsedHours = Math.max(0, (Date.now() - createdAt) / 36e5);
+  const hourlyRate = weekly / (7 * 24);
+  return Number((hourlyRate * elapsedHours).toFixed(2));
+};
+
 const mapPortfolioEntryToUserDevice = (entry: PortfolioEntryRow): UserDevice => {
-  const matchingDevice = GPU_DEVICES.find((device) => device.name === entry.name) ?? {
+  const normalizedName = LEGACY_DEVICE_NAME_MAP[entry.name] ?? entry.name;
+  const matchingDevice = GPU_DEVICES.find((device) => device.name === normalizedName || device.name === entry.name) ?? {
     id: `portfolio-${entry.id}`,
-    name: entry.name,
+    name: normalizedName,
     price: Number(entry.value ?? 0),
     reward_3_days: Number((entry.change ?? 0) * 0.42),
     reward_7_days: Number(entry.change ?? 0),
@@ -201,7 +228,7 @@ const mapPortfolioEntryToUserDevice = (entry: PortfolioEntryRow): UserDevice => 
     status: 'active',
     start_date: entry.created_at,
     end_date: null,
-    total_generated: Number(entry.change ?? 0),
+    total_generated: computeGeneratedValue(entry, matchingDevice.reward_7_days),
     created_at: entry.created_at,
   };
 };

@@ -133,15 +133,6 @@ const DevicesPage: React.FC = () => {
               >
                 {/* GPU Visual */}
                 <div className={`bg-gradient-to-br ${gpuColors[i % gpuColors.length]} p-6 relative overflow-hidden`}>
-                  {device.image_url && (
-                    <img
-                      src={device.image_url}
-                      alt={device.name}
-                      className="absolute inset-0 w-full h-full object-cover opacity-30"
-                      style={{ filter: 'contrast(1.08) saturate(1.25)' }}
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-900/55 to-slate-900/35" />
                   {/* Animated background effects */}
                   <div className="absolute inset-0">
                     <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse" />
@@ -162,6 +153,20 @@ const DevicesPage: React.FC = () => {
                         <Zap size={14} className="text-yellow-300" />
                         <span className="text-white/90 text-sm font-semibold">{device.compute_power} TFLOPS</span>
                       </div>
+                    </div>
+                    <div className="w-32 h-32 rounded-2xl overflow-hidden bg-black/30 border border-white/20 shadow-xl relative animate-gpu-glow p-2">
+                      {device.image_url ? (
+                        <img
+                          src={device.image_url}
+                          alt={device.name}
+                          className="w-full h-full object-contain rounded-xl"
+                          style={{ filter: 'contrast(1.08) saturate(1.15)' }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Cpu className="w-10 h-10 text-white/60" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
