@@ -71,10 +71,14 @@ src/
 
 ## Database
 
-Lo schema SQL si trova in `supabase/schema.sql`. Include:
+Lo schema SQL è diviso in due file:
+- `supabase/schema.sql`
+- `supabase/migrations/001_rpc_and_rls.sql`
+
+Insieme includono:
 - Tabelle: profiles, portfolio_entries, team_members, deposits, withdrawals, activity_logs, platform_settings
 - Row Level Security (RLS) su tutte le tabelle
-- Funzioni per gestione admin e referral
+- Funzioni per gestione admin, referral, acquisti, claim giornaliero e leaderboard
 
 ## Deploy
 

@@ -49,7 +49,7 @@ export const mapTeamMember = (row: TeamMemberRow): TeamMember => ({
   device_active: row.active_sub_count > 0 || row.active_balance > 0,
   production: Number(row.contribution ?? 0),
   status: row.account_blocked ? 'inactive' : 'active',
-  level: row.active_sub_count > 0 ? 1 : 2,
+  level: 1,
 });
 
 const computeGeneratedValue = (entry: PortfolioEntryRow, fallbackWeekly: number) => {

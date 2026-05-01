@@ -3,8 +3,8 @@ import { Database, KeyRound, ShieldCheck } from 'lucide-react';
 
 const steps = [
   'Copia .env.example in .env e inserisci URL e publishable key di Supabase.',
-  'Esegui lo script /supabase/schema.sql nel tuo progetto Supabase.',
-  'Ricarica l’app: registrazione, referral, claim, acquisti e admin useranno il database reale.',
+  'Esegui prima /supabase/schema.sql e poi /supabase/migrations/001_rpc_and_rls.sql nel tuo progetto Supabase.',
+  'Ricarica l’app: registrazione, referral, claim, acquisti, leaderboard e admin useranno il database reale.',
 ];
 
 const SupabaseSetupState: React.FC = () => {
@@ -47,7 +47,7 @@ const SupabaseSetupState: React.FC = () => {
               <span className="text-sm font-semibold">Schema incluso</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Lo script SQL crea tabelle, trigger, funzioni RPC, seed GPU e policy RLS per referral, acquisti e admin.
+              Lo schema è diviso tra tabelle base e migrazione RPC/RLS: entrambi i file sono necessari per il comportamento completo.
             </p>
           </div>
         </div>

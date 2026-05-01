@@ -31,7 +31,6 @@ const AdminPage: React.FC = () => {
     platformSettings,
     refreshAppData,
     updateUserBalance,
-    updateDeviceStatus,
     blockUser,
     unblockUser,
     setUserClaimEligibility,
@@ -318,17 +317,9 @@ const AdminPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  {(['pending', 'processing', 'active', 'completed'] as const).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => void updateDeviceStatus(ud.id, status)}
-                      className={`px-2 py-1 rounded text-[9px] font-semibold transition-all ${
-                        ud.status === status ? 'bg-purple-500 text-white' : 'bg-white/5 text-white/40 hover:text-white/70'
-                      }`}
-                    >
-                      {status}
-                    </button>
-                  ))}
+                  <p className="text-[10px] text-white/35 leading-relaxed">
+                    Stato dispositivo gestito in automatico dal database.
+                  </p>
                 </div>
               </div>
             ))}

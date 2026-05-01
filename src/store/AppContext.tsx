@@ -242,7 +242,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const syncReferral = useCallback(async (profile: ProfileRow, referralCode: string) => {
     if (!supabase) return;
     const normalized = referralCode.trim().toUpperCase();
-    if (!normalized || normalized === profile.referral_code || profile.referred_by) return;
+    if (
+      !normalized ||
+      normalized === profile.referral_code ||
+      (profile.referred_by && profile.referred_by !== 'SYSTEM')
+    ) {
+      return;
+    }
 
     const { data: referrer, error: referrerError } = await supabase
       .from('profiles')
