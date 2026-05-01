@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Cpu, Gift, ArrowRightLeft, Users, Sparkles } from 'lucide-react';
+import { Home, Cpu, Gift, ArrowRightLeft, Users, Sparkles, HelpCircle } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import type { Page } from '../types';
 
 const navItems: { page: Page; icon: React.ElementType; label: string }[] = [
   { page: 'home', icon: Home, label: 'Home' },
   { page: 'devices', icon: Cpu, label: 'GPU' },
-  { page: 'benefits', icon: Gift, label: 'Benefici' },
+  { page: 'faq', icon: HelpCircle, label: 'FAQ' },
   { page: 'transactions', icon: ArrowRightLeft, label: 'Transazioni' },
   { page: 'team', icon: Users, label: 'Team' },
 ];

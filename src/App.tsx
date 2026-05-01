@@ -8,6 +8,7 @@ import TransactionsPage from './pages/TransactionsPage';
 import TeamPage from './pages/TeamPage';
 import BenefitsPage from './pages/BenefitsPage';
 import AdminPage from './pages/AdminPage';
+import FAQPage from './pages/FAQPage';
 import BottomNav from './components/BottomNav';
 import SupabaseSetupState from './components/SupabaseSetupState';
 import ParticleBackground from './components/ParticleBackground';
@@ -56,6 +57,8 @@ const AppContent: React.FC = () => {
         return <BenefitsPage />;
       case 'admin':
         return <AdminPage />;
+      case 'faq':
+        return <FAQPage />;
       default:
         return <DashboardPage />;
     }

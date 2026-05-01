@@ -94,4 +94,4 @@ export interface AppNotice {
 }
 
 export type AuthMode = 'login' | 'register';
-export type Page = 'home' | 'devices' | 'transactions' | 'team' | 'benefits' | 'admin' | 'login';
+export type Page = 'home' | 'devices' | 'transactions' | 'team' | 'benefits' | 'admin' | 'faq' | 'login';
