@@ -33,6 +33,7 @@ npm run dev
 |---|---|
 | `VITE_SUPABASE_URL` | URL del progetto Supabase |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Chiave anon pubblica di Supabase |
+| `VITE_APP_DOMAIN` | Dominio pubblico usato per redirect auth (reset/email/OAuth). Se assente usa `window.location.origin` |
 
 ## Struttura progetto
 

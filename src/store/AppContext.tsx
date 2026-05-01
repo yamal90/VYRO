@@ -24,6 +24,7 @@ import type {
 } from './db-types';
 import { GPU_DEVICES } from './data';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { getAppBaseUrl } from '../lib/app-url';
 import {
   makeDailyClaims,
   mapLogsToTransactions,
@@ -413,10 +414,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sb = supabase;
     const boot = async () => {
       setAuthLoading(true);
-      const { data } = await sb.auth.getSession();
-      if (active) {
-        await hydrateFromSession(data.session);
-        setAuthLoading(false);
+      try {
+        const { data } = await sb.auth.getSession();
+        if (active) {
+          await hydrateFromSession(data.session);
+        }
+      } catch (err) {
+        throw err;
+      } finally {
+        if (active) setAuthLoading(false);
       }
     };
     void boot();
@@ -480,7 +486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAuthLoading(true);
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-          redirectTo: `${window.location.origin}?mode=reset`,
+          redirectTo: `${getAppBaseUrl()}?mode=reset`,
         });
         if (error) throw error;
         return { success: true, message: 'Email di reset inviata. Controlla la posta.' };
@@ -539,9 +545,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (referrerError) throw referrerError;
           if (!referrer || referrer.account_blocked) return emptyResult('Referral code non valido.');
         }
+        const appBaseUrl = getAppBaseUrl();
         const redirectUrl = normalizedReferral
-          ? `${window.location.origin}?ref=${encodeURIComponent(normalizedReferral)}`
-          : window.location.origin;
+          ? `${appBaseUrl}?ref=${encodeURIComponent(normalizedReferral)}`
+          : appBaseUrl;
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo: redirectUrl },
@@ -587,7 +594,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: payload.email.trim().toLowerCase(),
           password: payload.password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: getAppBaseUrl(),
             data: {
               username: payload.username.trim(),
               referralCode,

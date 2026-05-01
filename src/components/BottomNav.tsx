@@ -19,7 +19,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50" aria-label="Navigazione principale">
       <div className="max-w-lg mx-auto">
-        <div className="bg-slate-900/95 backdrop-blur-xl border-t border-purple-500/20 px-1 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-4px_30px_rgba(124,58,237,0.15)]">
+        <div className="surface-card rounded-t-2xl px-1 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-8px_30px_rgba(2,6,23,0.55)]">
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 snap-x snap-mandatory">
             {navItems.map(item => {
               const isActive = location.pathname === item.path;
@@ -38,7 +38,7 @@ const BottomNav: React.FC = () => {
                   {isActive && (
                     <motion.div
                       layoutId="navIndicator"
-                      className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full gradient-primary"
+                      className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-gradient-to-r from-violet-400 via-cyan-300 to-violet-400"
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     />
                   )}

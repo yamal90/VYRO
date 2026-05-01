@@ -154,9 +154,14 @@ const LoginPage: React.FC = () => {
                   ? 'Crea un account con referral obbligatorio'
                   : 'Accedi al tuo account'}
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
+            Accesso sicuro con redirect su dominio configurato
+          </div>
         </div>
 
-        <div className="bg-slate-800/60 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl">
+        <div className="relative bg-slate-800/60 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/10 to-transparent" />
           {authStep === 'auth' ? (
             <div className="flex gap-2 bg-slate-900/50 p-1 rounded-2xl mb-6">
               <button

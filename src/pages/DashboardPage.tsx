@@ -81,7 +81,7 @@ const DashboardPage: React.FC = () => {
   const mask = (v: number) => balanceVisible ? v.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '••••••';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-32 pt-16">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 pb-32 pt-16">
       {/* Header with background */}
       <div className="relative overflow-hidden">
         {/* Animated gradient orbs */}
@@ -98,7 +98,8 @@ const DashboardPage: React.FC = () => {
           />
         </div>
         
-        <div className="gradient-primary px-4 pt-6 pb-24 relative z-10">
+        <div className="px-4 pt-6 pb-24 relative z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/70 via-indigo-600/65 to-cyan-600/60" />
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-4 right-4 w-40 h-40 border border-white/20 rounded-full" />
             <div className="absolute top-20 right-20 w-20 h-20 border border-white/10 rounded-full" />
@@ -178,13 +179,13 @@ const DashboardPage: React.FC = () => {
             <div className="flex items-end gap-6">
               <div>
                 <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">VX Token</p>
-                <p className="text-white font-display text-3xl font-bold tracking-wide text-neon-purple">
+                <p className="text-white font-display text-3xl font-bold tracking-wide">
                   {mask(currentUser.vx_balance)}
                 </p>
               </div>
               <div>
                 <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">USDT Balance</p>
-                <p className="text-white font-display text-xl font-semibold tracking-wide text-neon-cyan">
+                <p className="text-white font-display text-xl font-semibold tracking-wide">
                   {mask(currentUser.demo_usdt_balance)}
                 </p>
               </div>
@@ -199,7 +200,7 @@ const DashboardPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-dark rounded-2xl shadow-xl shadow-purple-500/10 p-5 grid grid-cols-4 gap-3 border border-purple-500/20"
+          className="surface-card rounded-2xl p-5 grid grid-cols-4 gap-3"
         >
           {actionButtons.map((item, i) => (
             <motion.button
@@ -239,7 +240,7 @@ const DashboardPage: React.FC = () => {
               variants={fadeIn}
               initial="hidden"
               animate="visible"
-              className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-4 text-white relative overflow-hidden border border-white/10`}
+              className={`rounded-2xl p-4 text-white relative overflow-hidden border border-white/10 bg-gradient-to-br ${item.gradient} shadow-[0_10px_24px_rgba(2,6,23,0.35)]`}
             >
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full" />
               <item.icon size={18} className="mb-2 opacity-80" />
@@ -252,7 +253,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Personal Earnings */}
       <div className="px-4 mt-6">
-        <div className="glass-dark rounded-2xl p-5 border border-purple-500/20">
+        <div className="surface-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white">Guadagni personali</h3>
             <span className="px-3 py-1.5 bg-green-500/20 text-green-400 text-[10px] font-bold rounded-full flex items-center gap-1.5 border border-green-500/30">
@@ -275,7 +276,8 @@ const DashboardPage: React.FC = () => {
           </div>
 
           {/* Compute Power */}
-          <div className="flex items-center justify-between py-3 border-t border-purple-500/20">
+          <div className="soft-divider mb-3" />
+          <div className="flex items-center justify-between py-1">
             <span className="text-xs text-slate-400">Potenza di calcolo</span>
             <span className="text-sm font-bold text-purple-400 font-display">{currentUser.compute_power} TFLOPS</span>
           </div>
@@ -302,7 +304,7 @@ const DashboardPage: React.FC = () => {
               variants={fadeIn}
               initial="hidden"
               animate="visible"
-              className="glass-dark rounded-xl p-4 flex items-center gap-3 border border-purple-500/20"
+              className="surface-card-soft rounded-xl p-4 flex items-center gap-3"
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                 tx.amount > 0 ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'
