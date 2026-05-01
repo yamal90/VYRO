@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, Crown } from 'lucide-react';
+import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useApp } from '../store/AppContext';
 

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
-  Server, Key, Fingerprint, Globe, Clock, CheckCircle, AlertTriangle,
-  TrendingUp, Gift, RefreshCw, Database, Eye, EyeOff
+  Server, Key, Fingerprint, Globe, AlertTriangle,
+  TrendingUp, Gift, RefreshCw
 } from 'lucide-react';
 
 interface FAQItem {
