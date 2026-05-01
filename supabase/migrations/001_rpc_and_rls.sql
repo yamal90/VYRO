@@ -45,7 +45,7 @@ begin
   -- Create portfolio entry
   v_entry_id := gen_random_uuid();
   insert into public.portfolio_entries (id, owner_id, name, allocation, value, change, position)
-  values (v_entry_id, v_user_id, p_device_name, p_device_price, p_compute_power, 0, 1);
+  values (v_entry_id, v_user_id, p_device_name, p_compute_power, p_device_price, 0, 1);
 
   -- Log activity
   insert into public.activity_logs (owner_id, type, description, amount)
@@ -158,7 +158,7 @@ as $$
     p.username,
     p.balance as vx,
     coalesce((
-      select sum(pe.value)::integer
+      select sum(pe.allocation)::integer
       from public.portfolio_entries pe
       where pe.owner_id = p.id
     ), 0) as power
