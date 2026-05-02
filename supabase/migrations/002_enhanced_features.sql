@@ -271,7 +271,6 @@ $$;
 
 -- Stake tokens
 create or replace function public.stake_tokens(
-  p_user_id uuid,
   p_pool_id uuid,
   p_amount numeric
 )
@@ -281,10 +280,15 @@ security definer
 set search_path = public
 as $$
 declare
+  v_user_id uuid := auth.uid();
   v_pool public.staking_pools;
   v_user_balance numeric;
   v_current_stakes numeric;
 begin
+  if v_user_id is null then
+    return json_build_object('success', false, 'message', 'Non autenticato');
+  end if;
+
   select * into v_pool from staking_pools where id = p_pool_id and is_active = true;
   if v_pool is null then
     return json_build_object('success', false, 'message', 'Pool not found or inactive');
@@ -301,15 +305,15 @@ begin
     end if;
   end if;
   
-  select balance into v_user_balance from profiles where id = p_user_id;
+  select balance into v_user_balance from profiles where id = v_user_id;
   if v_user_balance < p_amount then
     return json_build_object('success', false, 'message', 'Insufficient balance');
   end if;
   
-  update profiles set balance = balance - p_amount where id = p_user_id;
+  update profiles set balance = balance - p_amount where id = v_user_id;
   
   insert into user_stakes (user_id, pool_id, amount, ends_at)
-  values (p_user_id, p_pool_id, p_amount, now() + (v_pool.lock_period_days || ' days')::interval);
+  values (v_user_id, p_pool_id, p_amount, now() + (v_pool.lock_period_days || ' days')::interval);
   
   update staking_pools set total_staked = total_staked + p_amount where id = p_pool_id;
   
@@ -432,7 +436,7 @@ create policy "notification_preferences_write_own" on public.notification_prefer
 
 grant execute on function public.calculate_user_tier(uuid) to authenticated;
 grant execute on function public.award_achievement(uuid, text, integer) to authenticated;
-grant execute on function public.stake_tokens(uuid, uuid, numeric) to authenticated;
+grant execute on function public.stake_tokens(uuid, numeric) to authenticated;
 grant execute on function public.validate_promo_code(text, uuid) to authenticated;
 
 -- ============================================

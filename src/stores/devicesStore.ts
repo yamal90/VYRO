@@ -83,47 +83,18 @@ export const useDevicesStore = create<DevicesState & DevicesActions>()(
 
       set({ isLoading: true });
       try {
-        // Deduct balance
-        const { error: balanceError } = await supabase
-          .from('profiles')
-          .update({ 
-            balance: currentUser.vx_balance - device.price,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', currentUser.id);
-        if (balanceError) throw balanceError;
-
-        // Create portfolio entry
-        const { error: portfolioError } = await supabase
-          .from('portfolio_entries')
-          .insert({
-            owner_id: currentUser.id,
-            name: device.name,
-            allocation: device.compute_power,
-            value: device.price,
-            change: 0,
-            cycle_reward: device.reward_7_days,
-            cycle_days: CYCLE_DAYS,
-            last_cycle_reset_at: new Date().toISOString(),
-            position: get().userDevices.length + 1,
-          });
-        if (portfolioError) throw portfolioError;
-
-        // Log activity
-        await supabase.from('activity_logs').insert({
-          owner_id: currentUser.id,
-          type: 'device_activation',
-          description: `Attivato ${device.name}`,
-          amount: device.price,
+        const { data, error } = await supabase.rpc('purchase_device', {
+          p_device_id: device.id,
         });
+        if (error) throw error;
 
-        // Refresh devices
+        const result = data as { success: boolean; message: string };
+        if (!result.success) return { success: false, message: result.message };
+
         await get().loadUserDevices(currentUser.id);
-        
-        // Update auth store balance
         useAuthStore.getState().refreshSession();
 
-        return { success: true, message: `${device.name} attivato con successo` };
+        return { success: true, message: result.message };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Attivazione fallita';
         set({ error: message, isLoading: false });

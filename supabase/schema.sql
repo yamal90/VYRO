@@ -225,6 +225,21 @@ as $$
   );
 $$;
 
+create or replace function public.is_admin(user_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = user_id
+      and role = 'admin'
+      and account_blocked = false
+  );
+$$;
+
 create or replace function private.generate_referral_code(seed_text text)
 returns text
 language plpgsql
@@ -892,6 +907,7 @@ grant execute on function public.request_deposit(numeric, text) to authenticated
 grant execute on function public.request_withdrawal(numeric, text) to authenticated;
 grant execute on function public.validate_referral_code(text) to anon, authenticated;
 grant execute on function public.apply_referral_link(text, uuid) to authenticated;
+grant execute on function public.get_team_tree(uuid) to authenticated;
 grant execute on function public.admin_manage_deposit(uuid, text, text) to authenticated;
 grant execute on function public.admin_manage_withdrawal(uuid, text, text) to authenticated;
 

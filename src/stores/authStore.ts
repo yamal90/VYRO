@@ -10,7 +10,7 @@ interface AuthState {
   isLoggedIn: boolean;
   authLoading: boolean;
   bootstrapped: boolean;
-  authMode: 'login' | 'register' | 'reset';
+  authMode: 'login' | 'register';
 }
 
 interface AuthActions {
