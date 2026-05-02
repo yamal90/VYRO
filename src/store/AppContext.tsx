@@ -86,6 +86,8 @@ interface AppState {
   ) => Promise<ActionResult>;
   updateUserBalance: (userId: string, field: 'vx_balance' | 'demo_usdt_balance', amount: number) => Promise<ActionResult>;
   updateDeviceStatus: (userDeviceId: string, status: UserDevice['status']) => Promise<ActionResult>;
+  assignDeviceToUser: (userId: string, deviceId: string, chargeBalance?: boolean) => Promise<ActionResult>;
+  removeDeviceFromUser: (userDeviceId: string, refund?: boolean) => Promise<ActionResult>;
   blockUser: (userId: string) => Promise<ActionResult>;
   unblockUser: (userId: string) => Promise<ActionResult>;
   setUserClaimEligibility: (userId: string, enabled: boolean) => Promise<ActionResult>;
@@ -1016,6 +1018,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [pushNotice],
   );
 
+  const assignDeviceToUser = useCallback(
+    async (userId: string, deviceId: string, chargeBalance = false): Promise<ActionResult> => {
+      if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+      const normalizedUserId = String(userId ?? '').trim();
+      const normalizedDeviceId = String(deviceId ?? '').trim();
+      if (!normalizedUserId) return emptyResult('Utente non valido.');
+      if (!normalizedDeviceId) return emptyResult('Dispositivo non valido.');
+
+      try {
+        const { data, error } = await supabase.rpc('admin_assign_device_to_user', {
+          p_user_id: normalizedUserId,
+          p_device_id: normalizedDeviceId,
+          p_charge_balance: Boolean(chargeBalance),
+        });
+        if (error) throw error;
+        const result = data as { success?: boolean; message?: string } | null;
+        if (!result?.success) return emptyResult(result?.message ?? 'Assegnazione dispositivo non riuscita.');
+        await refreshAppData();
+        return { success: true, message: result.message ?? 'Dispositivo assegnato.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Assegnazione dispositivo non riuscita';
+        void logOperationalError('admin_assign_device', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, pushNotice, refreshAppData],
+  );
+
+  const removeDeviceFromUser = useCallback(
+    async (userDeviceId: string, refund = false): Promise<ActionResult> => {
+      if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
+      const normalizedEntryId = String(userDeviceId ?? '').trim();
+      if (!normalizedEntryId) return emptyResult('Dispositivo utente non valido.');
+
+      try {
+        const { data, error } = await supabase.rpc('admin_remove_user_device', {
+          p_entry_id: normalizedEntryId,
+          p_refund: Boolean(refund),
+        });
+        if (error) throw error;
+        const result = data as { success?: boolean; message?: string } | null;
+        if (!result?.success) return emptyResult(result?.message ?? 'Rimozione dispositivo non riuscita.');
+        await refreshAppData();
+        return { success: true, message: result.message ?? 'Dispositivo rimosso.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Rimozione dispositivo non riuscita';
+        void logOperationalError('admin_remove_device', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, pushNotice, refreshAppData],
+  );
+
   const blockUser = useCallback(
     async (userId: string): Promise<ActionResult> => {
       if (!supabase || !currentUser || currentUser.role !== 'admin') return emptyResult('Non autorizzato');
@@ -1140,6 +1197,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateWithdrawalRequestStatus,
         updateUserBalance,
         updateDeviceStatus,
+        assignDeviceToUser,
+        removeDeviceFromUser,
         blockUser,
         unblockUser,
         setUserClaimEligibility,

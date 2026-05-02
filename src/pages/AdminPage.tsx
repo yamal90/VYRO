@@ -13,8 +13,10 @@ import {
   ExternalLink,
   Lock,
   LockOpen,
+  Plus,
   RefreshCw,
   Shield,
+  Trash2,
   Users,
   Wallet,
   X,
@@ -27,6 +29,7 @@ const AdminPage: React.FC = () => {
   const {
     currentUser,
     allUsers,
+    gpuDevices,
     adminUserDevices,
     adminTransactions,
     adminLogs,
@@ -37,6 +40,8 @@ const AdminPage: React.FC = () => {
     updateDepositRequestStatus,
     updateWithdrawalRequestStatus,
     updateUserBalance,
+    assignDeviceToUser,
+    removeDeviceFromUser,
     blockUser,
     unblockUser,
     setUserClaimEligibility,
@@ -50,6 +55,10 @@ const AdminPage: React.FC = () => {
   const [logFilter, setLogFilter] = useState<'all' | 'error' | 'activity'>('all');
   const [depositTxDraft, setDepositTxDraft] = useState<Record<string, string>>({});
   const [withdrawTxDraft, setWithdrawTxDraft] = useState<Record<string, string>>({});
+  const [assignUserId, setAssignUserId] = useState('');
+  const [assignDeviceId, setAssignDeviceId] = useState('');
+  const [assignChargeBalance, setAssignChargeBalance] = useState(false);
+  const [removeWithRefund, setRemoveWithRefund] = useState(false);
   const adminBootstrappedForUserRef = useRef<string | null>(null);
   const [settingsDraft, setSettingsDraft] = useState({
     maintenance_mode: false,
@@ -97,6 +106,15 @@ const AdminPage: React.FC = () => {
     () => adminWithdrawalRequests.filter((item) => item.status === 'pending'),
     [adminWithdrawalRequests],
   );
+  const sortedDepositRequests = useMemo(
+    () => [...adminDepositRequests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [adminDepositRequests],
+  );
+  const sortedWithdrawalRequests = useMemo(
+    () => [...adminWithdrawalRequests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [adminWithdrawalRequests],
+  );
+  const userMap = useMemo(() => new Map(allUsers.map((u) => [u.id, u])), [allUsers]);
 
   React.useEffect(() => {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -108,6 +126,14 @@ const AdminPage: React.FC = () => {
     void refreshAppData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id, currentUser?.role, refreshAppData]);
+
+  React.useEffect(() => {
+    if (!assignUserId && allUsers.length > 0) setAssignUserId(allUsers[0].id);
+  }, [allUsers, assignUserId]);
+
+  React.useEffect(() => {
+    if (!assignDeviceId && gpuDevices.length > 0) setAssignDeviceId(gpuDevices[0].id);
+  }, [gpuDevices, assignDeviceId]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (
@@ -334,24 +360,109 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'devices' && (
           <div className="space-y-2">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <p className="text-white text-sm font-semibold">Aggiungi dispositivo a utente</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <label className="text-[11px] text-white/65">
+                  Utente
+                  <select
+                    value={assignUserId}
+                    onChange={(e) => setAssignUserId(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                  >
+                    {allUsers.map((user) => (
+                      <option key={user.id} value={user.id} className="bg-slate-900 text-white">
+                        {user.username} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-[11px] text-white/65">
+                  Dispositivo
+                  <select
+                    value={assignDeviceId}
+                    onChange={(e) => setAssignDeviceId(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                  >
+                    {gpuDevices.map((device) => (
+                      <option key={device.id} value={device.id} className="bg-slate-900 text-white">
+                        {device.name} • {device.price.toLocaleString()} $
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="flex items-center gap-2 text-xs text-white/70">
+                <input
+                  type="checkbox"
+                  checked={assignChargeBalance}
+                  onChange={(e) => setAssignChargeBalance(e.target.checked)}
+                  className="w-4 h-4 accent-purple-500"
+                />
+                Scala il costo dal saldo utente durante l’assegnazione
+              </label>
+              <button
+                onClick={async () => {
+                  const result = await assignDeviceToUser(assignUserId, assignDeviceId, assignChargeBalance);
+                  pushNotice(result.success ? 'success' : 'error', result.message);
+                }}
+                className="w-full py-2.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-sm font-semibold hover:bg-emerald-500/30 flex items-center justify-center gap-2"
+              >
+                <Plus size={15} />
+                Assegna dispositivo
+              </button>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <label className="flex items-center gap-2 text-xs text-white/70">
+                <input
+                  type="checkbox"
+                  checked={removeWithRefund}
+                  onChange={(e) => setRemoveWithRefund(e.target.checked)}
+                  className="w-4 h-4 accent-purple-500"
+                />
+                Rimborso automatico al saldo utente quando rimuovo dispositivo
+              </label>
+            </div>
+
             {adminUserDevices.map((ud) => (
               <div key={ud.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-white text-sm font-semibold">{ud.device?.name}</p>
-                    <p className="text-white/40 text-[10px]">ID: {ud.id} | User: {ud.user_id}</p>
+                    <p className="text-white/40 text-[10px]">
+                      User: {userMap.get(ud.user_id)?.username ?? 'unknown'} ({userMap.get(ud.user_id)?.email ?? ud.user_id})
+                    </p>
+                    <p className="text-white/30 text-[10px]">Entry ID: {ud.id}</p>
                   </div>
-                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400">
-                    {ud.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400">
+                      {ud.status}
+                    </span>
+                    <button
+                      onClick={async () => {
+                        const result = await removeDeviceFromUser(ud.id, removeWithRefund);
+                        pushNotice(result.success ? 'success' : 'error', result.message);
+                      }}
+                      className="w-8 h-8 rounded-lg bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 flex items-center justify-center"
+                      title="Rimuovi dispositivo"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <p className="text-[10px] text-white/35 leading-relaxed">
-                    Stato dispositivo gestito in automatico dal database.
+                    Gestione admin attiva: puoi assegnare o rimuovere dispositivi da questa sezione.
                   </p>
                 </div>
               </div>
             ))}
+            {adminUserDevices.length === 0 && (
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-white/55 text-center">
+                Nessun dispositivo assegnato agli utenti.
+              </div>
+            )}
           </div>
         )}
 
@@ -363,6 +474,12 @@ const AdminPage: React.FC = () => {
                 Pending depositi: {pendingDeposits.length} • Pending prelievi: {pendingWithdrawals.length}
               </p>
             </div>
+
+            {pendingDeposits.length === 0 && pendingWithdrawals.length === 0 && (
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white/55">
+                Nessuna richiesta pending. Usa le liste complete sotto per gestione storica.
+              </div>
+            )}
 
             {pendingDeposits.map((item) => (
               <div key={item.id} className="bg-white/5 border border-emerald-500/30 rounded-xl p-3">
@@ -475,6 +592,56 @@ const AdminPage: React.FC = () => {
                 </div>
               </div>
             ))}
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 mt-2">
+              <p className="text-white text-xs font-semibold mb-2">Tutti i depositi (ultimi 30)</p>
+              <div className="space-y-2">
+                {sortedDepositRequests.slice(0, 30).map((item) => (
+                  <div key={`all-dep-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] text-white truncate">{item.username} • {item.amount.toFixed(2)} {item.asset}</p>
+                        <p className="text-[10px] text-white/45 truncate">{item.email}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                        item.status === 'approved' || item.status === 'completed'
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : item.status === 'rejected'
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 mt-2">
+              <p className="text-white text-xs font-semibold mb-2">Tutti i prelievi (ultimi 30)</p>
+              <div className="space-y-2">
+                {sortedWithdrawalRequests.slice(0, 30).map((item) => (
+                  <div key={`all-wd-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] text-white truncate">{item.username} • {item.amount.toFixed(2)} USDT</p>
+                        <p className="text-[10px] text-white/45 truncate">{item.wallet_address ?? 'Wallet non impostato'}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                        item.status === 'approved' || item.status === 'completed'
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : item.status === 'rejected'
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {adminTransactions.slice(0, 30).map((tx) => (
               <div key={tx.id} className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-3">

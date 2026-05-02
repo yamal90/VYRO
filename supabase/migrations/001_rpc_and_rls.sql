@@ -91,6 +91,42 @@ create unique index if not exists idx_withdrawals_tx_hash_unique
   on public.withdrawals (lower(tx_hash))
   where tx_hash is not null and length(trim(tx_hash)) > 0;
 
+-- ============================================================
+-- Normalize legacy status values and enforce unified statuses
+-- ============================================================
+
+update public.deposits
+set status = case
+  when lower(coalesce(status, '')) = 'confirmed' then 'completed'
+  when lower(coalesce(status, '')) in ('pending', 'approved', 'completed', 'rejected') then lower(status)
+  else 'pending'
+end;
+
+update public.withdrawals
+set status = case
+  when lower(coalesce(status, '')) = 'requested' then 'pending'
+  when lower(coalesce(status, '')) = 'paid' then 'completed'
+  when lower(coalesce(status, '')) in ('pending', 'approved', 'completed', 'rejected') then lower(status)
+  else 'pending'
+end;
+
+alter table public.deposits
+  alter column status set default 'pending';
+alter table public.withdrawals
+  alter column status set default 'pending';
+
+alter table public.deposits
+  drop constraint if exists deposits_status_check;
+alter table public.deposits
+  add constraint deposits_status_check
+  check (status = any (array['pending'::text, 'approved'::text, 'completed'::text, 'rejected'::text]));
+
+alter table public.withdrawals
+  drop constraint if exists withdrawals_status_check;
+alter table public.withdrawals
+  add constraint withdrawals_status_check
+  check (status = any (array['pending'::text, 'approved'::text, 'completed'::text, 'rejected'::text]));
+
 update public.team_members tm
 set member_user_id = p.id
 from public.profiles owner, public.profiles p
@@ -797,12 +833,185 @@ begin
 end;
 $$;
 
+create or replace function public.admin_assign_device_to_user(
+  p_user_id uuid,
+  p_device_id text,
+  p_charge_balance boolean default false
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin_id uuid := auth.uid();
+  v_target public.profiles;
+  v_device public.gpu_catalog;
+  v_entry_id uuid := gen_random_uuid();
+  v_position integer := 1;
+begin
+  if v_admin_id is null or not public.is_admin(v_admin_id) then
+    return json_build_object('success', false, 'message', 'Non autorizzato');
+  end if;
+  if p_user_id is null then
+    return json_build_object('success', false, 'message', 'Utente non valido');
+  end if;
+
+  select * into v_target
+  from public.profiles
+  where id = p_user_id
+  for update;
+
+  if v_target is null then
+    return json_build_object('success', false, 'message', 'Utente non trovato');
+  end if;
+
+  select * into v_device
+  from public.gpu_catalog
+  where id = trim(coalesce(p_device_id, ''))
+    and active = true;
+
+  if v_device is null then
+    return json_build_object('success', false, 'message', 'Dispositivo non disponibile');
+  end if;
+
+  if p_charge_balance and coalesce(v_target.balance, 0) < coalesce(v_device.price, 0) then
+    return json_build_object('success', false, 'message', 'Saldo utente insufficiente per addebito');
+  end if;
+
+  if p_charge_balance then
+    update public.profiles
+    set balance = coalesce(balance, 0) - coalesce(v_device.price, 0),
+        updated_at = now()
+    where id = v_target.id;
+  end if;
+
+  select coalesce(max(pe.position), 0) + 1 into v_position
+  from public.portfolio_entries pe
+  where pe.owner_id = v_target.id;
+
+  insert into public.portfolio_entries (
+    id, owner_id, name, allocation, value, change, cycle_reward, cycle_days, last_cycle_reset_at, position
+  )
+  values (
+    v_entry_id,
+    v_target.id,
+    v_device.name,
+    v_device.compute_power,
+    v_device.price,
+    0,
+    v_device.reward_7_days,
+    7,
+    now(),
+    v_position
+  );
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_target.id,
+    'admin_device_assign',
+    format('Admin %s ha assegnato %s', v_admin_id::text, v_device.name),
+    case when p_charge_balance then -coalesce(v_device.price, 0) else 0 end
+  );
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_admin_id,
+    'admin_device_assign',
+    format('Assegnato %s a %s', v_device.name, v_target.email),
+    coalesce(v_device.price, 0)
+  );
+
+  return json_build_object(
+    'success', true,
+    'message', format('Dispositivo %s assegnato a %s', v_device.name, v_target.username),
+    'entry_id', v_entry_id
+  );
+end;
+$$;
+
+create or replace function public.admin_remove_user_device(
+  p_entry_id uuid,
+  p_refund boolean default false
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin_id uuid := auth.uid();
+  v_entry public.portfolio_entries;
+  v_target public.profiles;
+  v_refund_amount numeric(18,2) := 0;
+begin
+  if v_admin_id is null or not public.is_admin(v_admin_id) then
+    return json_build_object('success', false, 'message', 'Non autorizzato');
+  end if;
+  if p_entry_id is null then
+    return json_build_object('success', false, 'message', 'Dispositivo utente non valido');
+  end if;
+
+  select * into v_entry
+  from public.portfolio_entries
+  where id = p_entry_id
+  for update;
+
+  if v_entry is null then
+    return json_build_object('success', false, 'message', 'Dispositivo non trovato');
+  end if;
+
+  select * into v_target
+  from public.profiles
+  where id = v_entry.owner_id
+  for update;
+
+  if v_target is null then
+    return json_build_object('success', false, 'message', 'Utente collegato non trovato');
+  end if;
+
+  if p_refund then
+    v_refund_amount := greatest(coalesce(v_entry.value, 0), 0);
+    update public.profiles
+    set balance = coalesce(balance, 0) + v_refund_amount,
+        updated_at = now()
+    where id = v_target.id;
+  end if;
+
+  delete from public.portfolio_entries
+  where id = v_entry.id;
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_target.id,
+    'admin_device_remove',
+    format('Admin %s ha rimosso dispositivo %s', v_admin_id::text, v_entry.name),
+    case when p_refund then v_refund_amount else 0 end
+  );
+
+  insert into public.activity_logs (owner_id, type, description, amount)
+  values (
+    v_admin_id,
+    'admin_device_remove',
+    format('Rimosso %s da %s', v_entry.name, v_target.email),
+    case when p_refund then v_refund_amount else 0 end
+  );
+
+  return json_build_object(
+    'success', true,
+    'message', case when p_refund then 'Dispositivo rimosso e rimborso applicato' else 'Dispositivo rimosso' end
+  );
+end;
+$$;
+
 grant execute on function public.request_deposit(numeric, text) to authenticated;
 grant execute on function public.request_withdrawal(numeric, text) to authenticated;
 grant execute on function public.validate_referral_code(text) to anon, authenticated;
 grant execute on function public.apply_referral_link(text, uuid) to authenticated;
 grant execute on function public.admin_manage_deposit(uuid, text, text) to authenticated;
 grant execute on function public.admin_manage_withdrawal(uuid, text, text) to authenticated;
+grant execute on function public.admin_assign_device_to_user(uuid, text, boolean) to authenticated;
+grant execute on function public.admin_remove_user_device(uuid, boolean) to authenticated;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (

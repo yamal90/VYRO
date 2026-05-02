@@ -135,6 +135,18 @@ create unique index if not exists idx_withdrawals_tx_hash_unique
   on public.withdrawals (lower(tx_hash))
   where tx_hash is not null and length(trim(tx_hash)) > 0;
 
+alter table public.deposits
+  drop constraint if exists deposits_status_check;
+alter table public.deposits
+  add constraint deposits_status_check
+  check (status = any (array['pending'::text, 'approved'::text, 'completed'::text, 'rejected'::text]));
+
+alter table public.withdrawals
+  drop constraint if exists withdrawals_status_check;
+alter table public.withdrawals
+  add constraint withdrawals_status_check
+  check (status = any (array['pending'::text, 'approved'::text, 'completed'::text, 'rejected'::text]));
+
 create table if not exists public.activity_logs (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references public.profiles (id) on delete cascade,
