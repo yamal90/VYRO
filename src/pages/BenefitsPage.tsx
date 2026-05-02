@@ -63,9 +63,9 @@ const BenefitsPage: React.FC = () => {
     bronze: 'from-amber-700 to-amber-900',
     silver: 'from-slate-400 to-slate-600',
     gold: 'from-yellow-500 to-amber-600',
-    platinum: 'from-cyan-400 to-blue-600',
-    diamond: 'from-purple-500 to-pink-600',
-    ultimate: 'from-purple-600 via-pink-500 to-cyan-500',
+    platinum: 'from-emerald-400 to-blue-600',
+    diamond: 'from-amber-500 to-amber-600',
+    ultimate: 'from-amber-600 via-pink-500 to-emerald-500',
   };
 
   // Missions
@@ -77,18 +77,18 @@ const BenefitsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 right-1/4 w-80 h-80 bg-yellow-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-amber-500/12 rounded-full blur-3xl" />
         </div>
         
         <div className="gradient-dark px-4 pt-6 pb-8 relative z-10">
           <div className="absolute inset-0">
             <div className="absolute top-5 right-5 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-10 w-32 h-32 bg-purple-500/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
           </div>
           
           <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10">
@@ -164,10 +164,10 @@ const BenefitsPage: React.FC = () => {
       {/* Weekly Progress */}
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <Calendar size={16} className="text-purple-400" />
+          <Calendar size={16} className="text-amber-400" />
           Progresso settimanale
         </h3>
-        <div className="glass-dark rounded-xl p-4 border border-purple-500/20">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <div className="flex items-center justify-between mb-3">
             {weekDays.map((day, i) => {
               const completed = i < daysCompleted;
@@ -175,8 +175,8 @@ const BenefitsPage: React.FC = () => {
                 <div key={day} className="flex flex-col items-center gap-1.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     completed
-                      ? 'gradient-primary text-white shadow-md shadow-purple-500/30'
-                      : 'bg-slate-800 text-slate-500 border border-slate-700'
+                      ? 'bg-amber-500 text-[#06080f] shadow-md shadow-amber-500/20'
+                      : 'bg-slate-800 text-slate-500 border border-white/6'
                   }`}>
                     {completed ? <CheckCircle size={14} /> : i + 1}
                   </div>
@@ -194,7 +194,7 @@ const BenefitsPage: React.FC = () => {
             />
           </div>
           <p className="text-[10px] text-slate-400 mt-2 text-center">
-            {daysCompleted}/7 giorni completati — Bonus settimana: <span className="font-bold text-purple-400">10 $</span>
+            {daysCompleted}/7 giorni completati — Bonus settimana: <span className="font-bold text-amber-400">10 $</span>
           </p>
         </div>
       </div>
@@ -202,7 +202,7 @@ const BenefitsPage: React.FC = () => {
       {/* Daily Missions */}
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <Target size={16} className="text-purple-400" />
+          <Target size={16} className="text-amber-400" />
           Missioni giornaliere
         </h3>
         <div className="space-y-2">
@@ -214,10 +214,10 @@ const BenefitsPage: React.FC = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className="glass-dark rounded-xl p-3.5 flex items-center gap-3 border border-purple-500/20"
+                className="glass-dark rounded-xl p-3.5 flex items-center gap-3 border border-amber-500/20"
               >
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                  mission.completed ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                  mission.completed ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/12 text-amber-400 border border-amber-500/25'
                 }`}>
                   {mission.completed ? <CheckCircle size={18} /> : <MissionIcon size={18} />}
                 </div>
@@ -226,7 +226,7 @@ const BenefitsPage: React.FC = () => {
                     {mission.name}
                   </p>
                 </div>
-                <span className="px-2.5 py-1 bg-purple-500/20 text-purple-400 text-[10px] font-bold rounded-full border border-purple-500/30">
+                <span className="px-2.5 py-1 bg-amber-500/12 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/25">
                   +{mission.reward} $
                 </span>
               </motion.div>
@@ -238,7 +238,7 @@ const BenefitsPage: React.FC = () => {
       {/* Badges */}
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <Award size={16} className="text-purple-400" />
+          <Award size={16} className="text-amber-400" />
           Badge ottenuti
         </h3>
         <div className="grid grid-cols-4 gap-2">
@@ -251,7 +251,7 @@ const BenefitsPage: React.FC = () => {
               className={`rounded-xl p-3 text-center border transition-all ${
                 badge.earned
                   ? `bg-gradient-to-br ${tierColors[badge.tier]} border-white/20 shadow-lg`
-                  : 'glass-dark border-slate-700 opacity-50'
+                  : 'glass-dark border-white/6 opacity-50'
               }`}
             >
               <div className="text-xl mb-1">{badge.icon}</div>
@@ -265,16 +265,16 @@ const BenefitsPage: React.FC = () => {
       {/* Leaderboard */}
       <div className="px-4 mt-6 mb-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <Trophy size={16} className="text-purple-400" />
+          <Trophy size={16} className="text-amber-400" />
           Classifica utenti
         </h3>
-        <div className="glass-dark rounded-xl overflow-hidden border border-purple-500/20">
+        <div className="glass-dark rounded-xl overflow-hidden border border-amber-500/20">
           {leaderboard.map((entry, i) => (
             <div
               key={entry.pos}
               className={`flex items-center gap-3 px-4 py-3 ${
-                i > 0 ? 'border-t border-purple-500/10' : ''
-              } ${entry.name === currentUser.username ? 'bg-purple-500/10' : ''}`}
+                i > 0 ? 'border-t border-amber-500/10' : ''
+              } ${entry.name === currentUser.username ? 'bg-amber-500/8' : ''}`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                 entry.pos === 1 ? 'bg-gradient-to-br from-yellow-400 to-amber-600 text-white shadow-lg shadow-yellow-500/30' :
@@ -286,14 +286,14 @@ const BenefitsPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className={`text-sm font-medium ${
-                  entry.name === currentUser.username ? 'text-purple-400 font-bold' : 'text-white'
+                  entry.name === currentUser.username ? 'text-amber-400 font-bold' : 'text-white'
                 }`}>
                   {entry.name}
                   {entry.name === currentUser.username && ' (Tu)'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-purple-400 font-display">{entry.vx.toLocaleString()} $</p>
+                <p className="text-xs font-bold text-amber-400 font-display">{entry.vx.toLocaleString()} $</p>
                 <p className="text-[9px] text-slate-400">{entry.power} TFLOPS</p>
               </div>
             </div>
@@ -303,7 +303,7 @@ const BenefitsPage: React.FC = () => {
 
       {/* Disclaimer */}
       <div className="px-4 mb-6">
-        <div className="glass-dark rounded-xl p-4 border border-purple-500/20">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <p className="text-[10px] text-slate-400 leading-relaxed text-center">
             Missioni, streak e badge rendono l'esperienza VYRO GPU più coinvolgente,
             premiando la costanza e la crescita del tuo profilo giorno dopo giorno.

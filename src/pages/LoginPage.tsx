@@ -126,11 +126,11 @@ const LoginPage: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1597852074816-d933c7d2b988?auto=format&fit=crop&w=1200&q=80')" }}
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/55 to-slate-950/85" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-2xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#06080f]/80 via-[#06080f]/65 to-[#06080f]/90" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-500/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/6 rounded-full blur-3xl" />
       </div>
 
       <motion.div
@@ -144,12 +144,12 @@ const LoginPage: React.FC = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.12 }}
-            className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-slate-900/70 border border-white/15 shadow-[0_14px_34px_rgba(2,6,23,0.5)] mb-4 overflow-hidden"
+            className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-[#0c101c]/80 border border-white/15 shadow-[0_14px_34px_rgba(2,6,23,0.5)] mb-4 overflow-hidden"
           >
             <img src="/vyro-wow-logo.svg" alt="VYRO logo" className="w-full h-full object-cover" />
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-white tracking-wider">VYRO GPU</h1>
-          <p className="text-cyan-300/90 mt-1 text-[11px] uppercase tracking-[0.34em]">Experience</p>
+          <p className="text-amber-400/90 mt-1 text-[11px] uppercase tracking-[0.34em]">Experience</p>
           <p className="text-slate-400 mt-2 text-sm">
             {authStep === 'forgot'
               ? 'Recupera la password via email'
@@ -159,8 +159,8 @@ const LoginPage: React.FC = () => {
                   ? 'Crea un account con referral obbligatorio'
                   : 'Accedi al tuo account'}
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-200">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] text-amber-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(240,180,41,0.9)]" />
             Accesso sicuro con redirect su dominio configurato
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-[11px] text-slate-300/90">
@@ -169,16 +169,16 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative bg-slate-800/62 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/10 to-transparent" />
-          <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-violet-500/15 blur-2xl" />
+        <div className="relative bg-[#0c101c]/92 backdrop-blur-xl rounded-3xl p-8 border border-white/6 shadow-2xl overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-400/8 to-transparent" />
+          <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-amber-500/8 blur-2xl" />
           {authStep === 'auth' ? (
-            <div className="flex gap-2 bg-slate-900/50 p-1 rounded-2xl mb-6">
+            <div className="flex gap-2 bg-white/3 p-1 rounded-2xl mb-6">
               <button
                 type="button"
                 onClick={() => setAuthMode('login')}
                 className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                  !isRegister ? 'gradient-primary text-white' : 'text-slate-400 hover:text-white'
+                  !isRegister ? 'bg-amber-500 text-[#06080f]' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Accedi
@@ -187,7 +187,7 @@ const LoginPage: React.FC = () => {
                 type="button"
                 onClick={() => setAuthMode('register')}
                 className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                  isRegister ? 'gradient-primary text-white' : 'text-slate-400 hover:text-white'
+                  isRegister ? 'bg-amber-500 text-[#06080f]' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Registrati
@@ -216,7 +216,7 @@ const LoginPage: React.FC = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  className="w-full px-4 py-3 bg-white/3 border border-white/6 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-all"
                   placeholder="CyberNova"
                   required={isRegister}
                 />
@@ -229,7 +229,7 @@ const LoginPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                className="w-full px-4 py-3 bg-white/3 border border-white/6 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-all"
                 placeholder="email@esempio.com"
                 required
               />
@@ -245,7 +245,7 @@ const LoginPage: React.FC = () => {
                     type={showPass ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all pr-12"
+                    className="w-full px-4 py-3 bg-white/3 border border-white/6 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-all pr-12"
                     placeholder="••••••••"
                     required
                   />
@@ -270,7 +270,7 @@ const LoginPage: React.FC = () => {
                     type={showConfirmPass ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all pr-12"
+                    className="w-full px-4 py-3 bg-white/3 border border-white/6 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-all pr-12"
                     placeholder="••••••••"
                     required
                   />
@@ -293,11 +293,11 @@ const LoginPage: React.FC = () => {
                     type="text"
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all pl-11"
+                    className="w-full px-4 py-3 bg-white/3 border border-white/6 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-all pl-11"
                     placeholder="VYRO-XXXXXX"
                     required={isRegister}
                   />
-                  <Ticket size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-300" />
+                  <Ticket size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-400" />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Obbligatorio per creare il profilo.</p>
               </div>
@@ -312,7 +312,7 @@ const LoginPage: React.FC = () => {
                   setSuccess('');
                   setAuthMode('login');
                 }}
-                className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
+                className="text-xs text-amber-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1"
               >
                 <KeyRound size={12} />
                 Password dimenticata?
@@ -343,7 +343,7 @@ const LoginPage: React.FC = () => {
               type="submit"
               disabled={authLoading}
               whileTap={{ scale: 0.97 }}
-              className="w-full py-3.5 gradient-primary rounded-xl text-white font-semibold text-base glow-purple hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl text-[#06080f] font-semibold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {authLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -405,28 +405,28 @@ const LoginPage: React.FC = () => {
           </form>
 
           <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+            <div className="rounded-xl border border-white/6 bg-white/3 px-2 py-2">
               <p className="text-[10px] text-slate-400">Uptime</p>
-              <p className="text-sm font-semibold text-emerald-300">99.98%</p>
+              <p className="text-sm font-semibold text-emerald-400">99.98%</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+            <div className="rounded-xl border border-white/6 bg-white/3 px-2 py-2">
               <p className="text-[10px] text-slate-400">Shield</p>
-              <p className="text-sm font-semibold text-cyan-300">Attivo</p>
+              <p className="text-sm font-semibold text-emerald-400">Attivo</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-slate-900/45 px-2 py-2">
+            <div className="rounded-xl border border-white/6 bg-white/3 px-2 py-2">
               <p className="text-[10px] text-slate-400">Cloud</p>
-              <p className="text-sm font-semibold text-violet-300">Realtime</p>
+              <p className="text-sm font-semibold text-amber-400">Realtime</p>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-700/50 text-center">
+          <div className="mt-4 pt-4 border-t border-white/6 text-center">
             {authStep === 'auth' ? (
               <p className="text-slate-400 text-sm">
                 {isRegister ? 'Hai già un account?' : 'Non hai un account?'}{' '}
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-purple-400 font-semibold hover:text-purple-300 transition-colors"
+                  className="text-amber-400 font-semibold hover:text-amber-300 transition-colors"
                 >
                   {isRegister ? 'Vai al login' : 'Registrati'}
                 </button>

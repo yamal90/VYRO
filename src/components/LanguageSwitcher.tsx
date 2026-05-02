@@ -49,13 +49,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) 
                   key={lang.code}
                   onClick={() => changeLanguage(lang.code)}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-white/10 transition-colors ${
-                    i18n.language === lang.code ? 'bg-purple-500/20' : ''
+                    i18n.language === lang.code ? 'bg-amber-500/12' : ''
                   }`}
                 >
                   <span className="text-lg">{lang.flag}</span>
                   <span className="text-sm text-white flex-1 text-left">{lang.name}</span>
                   {i18n.language === lang.code && (
-                    <Check size={14} className="text-purple-400" />
+                    <Check size={14} className="text-amber-400" />
                   )}
                 </button>
               ))}
@@ -73,7 +73,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) 
         className="w-full p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <Languages size={18} className="text-purple-400" />
+          <Languages size={18} className="text-amber-400" />
           <div className="text-left">
             <p className="text-xs text-white/50">Lingua</p>
             <p className="text-sm text-white font-medium">{currentLang.flag} {currentLang.name}</p>
@@ -102,13 +102,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) 
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
                 className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-colors ${
-                  i18n.language === lang.code ? 'bg-purple-500/20' : ''
+                  i18n.language === lang.code ? 'bg-amber-500/12' : ''
                 }`}
               >
                 <span className="text-xl">{lang.flag}</span>
                 <span className="text-sm text-white flex-1 text-left">{lang.name}</span>
                 {i18n.language === lang.code && (
-                  <Check size={16} className="text-purple-400" />
+                  <Check size={16} className="text-amber-400" />
                 )}
               </button>
             ))}

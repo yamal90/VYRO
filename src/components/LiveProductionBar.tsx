@@ -18,7 +18,7 @@ const LiveProductionBar: React.FC = () => {
         <motion.div initial={{ y: -100 }} animate={{ y: 0 }} className="mx-3 mt-2">
           <motion.div
             onClick={() => setIsExpanded(!isExpanded)}
-            className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 rounded-xl overflow-hidden shadow-lg shadow-purple-500/20 cursor-pointer border border-purple-500/30"
+            className="bg-gradient-to-r from-slate-900 via-amber-900/30 to-slate-900 rounded-xl overflow-hidden shadow-lg shadow-amber-500/15 cursor-pointer border border-amber-500/25"
             role="button"
             tabIndex={0}
             aria-expanded={isExpanded}
@@ -44,20 +44,20 @@ const LiveProductionBar: React.FC = () => {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] text-purple-300 font-semibold uppercase tracking-wider">
+                  <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
                     Produzione Live
                   </span>
                   <ChevronUp
                     size={12}
-                    className={`text-purple-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`text-amber-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                   />
                 </div>
 
-                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     animate={{ width: `${productionPercent}%` }}
                     transition={{ duration: 0.5 }}
-                    className="h-full bg-gradient-to-r from-green-400 via-cyan-400 to-purple-500 rounded-full relative"
+                    className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-amber-500 rounded-full relative"
                   >
                     <motion.div
                       animate={{ opacity: [0.5, 1, 0.5] }}
@@ -86,12 +86,12 @@ const LiveProductionBar: React.FC = () => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="bg-slate-900/95 backdrop-blur-xl rounded-b-xl border border-t-0 border-purple-500/30 overflow-hidden"
+                className="bg-[#0c101c]/95 backdrop-blur-xl rounded-b-xl border border-t-0 border-amber-500/25 overflow-hidden"
               >
                 <div className="p-3 grid grid-cols-3 gap-2">
                   <div className="bg-white/5 rounded-lg p-2 text-center">
-                    <Cpu size={12} className="text-purple-400 mx-auto mb-1" />
-                    <p className="font-display text-purple-400 text-xs font-bold">{totalPower}</p>
+                    <Cpu size={12} className="text-amber-400 mx-auto mb-1" />
+                    <p className="font-display text-amber-400 text-xs font-bold">{totalPower}</p>
                     <p className="text-[8px] text-slate-500">TFLOPS</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2 text-center">
@@ -102,8 +102,8 @@ const LiveProductionBar: React.FC = () => {
                     <p className="text-[8px] text-slate-500">GPU attive</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2 text-center">
-                    <TrendingUp size={12} className="text-cyan-400 mx-auto mb-1" />
-                    <p className="font-display text-cyan-400 text-xs font-bold">
+                    <TrendingUp size={12} className="text-emerald-400 mx-auto mb-1" />
+                    <p className="font-display text-emerald-400 text-xs font-bold">
                       {(production * 60 * 24).toFixed(1)}
                     </p>
                     <p className="text-[8px] text-slate-500">$/giorno</p>

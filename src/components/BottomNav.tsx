@@ -20,7 +20,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50" aria-label="Navigazione principale">
       <div className="max-w-lg mx-auto px-2">
-        <div className="surface-card rounded-t-3xl px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 shadow-[0_-12px_35px_rgba(2,6,23,0.62)] border border-white/10">
+        <div className="bg-[#080c16]/95 backdrop-blur-xl rounded-t-3xl px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 shadow-[0_-12px_35px_rgba(0,0,0,0.5)] border border-white/6 border-b-0">
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 snap-x snap-mandatory">
             {navItems.map(item => {
               const isActive = location.pathname === item.path;
@@ -33,25 +33,25 @@ const BottomNav: React.FC = () => {
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all relative flex-shrink-0 snap-center min-w-[66px] ${
-                    isActive ? 'text-cyan-300 bg-white/5' : 'text-slate-500 hover:text-slate-300'
+                    isActive ? 'text-amber-400 bg-amber-500/8' : 'text-slate-500 hover:text-slate-300'
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="navIndicator"
-                      className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-9 h-1 rounded-full bg-gradient-to-r from-violet-400 via-cyan-300 to-violet-400"
+                      className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-9 h-1 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400"
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     />
                   )}
                   <div className={`p-2 rounded-xl transition-all ${
                     isActive
-                      ? 'bg-gradient-to-br from-violet-500/30 to-cyan-500/25 shadow-[0_0_0_1px_rgba(125,211,252,0.35)]'
+                      ? 'bg-amber-500/15 shadow-[0_0_0_1px_rgba(240,180,41,0.25)]'
                       : 'bg-transparent'
                   }`}>
                     <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
                   </div>
                   <span className={`text-[10px] font-semibold whitespace-nowrap tracking-wide ${
-                    isActive ? 'text-cyan-200' : 'text-slate-500'
+                    isActive ? 'text-amber-400' : 'text-slate-500'
                   }`}>
                     {item.label}
                   </span>

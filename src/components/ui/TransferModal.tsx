@@ -133,7 +133,7 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.92, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-        className="glass-dark rounded-2xl p-6 w-full max-w-md border border-purple-500/30"
+        className="glass-dark rounded-2xl p-6 w-full max-w-md border border-amber-500/25"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -205,7 +205,7 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
             step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-purple-500/30 text-white placeholder-white/30 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25 text-white placeholder-white/30 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
             placeholder="0.00"
             autoFocus
           />
@@ -217,15 +217,15 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
                 type="text"
                 value={txHash}
                 onChange={(e) => setTxHash(e.target.value)}
-                className="mt-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-purple-500/30 text-white placeholder-white/30 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                className="mt-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25 text-white placeholder-white/30 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
                 placeholder="TX hash / memo"
               />
             </label>
           ) : (
             <label className="block text-sm text-slate-400 mt-4">
               Il tuo wallet di prelievo
-              <div className="mt-2 flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 border border-purple-500/30">
-                <Wallet size={16} className="text-purple-300 shrink-0" />
+              <div className="mt-2 flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25">
+                <Wallet size={16} className="text-amber-300 shrink-0" />
                 <input
                   type="text"
                   value={walletAddress}

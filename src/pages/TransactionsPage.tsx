@@ -9,10 +9,10 @@ import { useApp } from '../store/AppContext';
 const typeConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
   deposit: { icon: ArrowDownCircle, label: 'Ricarica', color: 'bg-green-500/20 text-green-400 border border-green-500/30' },
   withdrawal: { icon: ArrowUpCircle, label: 'Prelievo', color: 'bg-red-500/20 text-red-400 border border-red-500/30' },
-  device_purchase: { icon: Cpu, label: 'Acquisto GPU', color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30' },
+  device_purchase: { icon: Cpu, label: 'Acquisto GPU', color: 'bg-amber-500/12 text-amber-400 border border-amber-500/25' },
   device_reward: { icon: Star, label: 'Produzione GPU', color: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
   team_bonus: { icon: Users, label: 'Bonus Team', color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
-  daily_claim: { icon: Gift, label: 'Claim Giornaliero', color: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' },
+  daily_claim: { icon: Gift, label: 'Claim Giornaliero', color: 'bg-emerald-500/12 text-emerald-400 border border-emerald-500/30' },
   login_bonus: { icon: Gift, label: 'Bonus Login', color: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
 };
 
@@ -47,11 +47,11 @@ const TransactionsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-amber-500/12 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
         </div>
         
@@ -76,8 +76,8 @@ const TransactionsPage: React.FC = () => {
               onClick={() => setFilter(f.key)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 filter === f.key
-                  ? 'gradient-primary text-white shadow-md shadow-purple-500/30'
-                  : 'glass-dark text-slate-400 border border-purple-500/20 hover:text-white'
+                  ? 'bg-amber-500 text-[#06080f] shadow-md shadow-amber-500/20'
+                  : 'glass-dark text-slate-400 border border-amber-500/20 hover:text-white'
               }`}
             >
               {f.label}
@@ -116,7 +116,7 @@ const TransactionsPage: React.FC = () => {
       <div className="px-4 space-y-2">
         {filtered.length === 0 ? (
           <div className="text-center py-16">
-            <Filter className="w-12 h-12 text-purple-500/50 mx-auto mb-3" />
+            <Filter className="w-12 h-12 text-amber-500/50 mx-auto mb-3" />
             <p className="text-slate-400 text-sm">Nessuna transazione trovata</p>
           </div>
         ) : (
@@ -133,7 +133,7 @@ const TransactionsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="glass-dark rounded-xl overflow-hidden border border-purple-500/20"
+                className="glass-dark rounded-xl overflow-hidden border border-amber-500/20"
               >
                 <button
                   onClick={() => setExpanded(isExpanded ? null : tx.id)}
@@ -162,7 +162,7 @@ const TransactionsPage: React.FC = () => {
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
-                    className="border-t border-purple-500/10 px-4 py-3 bg-slate-900/50"
+                    className="border-t border-amber-500/10 px-4 py-3 bg-white/3"
                   >
                     <div className="grid grid-cols-2 gap-2">
                       <div>
@@ -178,7 +178,7 @@ const TransactionsPage: React.FC = () => {
                       </div>
                       <div className="col-span-2">
                         <p className="text-[9px] text-slate-400 uppercase">ID Transazione</p>
-                        <p className="text-xs font-mono text-purple-400">{tx.id}</p>
+                        <p className="text-xs font-mono text-amber-400">{tx.id}</p>
                       </div>
                     </div>
                   </motion.div>

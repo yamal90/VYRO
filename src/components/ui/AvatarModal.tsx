@@ -61,13 +61,13 @@ const AvatarModalContent: React.FC<AvatarModalContentProps> = ({ currentAvatarUr
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.92, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-        className="glass-dark rounded-2xl p-6 w-full max-w-sm border border-purple-500/30"
+        className="glass-dark rounded-2xl p-6 w-full max-w-sm border border-amber-500/25"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-              <Camera size={18} className="text-cyan-300" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/12 flex items-center justify-center">
+              <Camera size={18} className="text-emerald-400" />
             </div>
             <div>
               <h3 className="text-white font-bold text-lg">Cambia avatar</h3>
@@ -83,8 +83,8 @@ const AvatarModalContent: React.FC<AvatarModalContentProps> = ({ currentAvatarUr
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 mb-4">
-            <div className="w-28 h-28 rounded-2xl overflow-hidden border border-cyan-400/40 mx-auto mb-3 bg-slate-900">
+          <div className="rounded-xl border border-white/10 bg-white/3 p-4 mb-4">
+            <div className="w-28 h-28 rounded-2xl overflow-hidden border border-emerald-400/30 mx-auto mb-3 bg-slate-900">
               {previewUrl ? (
                 <img src={previewUrl} alt="Anteprima avatar" className="w-full h-full object-cover" />
               ) : (

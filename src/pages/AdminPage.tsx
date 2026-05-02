@@ -166,7 +166,7 @@ const AdminPage: React.FC = () => {
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <p className="text-white text-lg font-bold">Accesso negato</p>
-          <button onClick={() => navigate('/')} className="mt-4 text-purple-400 text-sm">
+          <button onClick={() => navigate('/')} className="mt-4 text-amber-400 text-sm">
             Torna alla home
           </button>
         </div>
@@ -290,7 +290,7 @@ const AdminPage: React.FC = () => {
 
         <div className="grid grid-cols-4 gap-2 mb-4">
             {[
-              { label: 'Utenti', value: allUsers.length, color: 'from-purple-500 to-violet-600' },
+              { label: 'Utenti', value: allUsers.length, color: 'from-amber-500 to-amber-600' },
               { label: 'Bloccati', value: allUsers.filter((u) => u.status === 'blocked').length, color: 'from-red-500 to-rose-600' },
               { label: 'Dispositivi', value: adminUserDevices.length, color: 'from-blue-500 to-indigo-600' },
               { label: 'Richieste', value: pendingDeposits.length + pendingWithdrawals.length, color: 'from-amber-500 to-orange-600' },
@@ -310,7 +310,7 @@ const AdminPage: React.FC = () => {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 transition-all ${
-                  activeTab === tab.key ? 'bg-purple-600 text-white' : 'text-white/50 hover:text-white/70'
+                  activeTab === tab.key ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-white/70'
                 }`}
               >
                 <TabIcon size={12} />
@@ -333,7 +333,7 @@ const AdminPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/30 flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/15 flex items-center justify-center text-white text-xs font-bold">
                       {user.username[0]}
                     </div>
                     <div>
@@ -389,7 +389,7 @@ const AdminPage: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">Dollaro</p>
-                    <p className="text-xs font-bold text-purple-400">{user.vx_balance.toLocaleString()}</p>
+                    <p className="text-xs font-bold text-amber-400">{user.vx_balance.toLocaleString()}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">USDT</p>
@@ -448,7 +448,7 @@ const AdminPage: React.FC = () => {
                     className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                   >
                     {allUsers.map((user) => (
-                      <option key={user.id} value={user.id} className="bg-slate-900 text-white">
+                      <option key={user.id} value={user.id} className="bg-[#0c101c] text-white">
                         {user.username} ({user.email})
                       </option>
                     ))}
@@ -462,7 +462,7 @@ const AdminPage: React.FC = () => {
                     className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                   >
                     {gpuDevices.map((device) => (
-                      <option key={device.id} value={device.id} className="bg-slate-900 text-white">
+                      <option key={device.id} value={device.id} className="bg-[#0c101c] text-white">
                         {device.name} • {device.price.toLocaleString()} $
                       </option>
                     ))}
@@ -474,7 +474,7 @@ const AdminPage: React.FC = () => {
                   type="checkbox"
                   checked={assignChargeBalance}
                   onChange={(e) => setAssignChargeBalance(e.target.checked)}
-                  className="w-4 h-4 accent-purple-500"
+                  className="w-4 h-4 accent-amber-500"
                 />
                 Scala il costo dal saldo utente durante l’assegnazione
               </label>
@@ -500,7 +500,7 @@ const AdminPage: React.FC = () => {
                   type="checkbox"
                   checked={removeWithRefund}
                   onChange={(e) => setRemoveWithRefund(e.target.checked)}
-                  className="w-4 h-4 accent-purple-500"
+                  className="w-4 h-4 accent-amber-500"
                 />
                 Rimborso automatico al saldo utente quando rimuovo dispositivo
               </label>
@@ -562,7 +562,7 @@ const AdminPage: React.FC = () => {
                     key={status}
                     onClick={() => setTxFilter(status)}
                     className={`px-3 py-1 rounded-lg text-xs ${
-                      txFilter === status ? 'bg-purple-600 text-white' : 'bg-white/10 text-white/70'
+                      txFilter === status ? 'bg-amber-600 text-white' : 'bg-white/10 text-white/70'
                     }`}
                   >
                     {status === 'all' ? 'Tutti' : status}
@@ -583,7 +583,7 @@ const AdminPage: React.FC = () => {
                 Depositi ({filteredDepositRequests.length})
               </p>
               {filteredDepositRequests.slice(0, 60).map((item) => (
-                <div key={`dep-manage-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-3 space-y-2">
+                <div key={`dep-manage-${item.id}`} className="bg-[#0c101c]/45 border border-white/10 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-white text-xs font-semibold truncate">
@@ -607,10 +607,10 @@ const AdminPage: React.FC = () => {
                       }
                       className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                     >
-                      <option value="pending" className="bg-slate-900 text-white">pending</option>
-                      <option value="approved" className="bg-slate-900 text-white">approved</option>
-                      <option value="completed" className="bg-slate-900 text-white">completed</option>
-                      <option value="rejected" className="bg-slate-900 text-white">rejected</option>
+                      <option value="pending" className="bg-[#0c101c] text-white">pending</option>
+                      <option value="approved" className="bg-[#0c101c] text-white">approved</option>
+                      <option value="completed" className="bg-[#0c101c] text-white">completed</option>
+                      <option value="rejected" className="bg-[#0c101c] text-white">rejected</option>
                     </select>
                     <input
                       type="text"
@@ -631,7 +631,7 @@ const AdminPage: React.FC = () => {
                           href={`https://bscscan.com/tx/${depositTxDraft[item.id] ?? item.tx_hash}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                          className="px-3 py-2 rounded-lg bg-emerald-500/12 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 inline-flex items-center gap-1"
                         >
                           BscScan <ExternalLink size={12} />
                         </a>
@@ -650,7 +650,7 @@ const AdminPage: React.FC = () => {
                 Prelievi ({filteredWithdrawalRequests.length})
               </p>
               {filteredWithdrawalRequests.slice(0, 60).map((item) => (
-                <div key={`wd-manage-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-3 space-y-2">
+                <div key={`wd-manage-${item.id}`} className="bg-[#0c101c]/45 border border-white/10 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-white text-xs font-semibold truncate">
@@ -678,10 +678,10 @@ const AdminPage: React.FC = () => {
                       }
                       className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                     >
-                      <option value="pending" className="bg-slate-900 text-white">pending</option>
-                      <option value="approved" className="bg-slate-900 text-white">approved</option>
-                      <option value="completed" className="bg-slate-900 text-white">completed</option>
-                      <option value="rejected" className="bg-slate-900 text-white">rejected</option>
+                      <option value="pending" className="bg-[#0c101c] text-white">pending</option>
+                      <option value="approved" className="bg-[#0c101c] text-white">approved</option>
+                      <option value="completed" className="bg-[#0c101c] text-white">completed</option>
+                      <option value="rejected" className="bg-[#0c101c] text-white">rejected</option>
                     </select>
                     <input
                       type="text"
@@ -702,7 +702,7 @@ const AdminPage: React.FC = () => {
                           href={`https://bscscan.com/tx/${withdrawTxDraft[item.id] ?? item.tx_hash}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                          className="px-3 py-2 rounded-lg bg-emerald-500/12 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 inline-flex items-center gap-1"
                         >
                           BscScan <ExternalLink size={12} />
                         </a>
@@ -755,7 +755,7 @@ const AdminPage: React.FC = () => {
                   key={item.key}
                   onClick={() => setLogFilter(item.key)}
                   className={`px-3 py-1 rounded-lg text-xs ${
-                    logFilter === item.key ? 'bg-purple-600 text-white' : 'bg-white/10 text-white/70'
+                    logFilter === item.key ? 'bg-amber-600 text-white' : 'bg-white/10 text-white/70'
                   }`}
                 >
                   {item.label}
@@ -769,7 +769,7 @@ const AdminPage: React.FC = () => {
                   <div className="flex items-center gap-2 mb-1">
                     {isError ? <CircleAlert size={12} className="text-red-400" /> : <Shield size={12} className="text-yellow-400" />}
                     <p className="text-white/60 text-[10px]">{new Date(log.created_at).toLocaleString('it-IT')}</p>
-                    <span className={`text-[10px] font-bold ml-auto ${isError ? 'text-red-300' : 'text-purple-400'}`}>
+                    <span className={`text-[10px] font-bold ml-auto ${isError ? 'text-red-300' : 'text-amber-400'}`}>
                       {log.action}
                     </span>
                   </div>
@@ -806,7 +806,7 @@ const AdminPage: React.FC = () => {
                     onChange={(e) =>
                       setSettingsDraft((prev) => ({ ...prev, [toggle.key]: e.target.checked }))
                     }
-                    className="w-4 h-4 accent-purple-500"
+                    className="w-4 h-4 accent-amber-500"
                   />
                 </label>
               ))}
@@ -864,7 +864,7 @@ const AdminPage: React.FC = () => {
 
               <button
                 onClick={() => void handleSaveSettings()}
-                className="w-full py-2.5 rounded-lg gradient-primary text-white font-semibold text-sm"
+                className="w-full py-2.5 rounded-lg bg-amber-500 text-[#06080f] font-semibold text-sm"
               >
                 Salva impostazioni piattaforma
               </button>

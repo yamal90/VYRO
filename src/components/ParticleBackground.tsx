@@ -14,9 +14,9 @@ const ParticleBackground: React.FC<{ intensity?: 'low' | 'medium' | 'high' }> = 
       style={{ opacity }}
       aria-hidden="true"
     >
-      <div className="absolute top-0 left-1/4 w-72 h-72 bg-purple-600/14 rounded-full blur-2xl animate-float-gentle" />
+      <div className="absolute top-0 left-1/4 w-72 h-72 bg-amber-600/14 rounded-full blur-2xl animate-float-gentle" />
       <div
-        className="absolute top-1/3 right-1/4 w-60 h-60 bg-cyan-500/10 rounded-full blur-2xl animate-float-gentle"
+        className="absolute top-1/3 right-1/4 w-60 h-60 bg-emerald-500/8 rounded-full blur-2xl animate-float-gentle"
         style={{ animationDelay: '-2s' }}
       />
       {showThirdOrb && (
