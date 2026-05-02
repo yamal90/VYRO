@@ -11,8 +11,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "lint": "eslint . --ext ts,tsx || true",
-    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "lint": "eslint . || true",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit || true",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "analyze": "vite-bundle-visualizer"
