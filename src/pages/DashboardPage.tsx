@@ -79,19 +79,19 @@ const DashboardPage: React.FC = () => {
     {
       icon: ArrowDownCircle,
       label: 'Ricarica',
-      color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+      color: 'bg-amber-500/12 text-amber-400 border border-amber-500/25',
       onClick: () => setTransferModal('deposit'),
     },
     {
       icon: ArrowUpCircle,
       label: 'Prelievo',
-      color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+      color: 'bg-blue-500/12 text-blue-400 border border-blue-500/25',
       onClick: () => setTransferModal('withdrawal'),
     },
     {
       icon: Repeat,
       label: 'Scambio',
-      color: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
+      color: 'bg-emerald-500/12 text-emerald-400 border border-emerald-500/25',
       onClick: () => {
         navigate('/devices');
         pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo Dollaro.');
@@ -100,7 +100,7 @@ const DashboardPage: React.FC = () => {
     {
       icon: FileText,
       label: 'Fattura',
-      color: 'bg-green-500/20 text-green-400 border border-green-500/30',
+      color: 'bg-green-500/12 text-green-400 border border-green-500/25',
       onClick: () => {
         navigate('/transactions');
         pushNotice('info', 'Apri una transazione per vedere il relativo dettaglio contabile.');
@@ -145,7 +145,7 @@ const DashboardPage: React.FC = () => {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 pb-32 pt-16">
+    <div className="min-h-screen bg-[#06080f] pb-32 pt-16">
       {/* Header with background */}
       <div className="relative overflow-hidden">
         <div
@@ -157,32 +157,32 @@ const DashboardPage: React.FC = () => {
             backgroundPosition: 'center',
           }}
         />
-        <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="absolute inset-0 bg-[#06080f]/60" />
         {/* Animated gradient orbs */}
         <div className="absolute inset-0 hidden md:block">
           <motion.div
-            animate={{ scale: [1, 1.1, 1], opacity: [0.24, 0.36, 0.24] }}
+            animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.2, 0.12] }}
             transition={{ duration: 12, repeat: Infinity }}
-            className="absolute top-0 right-0 w-56 h-56 bg-purple-600/24 rounded-full blur-2xl"
+            className="absolute top-0 right-0 w-56 h-56 bg-amber-500/12 rounded-full blur-3xl"
           />
           <motion.div
-            animate={{ scale: [1, 1.12, 1], opacity: [0.16, 0.3, 0.16] }}
+            animate={{ scale: [1, 1.12, 1], opacity: [0.08, 0.16, 0.08] }}
             transition={{ duration: 14, repeat: Infinity, delay: 1 }}
-            className="absolute top-20 left-0 w-40 h-40 bg-cyan-600/16 rounded-full blur-2xl"
+            className="absolute top-20 left-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl"
           />
         </div>
         
         <div className="px-4 pt-6 pb-24 relative z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700/72 via-indigo-700/66 to-cyan-700/58" />
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 w-40 h-40 border border-white/20 rounded-full" />
-            <div className="absolute top-20 right-20 w-20 h-20 border border-white/10 rounded-full" />
-            <div className="absolute -bottom-10 -left-10 w-60 h-60 border border-white/10 rounded-full" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0c101c]/85 via-[#0a0e1a]/80 to-[#06080f]/90" />
+          <div className="absolute inset-0 opacity-6">
+            <div className="absolute top-4 right-4 w-40 h-40 border border-amber-400/20 rounded-full" />
+            <div className="absolute top-20 right-20 w-20 h-20 border border-amber-400/10 rounded-full" />
+            <div className="absolute -bottom-10 -left-10 w-60 h-60 border border-amber-400/10 rounded-full" />
           </div>
 
           <div className="relative z-10 mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/30 relative shrink-0">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-lg shadow-amber-500/15 relative shrink-0">
                 <img
                   src={profileAvatar}
                   alt={currentUser.username}
@@ -192,7 +192,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setAvatarModalOpen(true)}
-                className="shrink-0 px-3 py-1.5 rounded-xl bg-white/10 text-xs font-semibold text-cyan-100 border border-cyan-300/30 hover:bg-white/20 transition-colors"
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-white/6 text-xs font-semibold text-amber-200 border border-amber-400/25 hover:bg-white/10 transition-colors"
               >
                 Foto
               </button>
@@ -210,24 +210,24 @@ const DashboardPage: React.FC = () => {
             <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:justify-end">
               <button
                 onClick={() => void refreshAppData()}
-                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/10 transition-colors"
               >
-                <RefreshCw size={16} className="text-purple-300" />
+                <RefreshCw size={16} className="text-slate-300" />
               </button>
               <button
                 onClick={() => {
                   window.location.href = 'mailto:support@vyrogpu.com';
                 }}
-                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/10 transition-colors"
               >
-                <Headphones size={16} className="text-purple-300" />
+                <Headphones size={16} className="text-slate-300" />
               </button>
               <button
                 onClick={() => setNicknameModalOpen(true)}
-                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/20 transition-colors border border-purple-500/30"
+                className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/10 transition-colors"
                 aria-label="Modifica nickname"
               >
-                <Settings size={16} className="text-purple-300" />
+                <Settings size={16} className="text-slate-300" />
               </button>
               {currentUser.role === 'admin' && (
                 <button
@@ -246,11 +246,11 @@ const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative z-10 mb-5 rounded-2xl border border-white/15 bg-slate-900/45 px-4 py-3 backdrop-blur-sm">
+          <div className="relative z-10 mb-5 rounded-2xl border border-white/6 bg-[#0c101c]/80 px-4 py-3 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-10 w-10 rounded-xl border border-white/15" />
+              <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-10 w-10 rounded-xl border border-amber-400/20" />
               <div>
-                <p className="text-xs text-cyan-200/90 uppercase tracking-[0.22em]">Realtime Control Center</p>
+                <p className="text-xs text-amber-400/90 uppercase tracking-[0.22em]">Realtime Control Center</p>
                 <p className="text-sm text-white/90">Monitoraggio continuo, sicurezza attiva, produzione cloud live.</p>
               </div>
             </div>
@@ -318,14 +318,14 @@ const DashboardPage: React.FC = () => {
       {/* My Earnings */}
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <TrendingUp size={16} className="text-purple-400" />
+          <TrendingUp size={16} className="text-amber-400" />
           I miei guadagni
         </h3>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Entrate oggi', value: todayIncome, icon: Zap, gradient: 'from-purple-600 to-violet-700' },
-            { label: 'Produzione', value: personalProd, icon: Activity, gradient: 'from-blue-600 to-indigo-700' },
-            { label: 'Team oggi', value: teamProd, icon: Users, gradient: 'from-cyan-600 to-teal-700' },
+            { label: 'Entrate oggi', value: todayIncome, icon: Zap, gradient: 'from-amber-600/80 to-amber-700/80' },
+            { label: 'Produzione', value: personalProd, icon: Activity, gradient: 'from-emerald-600/80 to-emerald-700/80' },
+            { label: 'Team oggi', value: teamProd, icon: Users, gradient: 'from-blue-600/80 to-blue-700/80' },
           ].map((item, i) => (
             <motion.div
               key={item.label}
@@ -352,13 +352,13 @@ const DashboardPage: React.FC = () => {
               <p className="text-[10px] text-emerald-200/80">Nodo</p>
               <p className="text-sm font-bold text-emerald-300">Online</p>
             </div>
-            <div className="rounded-xl border border-cyan-400/25 bg-cyan-500/10 p-3 text-center">
-              <p className="text-[10px] text-cyan-200/80">Latenza</p>
-              <p className="text-sm font-bold text-cyan-300">9 ms</p>
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/8 p-3 text-center">
+              <p className="text-[10px] text-emerald-200/80">Latenza</p>
+              <p className="text-sm font-bold text-emerald-400">9 ms</p>
             </div>
-            <div className="rounded-xl border border-violet-400/25 bg-violet-500/10 p-3 text-center">
-              <p className="text-[10px] text-violet-200/80">Qualità</p>
-              <p className="text-sm font-bold text-violet-300">Ultra</p>
+            <div className="rounded-xl border border-amber-400/20 bg-amber-500/8 p-3 text-center">
+              <p className="text-[10px] text-amber-200/80">Qualità</p>
+              <p className="text-sm font-bold text-amber-400">Ultra</p>
             </div>
           </div>
         </div>
@@ -383,7 +383,7 @@ const DashboardPage: React.FC = () => {
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
                 transition={{ delay: 0.3 + i * 0.03, duration: 0.3 }}
-                className={`flex-1 rounded-sm ${i >= productionBars.length - 2 ? 'bg-gradient-to-t from-purple-600 to-cyan-500' : 'bg-purple-800/50'}`}
+                className={`flex-1 rounded-sm ${i >= productionBars.length - 2 ? 'bg-gradient-to-t from-amber-500 to-emerald-500' : 'bg-amber-900/30'}`}
               />
             ))}
           </div>
@@ -392,7 +392,7 @@ const DashboardPage: React.FC = () => {
           <div className="soft-divider mb-3" />
           <div className="flex items-center justify-between py-1">
             <span className="text-xs text-slate-400">Potenza di calcolo</span>
-            <span className="text-sm font-bold text-purple-400 font-display">{currentUser.compute_power} TFLOPS</span>
+            <span className="text-sm font-bold text-amber-400 font-display">{currentUser.compute_power} TFLOPS</span>
           </div>
         </div>
       </div>
@@ -403,7 +403,7 @@ const DashboardPage: React.FC = () => {
           <h3 className="text-sm font-bold text-white">Ultime attività</h3>
           <button
             onClick={() => navigate('/transactions')}
-            className="text-purple-400 text-xs font-semibold flex items-center gap-0.5 hover:text-purple-300 transition-colors"
+            className="text-amber-400 text-xs font-semibold flex items-center gap-0.5 hover:text-amber-300 transition-colors"
           >
             Vedi tutto <ChevronRight size={14} />
           </button>

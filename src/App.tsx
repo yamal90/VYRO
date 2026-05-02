@@ -42,9 +42,9 @@ const pageVariants = {
 };
 
 const PageLoader: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-950">
+  <div className="min-h-screen flex items-center justify-center bg-[#06080f]">
     <div className="text-center">
-      <div className="w-10 h-10 border-4 border-purple-200/20 border-t-purple-500 rounded-full animate-spin mx-auto mb-3" />
+      <div className="w-10 h-10 border-4 border-amber-200/20 border-t-amber-500 rounded-full animate-spin mx-auto mb-3" />
       <p className="text-sm text-white/50">Caricamento...</p>
     </div>
   </div>
@@ -84,9 +84,9 @@ const AppContent: React.FC = () => {
 
   if (!bootstrapped) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#06080f] flex items-center justify-center">
         <div className="text-center text-white">
-          <div className="w-12 h-12 border-4 border-white/15 border-t-cyan-300 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-12 h-12 border-4 border-white/10 border-t-amber-400 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-sm text-white/75">Riconnessione account...</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-slate-950/90 shadow-[0_20px_60px_rgba(2,6,23,0.55)] overflow-hidden border border-white/10">
+      <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-[#06080f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden border border-white/6">
         <ParticleBackground intensity="low" />
 
         <AnimatePresence>
@@ -118,7 +118,7 @@ const AppContent: React.FC = () => {
                   ? 'bg-red-600 text-white'
                   : notice.kind === 'success'
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-900 text-white'
+                    : 'bg-[#0c101c] text-white'
               }`}
               aria-live="polite"
             >
@@ -154,7 +154,7 @@ const AppContent: React.FC = () => {
             role="status"
             aria-label="Caricamento in corso"
           >
-            <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-amber-200/20 border-t-amber-500 rounded-full animate-spin" />
           </div>
         )}
         {showNav && <BottomNav />}

@@ -61,13 +61,13 @@ const NicknameModalContent: React.FC<NicknameModalContentProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="glass-dark rounded-2xl p-6 w-full max-w-sm border border-purple-500/30"
+        className="glass-dark rounded-2xl p-6 w-full max-w-sm border border-amber-500/25"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <User size={20} className="text-purple-400" />
+            <div className="w-10 h-10 rounded-xl bg-amber-500/12 flex items-center justify-center">
+              <User size={20} className="text-amber-400" />
             </div>
             <h3 className="text-white font-bold text-lg">Modifica nickname</h3>
           </div>
@@ -94,7 +94,7 @@ const NicknameModalContent: React.FC<NicknameModalContentProps> = ({
             }}
             maxLength={24}
             autoFocus
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-purple-500/30 text-white placeholder-white/30 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25 text-white placeholder-white/30 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
             placeholder="Inserisci nickname..."
           />
           {error && (

@@ -55,7 +55,7 @@ export const TIERS: Tier[] = [
       'Commissioni ridotte',
       'Badge esclusivo',
     ],
-    color: 'from-purple-600 to-purple-800',
+    color: 'from-amber-600 to-amber-800',
     icon: Shield,
   },
   {
@@ -71,7 +71,7 @@ export const TIERS: Tier[] = [
       'Accesso Beta features',
       'Account manager dedicato',
     ],
-    color: 'from-cyan-500 to-cyan-700',
+    color: 'from-emerald-500 to-emerald-700',
     icon: Crown,
   },
   {
@@ -109,8 +109,8 @@ const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
       animate={{ opacity: 1, y: 0 }}
       className={`relative overflow-hidden rounded-2xl border ${
         isCurrent 
-          ? 'border-purple-500/50 shadow-lg shadow-purple-500/20' 
-          : 'border-slate-700/50'
+          ? 'border-amber-500/40 shadow-lg shadow-amber-500/15' 
+          : 'border-white/6'
       }`}
     >
       {/* Background gradient */}
@@ -132,7 +132,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
           </div>
           
           {isCurrent && (
-            <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+            <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/12 text-amber-400 border border-amber-500/25">
               Attuale
             </span>
           )}
@@ -140,15 +140,15 @@ const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
 
         {/* Requirements */}
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+          <div className="bg-white/3 rounded-lg p-2 text-center">
             <p className="text-[9px] text-slate-400">Saldo</p>
             <p className="text-xs font-bold text-white">${tier.minBalance.toLocaleString()}</p>
           </div>
-          <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+          <div className="bg-white/3 rounded-lg p-2 text-center">
             <p className="text-[9px] text-slate-400">GPU</p>
             <p className="text-xs font-bold text-white">{tier.minDevices}+</p>
           </div>
-          <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+          <div className="bg-white/3 rounded-lg p-2 text-center">
             <p className="text-[9px] text-slate-400">Team</p>
             <p className="text-xs font-bold text-white">{tier.minTeamSize}+</p>
           </div>
@@ -158,7 +158,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
         <div className="space-y-1">
           {tier.benefits.map((benefit, i) => (
             <div key={i} className="flex items-center gap-2 text-xs">
-              <ChevronRight className="w-3 h-3 text-purple-400" />
+              <ChevronRight className="w-3 h-3 text-amber-400" />
               <span className="text-slate-300">{benefit}</span>
             </div>
           ))}
@@ -171,7 +171,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
               <span>Progresso</span>
               <span>{progress}%</span>
             </div>
-            <div className="w-full h-2 bg-slate-900/50 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-white/3 rounded-full overflow-hidden">
               <div 
                 className={`h-full bg-gradient-to-r ${tier.color}`}
                 style={{ width: `${progress}%` }}
@@ -205,16 +205,16 @@ export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'zyra', us
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/12 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl" />
         </div>
         
         <div className="px-4 pt-6 pb-8 relative z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700/72 via-indigo-700/64 to-cyan-700/58" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-700/72 via-[#0a0e1a]/80 to-[#06080f]/90" />
           
           <div className="relative z-10">
             <h1 className="font-display text-2xl font-bold text-white tracking-wider">
@@ -225,7 +225,7 @@ export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'zyra', us
 
           {/* Current tier highlight */}
           <div className="mt-6 relative z-10">
-            <div className="glass-dark rounded-xl p-4 border border-purple-500/30">
+            <div className="glass-dark rounded-xl p-4 border border-amber-500/25">
               <p className="text-xs text-slate-400 mb-2">Il tuo tier attuale</p>
               <div className="flex items-center gap-3">
                 {(() => {

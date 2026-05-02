@@ -24,7 +24,7 @@ const faqCategories: FAQCategory[] = [
     id: 'platform',
     title: 'Cos\'è VYRO GPU',
     icon: Cpu,
-    color: 'from-purple-500 to-violet-600',
+    color: 'from-amber-500 to-amber-600',
     items: [
       {
         question: 'Cos\'è VYRO GPU?',
@@ -152,7 +152,7 @@ const faqCategories: FAQCategory[] = [
     id: 'certifications',
     title: 'Certificazioni',
     icon: Award,
-    color: 'from-cyan-500 to-teal-600',
+    color: 'from-emerald-500 to-teal-600',
     items: [
       {
         question: 'Quali certificazioni possiede VYRO?',
@@ -228,9 +228,9 @@ const teamMembers = [
 const securityBadges = [
   { icon: Shield, label: 'SOC 2 Type II', color: 'text-green-400' },
   { icon: Lock, label: 'ISO 27001', color: 'text-blue-400' },
-  { icon: Globe, label: 'GDPR', color: 'text-purple-400' },
+  { icon: Globe, label: 'GDPR', color: 'text-amber-400' },
   { icon: Key, label: 'PCI DSS L1', color: 'text-amber-400' },
-  { icon: Fingerprint, label: '2FA Ready', color: 'text-cyan-400' },
+  { icon: Fingerprint, label: '2FA Ready', color: 'text-emerald-400' },
   { icon: Server, label: '99.97% Uptime', color: 'text-emerald-400' }
 ];
 
@@ -252,12 +252,12 @@ const FAQPage: React.FC = () => {
   const currentCategory = faqCategories.find(c => c.id === activeCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/12 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-1/4 w-64 h-64 bg-emerald-500/12 rounded-full blur-3xl" />
         </div>
 
         <div className="gradient-primary px-4 pt-6 pb-8 relative z-10">
@@ -322,7 +322,7 @@ const FAQPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-slate-800/50 border border-purple-500/20 rounded-xl overflow-hidden"
+              className="bg-slate-800/50 border border-amber-500/20 rounded-xl overflow-hidden"
             >
               <button
                 onClick={() => toggleItem(itemId)}
@@ -338,7 +338,7 @@ const FAQPage: React.FC = () => {
                   animate={{ rotate: isExpanded ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown size={18} className="text-purple-400" />
+                  <ChevronDown size={18} className="text-amber-400" />
                 </motion.div>
               </button>
 
@@ -352,7 +352,7 @@ const FAQPage: React.FC = () => {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 pt-1">
-                      <div className="bg-slate-900/50 rounded-lg p-3.5 border-l-2 border-purple-500">
+                      <div className="bg-white/3 rounded-lg p-3.5 border-l-2 border-amber-500">
                         <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                           {item.answer}
                         </p>
@@ -368,14 +368,14 @@ const FAQPage: React.FC = () => {
 
       {/* Stats Section */}
       <div className="px-4 mt-6">
-        <div className="glass-dark rounded-xl p-4 border border-purple-500/20">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
             <TrendingUp size={16} className="text-green-400" />
             Statistiche Piattaforma
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-              <p className="font-display text-xl font-bold text-purple-400">99.97%</p>
+              <p className="font-display text-xl font-bold text-amber-400">99.97%</p>
               <p className="text-[10px] text-slate-400 mt-1">Uptime garantito</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
@@ -383,7 +383,7 @@ const FAQPage: React.FC = () => {
               <p className="text-[10px] text-slate-400 mt-1">Asset protetti</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-              <p className="font-display text-xl font-bold text-cyan-400">24/7</p>
+              <p className="font-display text-xl font-bold text-emerald-400">24/7</p>
               <p className="text-[10px] text-slate-400 mt-1">Supporto attivo</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
@@ -398,10 +398,10 @@ const FAQPage: React.FC = () => {
       <div className="px-4 mt-6">
         <motion.button
           onClick={() => setShowTeam(!showTeam)}
-          className="w-full glass-dark rounded-xl p-4 border border-purple-500/20 flex items-center justify-between"
+          className="w-full glass-dark rounded-xl p-4 border border-amber-500/20 flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-emerald-500 flex items-center justify-center">
               <Users size={20} className="text-white" />
             </div>
             <div className="text-left">
@@ -413,7 +413,7 @@ const FAQPage: React.FC = () => {
             animate={{ rotate: showTeam ? 180 : 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ChevronDown size={20} className="text-purple-400" />
+            <ChevronDown size={20} className="text-amber-400" />
           </motion.div>
         </motion.button>
       </div>
@@ -435,10 +435,10 @@ const FAQPage: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-800/50 border border-purple-500/20 rounded-xl overflow-hidden"
+                  className="bg-slate-800/50 border border-amber-500/20 rounded-xl overflow-hidden"
                 >
                   <div className="flex gap-4 p-4">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-700 flex-shrink-0 border border-purple-500/30">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/10 flex-shrink-0 border border-amber-500/25">
                       <img
                         src={member.image}
                         alt={member.name}
@@ -450,7 +450,7 @@ const FAQPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-display font-bold text-white">{member.name}</p>
-                      <p className="text-xs text-purple-400 font-medium">{member.role}</p>
+                      <p className="text-xs text-amber-400 font-medium">{member.role}</p>
                       <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
                         {member.bio}
                       </p>
@@ -458,7 +458,7 @@ const FAQPage: React.FC = () => {
                         {member.expertise.map((skill) => (
                           <span
                             key={skill}
-                            className="px-2 py-0.5 bg-purple-500/20 text-purple-300 text-[9px] rounded-full"
+                            className="px-2 py-0.5 bg-amber-500/12 text-amber-300 text-[9px] rounded-full"
                           >
                             {skill}
                           </span>
@@ -472,8 +472,8 @@ const FAQPage: React.FC = () => {
 
             {/* Team Motto */}
             <div className="px-4 mt-4">
-              <div className="bg-gradient-to-r from-purple-900/50 via-slate-800/50 to-cyan-900/50 rounded-xl p-4 text-center border border-purple-500/20">
-                <p className="font-display text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+              <div className="bg-gradient-to-r from-[#0c101c]/60 via-[#0a0e1a]/50 to-[#0c101c]/60 rounded-xl p-4 text-center border border-amber-500/20">
+                <p className="font-display text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">
                   Innovazione. Sicurezza. Potenza.
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
@@ -487,7 +487,7 @@ const FAQPage: React.FC = () => {
 
       {/* Contact Support */}
       <div className="px-4 mt-6">
-        <div className="glass-dark rounded-xl p-4 border border-purple-500/20">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <AlertTriangle size={16} className="text-amber-400" />
             Hai bisogno di aiuto?

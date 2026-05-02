@@ -177,12 +177,12 @@ const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-amber-500/12 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-emerald-500/12 rounded-full blur-3xl" />
         </div>
 
         <div className="gradient-dark px-4 pt-6 pb-8 relative z-10">
@@ -200,12 +200,12 @@ const SettingsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900/50 border border-white/10 rounded-xl p-4"
+          className="bg-white/3 border border-white/10 rounded-xl p-4"
         >
           <div className="flex items-center gap-4">
             <button
               onClick={() => setAvatarModalOpen(true)}
-              className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-purple-500/40 flex-shrink-0 group"
+              className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-amber-500/40 flex-shrink-0 group"
               aria-label={t('settings.changeAvatar', 'Cambia avatar')}
             >
               <img
@@ -226,7 +226,7 @@ const SettingsPage: React.FC = () => {
                   className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
                   aria-label={t('settings.editNickname', 'Modifica nickname')}
                 >
-                  <Edit3 size={12} className="text-purple-300" />
+                  <Edit3 size={12} className="text-amber-300" />
                 </button>
               </div>
               <div className="flex items-center gap-1 mt-1">
@@ -251,7 +251,7 @@ const SettingsPage: React.FC = () => {
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 px-1">
               {group.title}
             </h3>
-            <div className="bg-slate-900/50 border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white/3 border border-white/10 rounded-xl overflow-hidden">
               {group.items.map((item, itemIndex) => (
                 <div key={item.label}>
                   {itemIndex > 0 && <div className="h-px bg-white/5" />}
@@ -280,8 +280,8 @@ const SettingsPage: React.FC = () => {
                     }
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                        <item.icon size={18} className="text-purple-400" />
+                      <div className="w-10 h-10 rounded-lg bg-amber-500/12 flex items-center justify-center">
+                        <item.icon size={18} className="text-amber-400" />
                       </div>
                       <div>
                         <p className="text-sm text-white font-medium">{item.label}</p>
@@ -293,7 +293,7 @@ const SettingsPage: React.FC = () => {
                       <button
                         onClick={item.onToggle}
                         className={`w-12 h-7 rounded-full transition-colors ${
-                          item.toggle ? 'bg-purple-500' : 'bg-slate-700'
+                          item.toggle ? 'bg-amber-500' : 'bg-white/10'
                         }`}
                       >
                         <motion.div
@@ -306,7 +306,7 @@ const SettingsPage: React.FC = () => {
                     ) : item.type === 'nav' ? (
                       <ChevronRight size={18} className="text-white/30" />
                     ) : item.type === 'info' ? (
-                      <span className="text-[10px] text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full">
+                      <span className="text-[10px] text-amber-400 bg-amber-500/12 px-2 py-1 rounded-full">
                         Soon
                       </span>
                     ) : null}
@@ -322,7 +322,7 @@ const SettingsPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-slate-900/50 border border-white/10 rounded-xl p-4"
+          className="bg-white/3 border border-white/10 rounded-xl p-4"
         >
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-3">
             {t('settings.selectLanguage', 'Seleziona Lingua')}
@@ -352,7 +352,7 @@ const SettingsPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-slate-900/50 border border-white/10 rounded-xl p-4 text-center"
+          className="bg-white/3 border border-white/10 rounded-xl p-4 text-center"
         >
           <p className="text-xs text-white/40">VYRO GPU v2.0</p>
           <p className="text-[10px] text-white/30 mt-1">&copy; 2025 VYRO Cloud Computing</p>

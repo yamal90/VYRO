@@ -6,15 +6,15 @@ import type { GPUDevice } from '../types';
 import LiveProductionInline from '../components/LiveProductionInline';
 
 const gpuColors = [
-  'from-violet-600 to-purple-700',
-  'from-blue-600 to-indigo-700',
-  'from-cyan-600 to-blue-700',
-  'from-purple-600 to-pink-700',
-  'from-indigo-600 to-violet-700',
-  'from-teal-600 to-cyan-700',
-  'from-fuchsia-600 to-purple-700',
-  'from-blue-700 to-violet-700',
-  'from-purple-700 to-indigo-800',
+  'from-[#0c101c] to-[#111827]',
+  'from-[#0f1629] to-[#0c1220]',
+  'from-[#0c101c] to-[#111827]',
+  'from-[#0f1629] to-[#0c1220]',
+  'from-[#0c101c] to-[#111827]',
+  'from-[#0f1629] to-[#0c1220]',
+  'from-[#0c101c] to-[#111827]',
+  'from-[#0f1629] to-[#0c1220]',
+  'from-[#0c101c] to-[#111827]',
 ];
 
 const statusConfig = {
@@ -65,7 +65,7 @@ const DevicesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 pb-24">
+    <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
       <div className="relative overflow-hidden pt-12">
         <div
@@ -77,15 +77,15 @@ const DevicesPage: React.FC = () => {
             backgroundPosition: 'center',
           }}
         />
-        <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="absolute inset-0 bg-[#06080f]/60" />
         {/* Animated background */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-80 h-80 bg-purple-500/16 rounded-full blur-2xl" />
-          <div className="absolute top-20 right-1/4 w-56 h-56 bg-cyan-500/16 rounded-full blur-2xl" />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-1/4 w-80 h-80 bg-amber-500/12 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-1/4 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl" />
         </div>
         
         <div className="px-4 pt-6 pb-8 relative z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700/72 via-indigo-700/64 to-cyan-700/58" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0c101c]/85 via-[#0a0e1a]/80 to-[#06080f]/90" />
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-0 right-0 w-32 h-32 border border-white/20 rounded-full" />
             <div className="absolute bottom-0 left-1/4 w-48 h-48 border border-white/10 rounded-full" />
@@ -96,17 +96,17 @@ const DevicesPage: React.FC = () => {
               <h1 className="font-display text-2xl font-bold text-white tracking-wider">Centro GPU</h1>
               <p className="text-white/60 text-xs mt-1">Hardware per cloud computing</p>
             </div>
-            <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-11 w-11 rounded-xl border border-white/15 bg-slate-900/40" />
+            <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-11 w-11 rounded-xl border border-white/15 bg-[#0c101c]/50" />
           </div>
           
           {/* Quick stats */}
           <div className="flex gap-3 mt-4 relative z-10">
             <div className="glass-dark rounded-lg px-3 py-2 flex items-center gap-2">
-              <Cpu size={14} className="text-purple-400" />
+              <Cpu size={14} className="text-amber-400" />
               <span className="text-white text-xs font-medium">{gpuDevices.length} GPU</span>
             </div>
             <div className="glass-dark rounded-lg px-3 py-2 flex items-center gap-2">
-              <Power size={14} className="text-cyan-400" />
+              <Power size={14} className="text-emerald-400" />
               <span className="text-white text-xs font-medium">{userDevices.filter(d => d.status === 'active').length} Attive</span>
             </div>
           </div>
@@ -125,13 +125,13 @@ const DevicesPage: React.FC = () => {
               onClick={() => setActiveTab(tab.key)}
               className={`flex-1 py-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                 activeTab === tab.key
-                  ? 'gradient-primary text-white shadow-lg shadow-purple-500/30'
+                  ? 'bg-amber-500 text-[#06080f] shadow-lg shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               {tab.label}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                activeTab === tab.key ? 'bg-white/20' : 'bg-slate-700'
+                activeTab === tab.key ? 'bg-white/20' : 'bg-white/10'
               }`}>
                 {tab.count}
               </span>
@@ -216,27 +216,27 @@ const DevicesPage: React.FC = () => {
                 </div>
 
                 {/* Details */}
-                <div className="p-5 bg-slate-900/90">
+                <div className="p-5 bg-[#0c101c]/90">
                   <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-xl p-3 border border-purple-500/20">
+                    <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-amber-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <TrendingUp size={12} className="text-green-400" />
-                        <p className="text-[10px] text-purple-300 uppercase tracking-wider">3 Giorni</p>
+                        <p className="text-[10px] text-amber-300 uppercase tracking-wider">3 Giorni</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-purple-400">$</span></p>
+                      <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-amber-400">$</span></p>
                     </div>
-                    <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl p-3 border border-cyan-500/20">
+                    <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-emerald-500/20">
                       <div className="flex items-center gap-2 mb-1">
-                        <Activity size={12} className="text-cyan-400" />
-                        <p className="text-[10px] text-cyan-300 uppercase tracking-wider">7 Giorni</p>
+                        <Activity size={12} className="text-emerald-400" />
+                        <p className="text-[10px] text-emerald-400 uppercase tracking-wider">7 Giorni</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-cyan-400">$</span></p>
+                      <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-emerald-400">$</span></p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between mb-4 p-3 bg-slate-800/50 rounded-xl">
                     <div>
-                      <p className="text-[10px] text-purple-300 uppercase tracking-wider mb-1">Prezzo attivazione</p>
+                      <p className="text-[10px] text-amber-300 uppercase tracking-wider mb-1">Prezzo attivazione</p>
                       <p className="text-2xl font-display font-bold text-neon-purple">{device.price.toLocaleString()} $</p>
                     </div>
                     <div className="text-right">
@@ -254,7 +254,7 @@ const DevicesPage: React.FC = () => {
                     className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                       (currentUser?.vx_balance ?? 0) >= device.price
                         ? 'gradient-primary text-white glow-purple hover:opacity-90'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                        : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/6'
                     }`}
                   >
                     {activatingId === device.id ? (
@@ -277,7 +277,7 @@ const DevicesPage: React.FC = () => {
             
             {userDevices.length === 0 ? (
               <div className="text-center py-16">
-                <Cpu className="w-16 h-16 text-purple-500/50 mx-auto mb-4" />
+                <Cpu className="w-16 h-16 text-amber-500/50 mx-auto mb-4" />
                 <p className="text-white font-medium">Nessun dispositivo attivato</p>
                 <p className="text-slate-400 text-sm mt-1">Attiva il tuo primo dispositivo GPU</p>
                 <button
@@ -309,11 +309,11 @@ const DevicesPage: React.FC = () => {
                     <div className="p-5">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 border border-purple-500/30 flex items-center justify-center relative animate-gpu-glow">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 border border-amber-500/25 flex items-center justify-center relative animate-gpu-glow">
                             {ud.device?.image_url ? (
                               <img src={ud.device.image_url} alt={ud.device.name} className="w-full h-full object-cover" />
                             ) : (
-                              <Cpu className="w-7 h-7 text-purple-400" />
+                              <Cpu className="w-7 h-7 text-amber-400" />
                             )}
                             {ud.status === 'active' && (
                               <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
@@ -334,15 +334,15 @@ const DevicesPage: React.FC = () => {
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
+                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Potenza</p>
-                          <p className="text-sm font-bold text-purple-400 font-display">{ud.device?.compute_power} TF</p>
+                          <p className="text-sm font-bold text-amber-400 font-display">{ud.device?.compute_power} TF</p>
                         </div>
-                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
+                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Generato</p>
                           <p className="text-sm font-bold text-green-400 font-display">{liveGenerated.toFixed(2)} $</p>
                         </div>
-                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-slate-700/50">
+                        <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">Avviato</p>
                           <p className="text-sm font-bold text-white font-display">
                             {new Date(ud.start_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
@@ -362,9 +362,9 @@ const DevicesPage: React.FC = () => {
                               <span>Produzione live</span>
                               <span>{livePercent.toFixed(2)}%</span>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-slate-900/40 overflow-hidden">
+                            <div className="w-full h-2 rounded-full bg-[#0c101c]/50 overflow-hidden">
                               <div
-                                className="h-full bg-gradient-to-r from-violet-500 to-cyan-500"
+                                className="h-full bg-gradient-to-r from-amber-500 to-emerald-500"
                                 style={{ width: `${livePercent}%` }}
                               />
                             </div>
