@@ -1,7 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { describe, it, expect } from 'vitest';
 import { cn } from '@/utils/cn';
 
 describe('cn utility', () => {
@@ -10,7 +7,8 @@ describe('cn utility', () => {
   });
 
   it('should handle conditional classes', () => {
-    expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz');
+    const condition = false;
+    expect(cn('foo', condition && 'bar', 'baz')).toBe('foo baz');
   });
 
   it('should merge tailwind classes correctly', () => {

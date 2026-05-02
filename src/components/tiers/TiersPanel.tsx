@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Crown, Zap, Shield, Star, Infinity, ChevronRight } from 'lucide-react';
+import { Crown, Zap, Shield, Star, Infinity as InfinityIcon, ChevronRight } from 'lucide-react';
 
 export interface Tier {
   id: string;
@@ -89,7 +89,7 @@ export const TIERS: Tier[] = [
       'Revenue sharing',
     ],
     color: 'from-amber-500 to-amber-700',
-    icon: Infinity,
+    icon: InfinityIcon,
   },
 ];
 
@@ -100,8 +100,7 @@ interface TierCardProps {
   progress?: number;
 }
 
-const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, isLocked, progress }) => {
-  const { t } = useTranslation();
+const TierCard: React.FC<TierCardProps> = ({ tier, isCurrent, progress }) => {
   const Icon = tier.icon;
 
   return (

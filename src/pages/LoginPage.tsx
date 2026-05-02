@@ -21,7 +21,10 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] = useState(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    return ref ? ref.toUpperCase() : '';
+  });
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [error, setError] = useState('');
@@ -36,13 +39,13 @@ const LoginPage: React.FC = () => {
 
     if (ref) {
       setAuthMode('register');
-      setReferralCode(ref.toUpperCase());
     }
     if (recoveryMode) {
       setAuthMode('login');
-      setAuthStep('reset');
+      setAuthStep('reset'); // eslint-disable-line react-hooks/set-state-in-effect -- URL param sync on mount
     }
-  }, [setAuthMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const resetForm = () => {
     setUsername('');

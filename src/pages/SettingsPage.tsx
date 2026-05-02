@@ -3,14 +3,11 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
   Globe,
-  Moon,
-  Sun,
   Bell,
   Shield,
   HelpCircle,
   ChevronRight,
   Eye,
-  EyeOff,
   Smartphone,
   Palette,
 } from 'lucide-react';

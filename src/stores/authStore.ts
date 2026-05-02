@@ -301,15 +301,19 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                   id: profile.id,
                   email: profile.email,
                   username: profile.username,
-                  role: profile.role,
+                  role: profile.role === 'admin' ? 'admin' : 'user',
+                  status: profile.account_blocked ? 'blocked' : 'active',
+                  claim_eligible: Boolean(profile.claim_eligible),
                   avatar_url: profile.avatar_url,
-                  tier: profile.tier,
+                  tier: profile.tier ?? 'zyra',
                   vx_balance: Number(profile.balance ?? 0),
                   demo_usdt_balance: demoUsdtBalance,
                   compute_power: computePower,
                   invite_code: profile.referral_code,
+                  invited_by: profile.referred_by || null,
                   streak: profile.streak ?? 0,
                   account_blocked: profile.account_blocked ?? false,
+                  created_at: profile.created_at ?? profile.joined_at,
                 },
                 isLoggedIn: true,
                 bootstrapped: true,
@@ -344,7 +348,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 if (typeof window !== 'undefined' && supabase) {
   useAuthStore.getState().hydrateFromSession();
   
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((_event, _session) => {
     setTimeout(() => {
       useAuthStore.getState().hydrateFromSession();
     }, 0);

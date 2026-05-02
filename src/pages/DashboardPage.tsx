@@ -73,10 +73,8 @@ const DashboardPage: React.FC = () => {
     return teamMembers.reduce((sum, m) => sum + m.production * (m.level === 1 ? 0.03 : 0.02), 0);
   }, [teamMembers]);
 
-  if (!currentUser) return null;
-
   const recentTx = transactions.slice(0, 4);
-  const profileAvatar = currentUser.avatar_url || `https://i.pravatar.cc/160?u=${currentUser.id}`;
+  const profileAvatar = currentUser?.avatar_url || (currentUser ? `https://i.pravatar.cc/160?u=${currentUser.id}` : '');
   const actionButtons = [
     {
       icon: ArrowDownCircle,
@@ -143,6 +141,8 @@ const DashboardPage: React.FC = () => {
       return Math.max(8, Number(percent.toFixed(2)));
     });
   }, [userDevices, nowMs]);
+
+  if (!currentUser) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 pb-32 pt-16">

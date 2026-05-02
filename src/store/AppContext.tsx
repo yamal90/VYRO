@@ -439,12 +439,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return;
         }
 
-        let { data, error } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', effectiveSession.user.id)
           .single<ProfileRow>();
-        if (error || !data) {
+        let data = profileData;
+        if (profileError || !data) {
           try {
             data = await ensureProfileFromSession(effectiveSession);
           } catch {
@@ -483,7 +484,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setBootstrapped(true);
       }
     },
-    [ensureProfileFromSession, fetchAppData, loadTeamMembers, pushNotice, resetData, syncReferral],
+    [ensureProfileFromSession, fetchAppData, pushNotice, resetData, syncReferral],
   );
 
   /* ── Bootstrap + auth listener ── */
@@ -491,7 +492,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     let active = true;
     if (!isSupabaseConfigured || !supabase) {
-      setBootstrapped(true);
+      setBootstrapped(true); // eslint-disable-line react-hooks/set-state-in-effect -- bootstrap init
       return;
     }
 
@@ -532,10 +533,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       active = false;
       subscription.subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrateFromSession]);
 
   /* ── Actions ── */
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const refreshAppData = useCallback(async () => {
     if (!supabase || !currentUser?.id || !currentUser?.role) return;
     const currentUserId = currentUser.id;

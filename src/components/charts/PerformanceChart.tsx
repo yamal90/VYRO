@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 
 interface PerformanceChartProps {
   data: number[];
@@ -18,7 +17,6 @@ const gradients = {
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   data,
   height = 120,
-  showLabels = false,
   gradient = 'purple',
 }) => {
   const max = Math.max(...data, 1);
@@ -147,7 +145,12 @@ export const DonutChart: React.FC<DonutChartProps> = ({
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
   
-  let offset = 0;
+  const offsets = data.reduce<number[]>((acc, item) => {
+    const prev = acc.length > 0 ? acc[acc.length - 1] : 0;
+    const dashLength = ((item.value / total) * 100 / 100) * circumference;
+    acc.push(prev + dashLength);
+    return acc;
+  }, []);
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -155,8 +158,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         {data.map((item, i) => {
           const percent = (item.value / total) * 100;
           const dashLength = (percent / 100) * circumference;
-          const dashOffset = offset;
-          offset += dashLength;
+          const dashOffset = i > 0 ? offsets[i - 1] : 0;
 
           return (
             <motion.circle
