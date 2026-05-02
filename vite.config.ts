@@ -9,7 +9,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      disable: true,
       registerType: 'autoUpdate',
+      minify: false,
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'VYRO GPU - Cloud Computing Platform',
@@ -50,6 +52,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        sourcemap: false,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {

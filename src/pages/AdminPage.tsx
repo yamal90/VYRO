@@ -55,6 +55,14 @@ const AdminPage: React.FC = () => {
   const [logFilter, setLogFilter] = useState<'all' | 'error' | 'activity'>('all');
   const [depositTxDraft, setDepositTxDraft] = useState<Record<string, string>>({});
   const [withdrawTxDraft, setWithdrawTxDraft] = useState<Record<string, string>>({});
+  const [depositStatusDraft, setDepositStatusDraft] = useState<
+    Record<string, 'pending' | 'approved' | 'completed' | 'rejected'>
+  >({});
+  const [withdrawStatusDraft, setWithdrawStatusDraft] = useState<
+    Record<string, 'pending' | 'approved' | 'completed' | 'rejected'>
+  >({});
+  const [txFilter, setTxFilter] = useState<'all' | 'pending' | 'approved' | 'completed' | 'rejected'>('all');
+  const [txSearch, setTxSearch] = useState('');
   const [assignUserId, setAssignUserId] = useState('');
   const [assignDeviceId, setAssignDeviceId] = useState('');
   const [assignChargeBalance, setAssignChargeBalance] = useState(false);
@@ -114,7 +122,32 @@ const AdminPage: React.FC = () => {
     () => [...adminWithdrawalRequests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [adminWithdrawalRequests],
   );
+  const txSearchNormalized = txSearch.trim().toLowerCase();
+  const txMatchesFilter = React.useCallback(
+    (status: string, ...chunks: Array<string | null | undefined>) => {
+      if (txFilter !== 'all' && status !== txFilter) return false;
+      if (!txSearchNormalized) return true;
+      return chunks.some((chunk) => String(chunk ?? '').toLowerCase().includes(txSearchNormalized));
+    },
+    [txFilter, txSearchNormalized],
+  );
+  const filteredDepositRequests = useMemo(
+    () =>
+      sortedDepositRequests.filter(
+        (item) => txMatchesFilter(item.status, item.username, item.email, item.asset, item.network, item.tx_hash, item.id),
+      ),
+    [sortedDepositRequests, txMatchesFilter],
+  );
+  const filteredWithdrawalRequests = useMemo(
+    () =>
+      sortedWithdrawalRequests.filter(
+        (item) => txMatchesFilter(item.status, item.username, item.email, item.wallet_address, item.tx_hash, item.id),
+      ),
+    [sortedWithdrawalRequests, txMatchesFilter],
+  );
   const userMap = useMemo(() => new Map(allUsers.map((u) => [u.id, u])), [allUsers]);
+  const effectiveAssignUserId = assignUserId || allUsers[0]?.id || '';
+  const effectiveAssignDeviceId = assignDeviceId || gpuDevices[0]?.id || '';
 
   React.useEffect(() => {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -126,14 +159,6 @@ const AdminPage: React.FC = () => {
     void refreshAppData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id, currentUser?.role, refreshAppData]);
-
-  React.useEffect(() => {
-    if (!assignUserId && allUsers.length > 0) setAssignUserId(allUsers[0].id);
-  }, [allUsers, assignUserId]);
-
-  React.useEffect(() => {
-    if (!assignDeviceId && gpuDevices.length > 0) setAssignDeviceId(gpuDevices[0].id);
-  }, [gpuDevices, assignDeviceId]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (
@@ -170,18 +195,70 @@ const AdminPage: React.FC = () => {
   };
 
   const handleSaveSettings = async () => {
+    const minDeposit = Number(settingsDraft.min_deposit);
+    const minWithdraw = Number(settingsDraft.min_withdraw);
+    if (!Number.isFinite(minDeposit) || minDeposit < 0) {
+      pushNotice('error', 'Min deposito non valido.');
+      return;
+    }
+    if (!Number.isFinite(minWithdraw) || minWithdraw < 0) {
+      pushNotice('error', 'Min prelievo non valido.');
+      return;
+    }
+    const depositAsset = settingsDraft.deposit_asset.trim().toUpperCase() || 'USDT';
+    const depositNetwork = settingsDraft.deposit_network.trim().toUpperCase() || 'BEP20';
+    const depositAddress = settingsDraft.deposit_address.trim();
     const result = await updatePlatformSettings({
       maintenance_mode: settingsDraft.maintenance_mode,
       deposits_enabled: settingsDraft.deposits_enabled,
       withdrawals_enabled: settingsDraft.withdrawals_enabled,
       daily_claim_enabled: settingsDraft.daily_claim_enabled,
-      min_deposit: settingsDraft.min_deposit,
-      min_withdraw: settingsDraft.min_withdraw,
-      deposit_asset: settingsDraft.deposit_asset.trim().toUpperCase(),
-      deposit_network: settingsDraft.deposit_network.trim().toUpperCase(),
-      deposit_address: settingsDraft.deposit_address.trim(),
+      min_deposit: minDeposit,
+      min_withdraw: minWithdraw,
+      deposit_asset: depositAsset,
+      deposit_network: depositNetwork,
+      deposit_address: depositAddress,
     });
     pushNotice(result.success ? 'success' : 'error', result.message);
+  };
+
+  const getStatusBadgeClass = (status: string) =>
+    status === 'approved' || status === 'completed'
+      ? 'bg-emerald-500/20 text-emerald-300'
+      : status === 'rejected'
+        ? 'bg-red-500/20 text-red-300'
+        : 'bg-yellow-500/20 text-yellow-300';
+
+  const applyDepositStatus = async (
+    itemId: string,
+    currentStatus: 'pending' | 'approved' | 'completed' | 'rejected',
+  ) => {
+    const nextStatus = depositStatusDraft[itemId] ?? currentStatus;
+    const result = await updateDepositRequestStatus(itemId, nextStatus, depositTxDraft[itemId]);
+    pushNotice(result.success ? 'success' : 'error', result.message);
+    if (result.success) {
+      setDepositStatusDraft((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+    }
+  };
+
+  const applyWithdrawalStatus = async (
+    itemId: string,
+    currentStatus: 'pending' | 'approved' | 'completed' | 'rejected',
+  ) => {
+    const nextStatus = withdrawStatusDraft[itemId] ?? currentStatus;
+    const result = await updateWithdrawalRequestStatus(itemId, nextStatus, withdrawTxDraft[itemId]);
+    pushNotice(result.success ? 'success' : 'error', result.message);
+    if (result.success) {
+      setWithdrawStatusDraft((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+    }
   };
 
   return (
@@ -366,7 +443,7 @@ const AdminPage: React.FC = () => {
                 <label className="text-[11px] text-white/65">
                   Utente
                   <select
-                    value={assignUserId}
+                    value={effectiveAssignUserId}
                     onChange={(e) => setAssignUserId(e.target.value)}
                     className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                   >
@@ -380,7 +457,7 @@ const AdminPage: React.FC = () => {
                 <label className="text-[11px] text-white/65">
                   Dispositivo
                   <select
-                    value={assignDeviceId}
+                    value={effectiveAssignDeviceId}
                     onChange={(e) => setAssignDeviceId(e.target.value)}
                     className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
                   >
@@ -403,7 +480,11 @@ const AdminPage: React.FC = () => {
               </label>
               <button
                 onClick={async () => {
-                  const result = await assignDeviceToUser(assignUserId, assignDeviceId, assignChargeBalance);
+                  const result = await assignDeviceToUser(
+                    effectiveAssignUserId,
+                    effectiveAssignDeviceId,
+                    assignChargeBalance,
+                  );
                   pushNotice(result.success ? 'success' : 'error', result.message);
                 }}
                 className="w-full py-2.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-sm font-semibold hover:bg-emerald-500/30 flex items-center justify-center gap-2"
@@ -431,7 +512,7 @@ const AdminPage: React.FC = () => {
                   <div>
                     <p className="text-white text-sm font-semibold">{ud.device?.name}</p>
                     <p className="text-white/40 text-[10px]">
-                      User: {userMap.get(ud.user_id)?.username ?? 'unknown'} ({userMap.get(ud.user_id)?.email ?? ud.user_id})
+                      User: {userMap.get(ud.user_id ?? '')?.username ?? 'unknown'} ({userMap.get(ud.user_id ?? '')?.email ?? ud.user_id ?? 'n/a'})
                     </p>
                     <p className="text-white/30 text-[10px]">Entry ID: {ud.id}</p>
                   </div>
@@ -474,173 +555,165 @@ const AdminPage: React.FC = () => {
                 Pending depositi: {pendingDeposits.length} • Pending prelievi: {pendingWithdrawals.length}
               </p>
             </div>
-
-            {pendingDeposits.length === 0 && pendingWithdrawals.length === 0 && (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white/55">
-                Nessuna richiesta pending. Usa le liste complete sotto per gestione storica.
-              </div>
-            )}
-
-            {pendingDeposits.map((item) => (
-              <div key={item.id} className="bg-white/5 border border-emerald-500/30 rounded-xl p-3">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">Deposito {item.amount.toFixed(2)} {item.asset}</p>
-                    <p className="text-[10px] text-white/50 truncate">{item.username} • {item.email}</p>
-                    <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
-                  </div>
-                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300">
-                    {item.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
-                  <input
-                    type="text"
-                    value={depositTxDraft[item.id] ?? item.tx_hash ?? ''}
-                    onChange={(e) => setDepositTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                    placeholder="TX hash (opzionale)"
-                    className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        const result = await updateDepositRequestStatus(item.id, 'approved', depositTxDraft[item.id]);
-                        pushNotice(result.success ? 'success' : 'error', result.message);
-                      }}
-                      className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
-                    >
-                      Approva
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const result = await updateDepositRequestStatus(item.id, 'rejected', depositTxDraft[item.id]);
-                        pushNotice(result.success ? 'success' : 'error', result.message);
-                      }}
-                      className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
-                    >
-                      Rifiuta
-                    </button>
-                    {item.tx_hash ? (
-                      <a
-                        href={`https://bscscan.com/tx/${item.tx_hash}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
-                      >
-                        BscScan <ExternalLink size={12} />
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {pendingWithdrawals.map((item) => (
-              <div key={item.id} className="bg-white/5 border border-blue-500/30 rounded-xl p-3">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">Prelievo {item.amount.toFixed(2)} USDT</p>
-                    <p className="text-[10px] text-white/50 truncate">{item.username} • {item.email}</p>
-                    <p className="text-[10px] text-blue-200/70 truncate inline-flex items-center gap-1">
-                      <Wallet size={11} />
-                      {item.wallet_address ?? 'Wallet non impostato'}
-                    </p>
-                    <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
-                  </div>
-                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300">
-                    {item.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
-                  <input
-                    type="text"
-                    value={withdrawTxDraft[item.id] ?? item.tx_hash ?? ''}
-                    onChange={(e) => setWithdrawTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                    placeholder="TX hash payout (opzionale)"
-                    className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        const result = await updateWithdrawalRequestStatus(item.id, 'approved', withdrawTxDraft[item.id]);
-                        pushNotice(result.success ? 'success' : 'error', result.message);
-                      }}
-                      className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
-                    >
-                      Approva
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const result = await updateWithdrawalRequestStatus(item.id, 'rejected', withdrawTxDraft[item.id]);
-                        pushNotice(result.success ? 'success' : 'error', result.message);
-                      }}
-                      className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
-                    >
-                      Rifiuta
-                    </button>
-                    {item.tx_hash ? (
-                      <a
-                        href={`https://bscscan.com/tx/${item.tx_hash}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
-                      >
-                        BscScan <ExternalLink size={12} />
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3 mt-2">
-              <p className="text-white text-xs font-semibold mb-2">Tutti i depositi (ultimi 30)</p>
-              <div className="space-y-2">
-                {sortedDepositRequests.slice(0, 30).map((item) => (
-                  <div key={`all-dep-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-white truncate">{item.username} • {item.amount.toFixed(2)} {item.asset}</p>
-                        <p className="text-[10px] text-white/45 truncate">{item.email}</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                        item.status === 'approved' || item.status === 'completed'
-                          ? 'bg-emerald-500/20 text-emerald-300'
-                          : item.status === 'rejected'
-                            ? 'bg-red-500/20 text-red-300'
-                            : 'bg-yellow-500/20 text-yellow-300'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {(['all', 'pending', 'approved', 'completed', 'rejected'] as const).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setTxFilter(status)}
+                    className={`px-3 py-1 rounded-lg text-xs ${
+                      txFilter === status ? 'bg-purple-600 text-white' : 'bg-white/10 text-white/70'
+                    }`}
+                  >
+                    {status === 'all' ? 'Tutti' : status}
+                  </button>
                 ))}
               </div>
+              <input
+                type="text"
+                value={txSearch}
+                onChange={(e) => setTxSearch(e.target.value)}
+                placeholder="Cerca per utente, email, tx hash, wallet..."
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+              />
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3 mt-2">
-              <p className="text-white text-xs font-semibold mb-2">Tutti i prelievi (ultimi 30)</p>
-              <div className="space-y-2">
-                {sortedWithdrawalRequests.slice(0, 30).map((item) => (
-                  <div key={`all-wd-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-white truncate">{item.username} • {item.amount.toFixed(2)} USDT</p>
-                        <p className="text-[10px] text-white/45 truncate">{item.wallet_address ?? 'Wallet non impostato'}</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                        item.status === 'approved' || item.status === 'completed'
-                          ? 'bg-emerald-500/20 text-emerald-300'
-                          : item.status === 'rejected'
-                            ? 'bg-red-500/20 text-red-300'
-                            : 'bg-yellow-500/20 text-yellow-300'
-                      }`}>
-                        {item.status}
-                      </span>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+              <p className="text-white text-xs font-semibold">
+                Depositi ({filteredDepositRequests.length})
+              </p>
+              {filteredDepositRequests.slice(0, 60).map((item) => (
+                <div key={`dep-manage-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-white text-xs font-semibold truncate">
+                        {item.username} • {item.amount.toFixed(2)} {item.asset}
+                      </p>
+                      <p className="text-[10px] text-white/45 truncate">{item.email}</p>
+                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-[180px_1fr_auto] gap-2">
+                    <select
+                      value={depositStatusDraft[item.id] ?? item.status}
+                      onChange={(e) =>
+                        setDepositStatusDraft((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value as 'pending' | 'approved' | 'completed' | 'rejected',
+                        }))
+                      }
+                      className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                    >
+                      <option value="pending" className="bg-slate-900 text-white">pending</option>
+                      <option value="approved" className="bg-slate-900 text-white">approved</option>
+                      <option value="completed" className="bg-slate-900 text-white">completed</option>
+                      <option value="rejected" className="bg-slate-900 text-white">rejected</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={depositTxDraft[item.id] ?? item.tx_hash ?? ''}
+                      onChange={(e) => setDepositTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                      placeholder="TX hash (opzionale)"
+                      className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => void applyDepositStatus(item.id, item.status)}
+                        className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
+                      >
+                        Applica
+                      </button>
+                      {(depositTxDraft[item.id] ?? item.tx_hash) ? (
+                        <a
+                          href={`https://bscscan.com/tx/${depositTxDraft[item.id] ?? item.tx_hash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                        >
+                          BscScan <ExternalLink size={12} />
+                        </a>
+                      ) : null}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+              {filteredDepositRequests.length === 0 && (
+                <p className="text-[11px] text-white/45">Nessun deposito per questo filtro.</p>
+              )}
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+              <p className="text-white text-xs font-semibold">
+                Prelievi ({filteredWithdrawalRequests.length})
+              </p>
+              {filteredWithdrawalRequests.slice(0, 60).map((item) => (
+                <div key={`wd-manage-${item.id}`} className="bg-slate-900/35 border border-white/10 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-white text-xs font-semibold truncate">
+                        {item.username} • {item.amount.toFixed(2)} USDT
+                      </p>
+                      <p className="text-[10px] text-white/45 truncate">{item.email}</p>
+                      <p className="text-[10px] text-blue-200/70 truncate inline-flex items-center gap-1">
+                        <Wallet size={11} />
+                        {item.wallet_address ?? 'Wallet non impostato'}
+                      </p>
+                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-[180px_1fr_auto] gap-2">
+                    <select
+                      value={withdrawStatusDraft[item.id] ?? item.status}
+                      onChange={(e) =>
+                        setWithdrawStatusDraft((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value as 'pending' | 'approved' | 'completed' | 'rejected',
+                        }))
+                      }
+                      className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                    >
+                      <option value="pending" className="bg-slate-900 text-white">pending</option>
+                      <option value="approved" className="bg-slate-900 text-white">approved</option>
+                      <option value="completed" className="bg-slate-900 text-white">completed</option>
+                      <option value="rejected" className="bg-slate-900 text-white">rejected</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={withdrawTxDraft[item.id] ?? item.tx_hash ?? ''}
+                      onChange={(e) => setWithdrawTxDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                      placeholder="TX hash payout (opzionale)"
+                      className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => void applyWithdrawalStatus(item.id, item.status)}
+                        className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
+                      >
+                        Applica
+                      </button>
+                      {(withdrawTxDraft[item.id] ?? item.tx_hash) ? (
+                        <a
+                          href={`https://bscscan.com/tx/${withdrawTxDraft[item.id] ?? item.tx_hash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/30 inline-flex items-center gap-1"
+                        >
+                          BscScan <ExternalLink size={12} />
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {filteredWithdrawalRequests.length === 0 && (
+                <p className="text-[11px] text-white/45">Nessun prelievo per questo filtro.</p>
+              )}
             </div>
 
             {adminTransactions.slice(0, 30).map((tx) => (
