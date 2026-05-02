@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, ChevronDown, GitBranch } from 'lucide-react';
+import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, ChevronDown, Brain } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useApp } from '../store/AppContext';
 
@@ -25,6 +25,10 @@ const TeamPage: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const l1Count = level1.length;
+  const l2Count = level2.length;
+  const totalNodes = l1Count + l2Count;
+
   return (
     <div className="min-h-screen bg-[#06080f] pb-24">
       {/* Header */}
@@ -34,122 +38,172 @@ const TeamPage: React.FC = () => {
           <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-emerald-500/12 rounded-full blur-3xl" />
         </div>
         
-        <div className="gradient-dark px-4 pt-6 pb-8 relative z-10">
-          <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10 mb-2">
+        <div className="gradient-dark px-4 pt-6 pb-6 relative z-10">
+          <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10 mb-1">
             Team & Inviti
           </h1>
           <p className="text-white/50 text-xs relative z-10">Costruisci il tuo team di cloud computing</p>
 
-          {/* Team Flow Visualization - You at center top, members branching down */}
-          <div className="mt-6 relative z-10">
-            <div className="flex flex-col items-center">
-              {/* Your node */}
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="relative"
-              >
-                <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-lg shadow-amber-500/20 bg-[#0c101c]">
-                  <img src="/vyro-wow-logo.svg" alt="Tu" className="w-full h-full object-cover" />
-                </div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-amber-500 rounded-full text-[8px] font-bold text-[#06080f] whitespace-nowrap">
-                  TU
-                </div>
-              </motion.div>
+          {/* AI Neural Network Flow Visualization */}
+          <div className="mt-5 relative z-10">
+            <div className="relative bg-[#080c16]/80 rounded-2xl border border-amber-500/10 p-4 overflow-hidden">
+              {/* Animated background grid */}
+              <div className="absolute inset-0 opacity-[0.03]" style={{
+                backgroundImage: 'linear-gradient(rgba(240,180,41,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(240,180,41,0.5) 1px, transparent 1px)',
+                backgroundSize: '24px 24px'
+              }} />
 
-              {/* Connector line down */}
-              <div className="w-px h-6 bg-gradient-to-b from-amber-400/60 to-amber-400/20" />
-
-              {/* Branch out indicator */}
-              <div className="flex items-center gap-1 mb-2">
-                <GitBranch size={12} className="text-amber-400/60" />
-                <span className="text-[9px] text-amber-400/60 font-medium">Team Network</span>
+              {/* Header label */}
+              <div className="flex items-center gap-2 mb-4 relative z-10">
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  className="w-5 h-5 rounded-full border border-amber-400/40 flex items-center justify-center"
+                >
+                  <Brain size={10} className="text-amber-400" />
+                </motion.div>
+                <span className="text-[10px] text-amber-400/80 font-semibold uppercase tracking-widest">AI Network Graph</span>
+                <motion.span
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="ml-auto text-[8px] text-emerald-400 font-medium"
+                >
+                  ● LIVE
+                </motion.span>
               </div>
 
-              {/* Level 1 members preview - connected flow */}
-              {level1.length > 0 ? (
-                <div className="relative w-full">
-                  {/* Horizontal connector */}
-                  <div className="absolute top-5 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" style={{ width: `${Math.min(level1.length * 52, 260)}px` }} />
-                  
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {level1.slice(0, 5).map((member, i) => (
-                      <motion.div
-                        key={member.id}
-                        initial={{ y: 10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 + i * 0.08 }}
-                        className="flex flex-col items-center"
-                      >
-                        {/* Vertical connector to horizontal line */}
-                        <div className="w-px h-2 bg-amber-400/25" />
-                        <div className={`w-9 h-9 rounded-xl overflow-hidden border ${member.device_active ? 'border-emerald-400/50' : 'border-white/10'} bg-[#0c101c]`}>
-                          <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username}`}
-                            alt={member.username}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className="text-[7px] text-slate-400 mt-0.5 max-w-[40px] truncate">{member.username}</span>
-                        {member.device_active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-0.5" />}
-                      </motion.div>
-                    ))}
-                    {level1.length > 5 && (
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="w-px h-2 bg-amber-400/25" />
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                          <span className="text-[10px] text-amber-400 font-bold">+{level1.length - 5}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              {/* SVG Neural Network */}
+              <div className="relative" style={{ height: l1Count > 0 ? (l2Count > 0 ? '200px' : '140px') : '80px' }}>
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+                  <defs>
+                    <linearGradient id="lineGradL1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f0b429" stopOpacity="0.6" />
+                      <stop offset="100%" stopColor="#f0b429" stopOpacity="0.15" />
+                    </linearGradient>
+                    <linearGradient id="lineGradL2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+                    </linearGradient>
+                    <filter id="nodeGlow">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                    <filter id="pulseGlow">
+                      <feGaussianBlur stdDeviation="2" />
+                    </filter>
+                  </defs>
 
-                  {/* Level 2 sub-branches */}
-                  {level2.length > 0 && (
-                    <>
-                      <div className="flex justify-center mt-1">
-                        <div className="w-px h-4 bg-gradient-to-b from-emerald-400/30 to-emerald-400/10" />
-                      </div>
-                      <div className="flex justify-center gap-1.5 flex-wrap">
-                        {level2.slice(0, 4).map((member, i) => (
-                          <motion.div
-                            key={member.id}
-                            initial={{ y: 8, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.4 + i * 0.06 }}
-                            className="flex flex-col items-center"
-                          >
-                            <div className={`w-7 h-7 rounded-lg overflow-hidden border ${member.device_active ? 'border-emerald-400/40' : 'border-white/8'} bg-[#0c101c]`}>
-                              <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username}`}
-                                alt={member.username}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          </motion.div>
-                        ))}
-                        {level2.length > 4 && (
-                          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center">
-                            <span className="text-[8px] text-emerald-400 font-bold">+{level2.length - 4}</span>
-                          </div>
+                  {/* Connection lines from center to L1 nodes */}
+                  {level1.slice(0, 5).map((_, i) => {
+                    const l1x = l1Count <= 1 ? 160 : 60 + (i * (200 / (Math.min(l1Count, 5) - 1)));
+                    return (
+                      <g key={`line-l1-${i}`}>
+                        <line x1="160" y1="28" x2={l1x} y2="90" stroke="url(#lineGradL1)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.6" />
+                        {/* Animated pulse traveling along line */}
+                        <circle r="2.5" fill="#f0b429" filter="url(#pulseGlow)">
+                          <animateMotion dur={`${1.5 + i * 0.3}s`} repeatCount="indefinite">
+                            <mpath href={`#path-l1-${i}`} />
+                          </animateMotion>
+                        </circle>
+                        <path id={`path-l1-${i}`} d={`M160,28 L${l1x},90`} fill="none" stroke="none" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Connection lines from L1 to L2 nodes */}
+                  {level2.slice(0, 4).map((_, i) => {
+                    const l2x = l2Count <= 1 ? 160 : 80 + (i * (160 / (Math.min(l2Count, 4) - 1)));
+                    const parentL1x = l1Count <= 1 ? 160 : 60 + (Math.floor(i * Math.min(l1Count, 5) / Math.min(l2Count, 4)) * (200 / (Math.min(l1Count, 5) - 1)));
+                    return (
+                      <g key={`line-l2-${i}`}>
+                        <line x1={parentL1x} y1="90" x2={l2x} y2="160" stroke="url(#lineGradL2)" strokeWidth="1" strokeDasharray="3 4" opacity="0.4" />
+                        <circle r="2" fill="#10b981" filter="url(#pulseGlow)">
+                          <animateMotion dur={`${2 + i * 0.4}s`} repeatCount="indefinite">
+                            <mpath href={`#path-l2-${i}`} />
+                          </animateMotion>
+                        </circle>
+                        <path id={`path-l2-${i}`} d={`M${parentL1x},90 L${l2x},160`} fill="none" stroke="none" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Central node (YOU) */}
+                  <g filter="url(#nodeGlow)">
+                    <circle cx="160" cy="24" r="18" fill="#0c101c" stroke="#f0b429" strokeWidth="2" />
+                    <circle cx="160" cy="24" r="12" fill="#f0b429" opacity="0.15" />
+                    <text x="160" y="28" textAnchor="middle" fill="#f0b429" fontSize="9" fontWeight="bold" fontFamily="Orbitron, sans-serif">TU</text>
+                    {/* Orbiting ring */}
+                    <circle cx="160" cy="24" r="22" fill="none" stroke="#f0b429" strokeWidth="0.5" opacity="0.3" strokeDasharray="3 5">
+                      <animateTransform attributeName="transform" type="rotate" from="0 160 24" to="360 160 24" dur="8s" repeatCount="indefinite" />
+                    </circle>
+                  </g>
+
+                  {/* L1 member nodes */}
+                  {level1.slice(0, 5).map((member, i) => {
+                    const cx = l1Count <= 1 ? 160 : 60 + (i * (200 / (Math.min(l1Count, 5) - 1)));
+                    const isActive = member.device_active;
+                    return (
+                      <g key={`node-l1-${member.id}`}>
+                        {/* Pulse ring for active */}
+                        {isActive && (
+                          <circle cx={cx} cy="90" r="14" fill="none" stroke="#10b981" strokeWidth="0.8" opacity="0.4">
+                            <animate attributeName="r" values="14;20;14" dur="2.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite" />
+                          </circle>
                         )}
-                      </div>
-                    </>
+                        <circle cx={cx} cy="90" r="12" fill="#0c101c" stroke={isActive ? '#10b981' : '#f0b429'} strokeWidth="1.5" opacity="0.9" />
+                        <circle cx={cx} cy="90" r="3" fill={isActive ? '#10b981' : '#f0b429'} opacity="0.6" />
+                        <text x={cx} y="110" textAnchor="middle" fill="white" fontSize="7" opacity="0.6" fontFamily="Inter, sans-serif">{member.username.slice(0, 6)}</text>
+                      </g>
+                    );
+                  })}
+
+                  {/* L2 member nodes */}
+                  {level2.slice(0, 4).map((member, i) => {
+                    const cx = l2Count <= 1 ? 160 : 80 + (i * (160 / (Math.min(l2Count, 4) - 1)));
+                    const isActive = member.device_active;
+                    return (
+                      <g key={`node-l2-${member.id}`}>
+                        <circle cx={cx} cy="160" r="9" fill="#0c101c" stroke={isActive ? '#10b981' : '#334155'} strokeWidth="1" opacity="0.7" />
+                        <circle cx={cx} cy="160" r="2.5" fill={isActive ? '#10b981' : '#475569'} opacity="0.5" />
+                        <text x={cx} y="176" textAnchor="middle" fill="white" fontSize="6" opacity="0.4" fontFamily="Inter, sans-serif">{member.username.slice(0, 5)}</text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Empty state */}
+                  {l1Count === 0 && (
+                    <text x="160" y="65" textAnchor="middle" fill="#475569" fontSize="9" fontFamily="Inter, sans-serif">Invita il tuo primo membro</text>
                   )}
+                </svg>
+              </div>
+
+              {/* Stats bar at bottom */}
+              <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/5 relative z-10">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] text-white/40">Nodi: <span className="text-amber-400 font-bold">{totalNodes + 1}</span></span>
+                  <span className="text-[9px] text-white/40">L1: <span className="text-amber-400 font-bold">{l1Count}</span></span>
+                  <span className="text-[9px] text-white/40">L2: <span className="text-emerald-400 font-bold">{l2Count}</span></span>
                 </div>
-              ) : (
-                <div className="text-center py-3">
-                  <p className="text-slate-500 text-[10px]">Invita il tuo primo membro</p>
-                  <ChevronDown size={14} className="text-amber-400/40 mx-auto mt-1 animate-bounce" />
+                <div className="flex items-center gap-1">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full bg-amber-400"
+                  />
+                  <span className="text-[8px] text-white/30 uppercase tracking-wider">Syncing</span>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Invite Card */}
-      <div className="px-4 -mt-4 relative z-10">
+      <div className="px-4 -mt-2 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -269,14 +323,20 @@ const TeamPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Members List with flow connectors */}
+        {/* Members List */}
         <div className="relative">
-          {/* Vertical connector line on the left */}
+          {/* Vertical connector line */}
           {activeMembers.length > 1 && (
-            <div
-              className="absolute left-5 top-8 w-px bg-gradient-to-b from-amber-400/30 via-amber-400/15 to-transparent"
-              style={{ height: `${(activeMembers.length - 1) * 72}px` }}
-            />
+            <div className="absolute left-[22px] top-8 bottom-8 w-px">
+              <div className="h-full bg-gradient-to-b from-amber-400/25 via-amber-400/10 to-transparent" />
+              {/* Animated pulse on the line */}
+              <motion.div
+                animate={{ y: ['0%', '100%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                className="absolute top-0 left-0 w-px h-4 bg-amber-400/60"
+                style={{ filter: 'blur(1px)' }}
+              />
+            </div>
           )}
 
           <div className="space-y-2">
@@ -284,6 +344,7 @@ const TeamPage: React.FC = () => {
               <div className="text-center py-10">
                 <Users className="w-12 h-12 text-amber-500/30 mx-auto mb-3" />
                 <p className="text-slate-400 text-sm">Nessun membro a questo livello</p>
+                <ChevronDown size={14} className="text-amber-400/40 mx-auto mt-2 animate-bounce" />
               </div>
             ) : (
               activeMembers.map((member, i) => (
@@ -292,14 +353,17 @@ const TeamPage: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-[#0c101c] rounded-xl p-4 border border-white/6 relative"
+                  className="bg-[#0c101c] rounded-xl p-4 border border-white/6 relative ml-6"
                 >
-                  {/* Connector dot on the left */}
-                  {activeMembers.length > 1 && (
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 -translate-x-[calc(100%+8px)]">
-                      <div className={`w-2.5 h-2.5 rounded-full border-2 ${member.device_active ? 'bg-emerald-400 border-emerald-400/50' : 'bg-slate-600 border-slate-500/50'}`} />
-                    </div>
-                  )}
+                  {/* Node connector dot */}
+                  <div className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center">
+                    <motion.div
+                      animate={{ boxShadow: member.device_active ? ['0 0 0px #10b981', '0 0 8px #10b981', '0 0 0px #10b981'] : 'none' }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className={`w-3 h-3 rounded-full border-2 ${member.device_active ? 'bg-emerald-400 border-emerald-400/50' : 'bg-slate-600 border-slate-500/50'}`}
+                    />
+                    <div className={`w-3 h-px ${member.device_active ? 'bg-emerald-400/30' : 'bg-slate-600/30'}`} />
+                  </div>
 
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center border-2 ${member.device_active ? 'border-emerald-400/40' : 'border-white/10'}`}>
