@@ -11,6 +11,35 @@ const BenefitsPage: React.FC = () => {
   const { currentUser, claimDailyReward, dailyClaims, userDevices, teamMembers } = useApp();
   const [claimResult, setClaimResult] = useState<{ msg: string; ok: boolean } | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<{ pos: number; name: string; vx: number; power: number }[]>([]);
+
+  const badges = useMemo(() => {
+    if (!currentUser) return [];
+    return [
+      { name: 'Primo Login', icon: '🚀', earned: Boolean(currentUser), desc: 'Accesso alla piattaforma', tier: 'bronze' },
+      { name: 'Primo GPU', icon: '⚡', earned: userDevices.length > 0, desc: 'Attivazione primo dispositivo', tier: 'silver' },
+      { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: 'Invita 3 membri', tier: 'silver' },
+      { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: '7 claim consecutivi', tier: 'gold' },
+      { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: '100 TFLOPS potenza', tier: 'platinum' },
+      { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 Dollari generati', tier: 'diamond' },
+      { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 Dollari generati', tier: 'ultimate' },
+      { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
+    ];
+  }, [currentUser, userDevices, teamMembers, dailyClaims]);
+
+  useEffect(() => {
+    if (!supabase || !currentUser) return;
+    supabase.rpc('leaderboard_top', { p_limit: 10 }).then(({ data }) => {
+      if (data && Array.isArray(data)) {
+        setLeaderboard(data.map((r: { pos: number; username: string; vx: number; power: number }) => ({
+          pos: Number(r.pos),
+          name: r.username,
+          vx: Number(r.vx),
+          power: Number(r.power),
+        })));
+      }
+    });
+  }, [currentUser]);
 
   if (!currentUser) return null;
 
@@ -27,20 +56,8 @@ const BenefitsPage: React.FC = () => {
     }, 800);
   };
 
-  // Week days
   const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   const daysCompleted = Math.min(dailyClaims.length, 7);
-
-  const badges = useMemo(() => [
-    { name: 'Primo Login', icon: '🚀', earned: Boolean(currentUser), desc: 'Accesso alla piattaforma', tier: 'bronze' },
-    { name: 'Primo GPU', icon: '⚡', earned: userDevices.length > 0, desc: 'Attivazione primo dispositivo', tier: 'silver' },
-    { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: 'Invita 3 membri', tier: 'silver' },
-    { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: '7 claim consecutivi', tier: 'gold' },
-    { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: '100 TFLOPS potenza', tier: 'platinum' },
-    { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 Dollari generati', tier: 'diamond' },
-    { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 Dollari generati', tier: 'ultimate' },
-    { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
-  ], [currentUser, userDevices, teamMembers, dailyClaims]);
 
   const tierColors: Record<string, string> = {
     bronze: 'from-amber-700 to-amber-900',
@@ -50,22 +67,6 @@ const BenefitsPage: React.FC = () => {
     diamond: 'from-purple-500 to-pink-600',
     ultimate: 'from-purple-600 via-pink-500 to-cyan-500',
   };
-
-  const [leaderboard, setLeaderboard] = useState<{ pos: number; name: string; vx: number; power: number }[]>([]);
-
-  useEffect(() => {
-    if (!supabase) return;
-    supabase.rpc('leaderboard_top', { p_limit: 10 }).then(({ data }) => {
-      if (data && Array.isArray(data)) {
-        setLeaderboard(data.map((r: { pos: number; username: string; vx: number; power: number }) => ({
-          pos: Number(r.pos),
-          name: r.username,
-          vx: Number(r.vx),
-          power: Number(r.power),
-        })));
-      }
-    });
-  }, [currentUser.vx_balance]);
 
   // Missions
   const missions = [

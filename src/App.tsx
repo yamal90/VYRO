@@ -139,7 +139,7 @@ const AppContent: React.FC = () => {
               <Route path="/faq" element={<AnimatedPage><FAQPage /></AnimatedPage>} />
               <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
               <Route path="/achievements" element={<AnimatedPage><AchievementsPage /></AnimatedPage>} />
-              <Route path="/tiers" element={<AnimatedPage><TiersPage /></AnimatedPage>} />
+              <Route path="/tiers" element={<AnimatedPage><TiersPage userStats={{ balance: currentUser?.vx_balance ?? 0, devices: 0, teamSize: 0 }} currentTier={currentUser?.tier} /></AnimatedPage>} />
               {isAdmin && (
                 <Route path="/admin" element={<AnimatedPage><AdminPage /></AnimatedPage>} />
               )}

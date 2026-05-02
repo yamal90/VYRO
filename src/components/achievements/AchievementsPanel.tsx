@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Lock, Sparkles, Star, Crown, Diamond } from 'lucide-react';
 import { useAchievementsStore, type Achievement } from '@/stores/achievementsStore';
@@ -114,7 +114,7 @@ interface AchievementsPanelProps {
   onClose?: () => void;
 }
 
-export const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ onClose }) => {
+export const AchievementsPanel: React.FC<AchievementsPanelProps> = () => {
   const { t } = useTranslation();
   const { achievements, totalXp, level, getUnlockedCount } = useAchievementsStore();
   const unlockedCount = getUnlockedCount();

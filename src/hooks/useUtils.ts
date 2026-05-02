@@ -15,7 +15,7 @@ export const useRealtime = <T = unknown>({
   filter,
 }: UseRealtimeOptions) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [lastEvent, setLastEvent] = useState<T | null>(null);
+  const [lastEvent, _setLastEvent] = useState<T | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -70,12 +70,10 @@ export const useProductionStats = () => {
 
 // Theme hook
 export const useTheme = () => {
-  const [theme, setThemeState] = useState<'dark' | 'cyberpunk' | 'neon'>('cyberpunk');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('vyro-theme') as typeof theme;
-    if (saved) setThemeState(saved);
-  }, []);
+  const [theme, setThemeState] = useState<'dark' | 'cyberpunk' | 'neon'>(() => {
+    const saved = localStorage.getItem('vyro-theme') as 'dark' | 'cyberpunk' | 'neon' | null;
+    return saved ?? 'cyberpunk';
+  });
 
   const setTheme = useCallback((newTheme: typeof theme) => {
     setThemeState(newTheme);
@@ -88,12 +86,13 @@ export const useTheme = () => {
 
 // Media query hook
 export const useMediaQuery = (query: string) => {
-  const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(query).matches;
+  });
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    setMatches(media.matches);
-
     const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
     media.addEventListener('change', listener);
     return () => media.removeEventListener('change', listener);

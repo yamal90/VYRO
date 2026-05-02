@@ -62,10 +62,9 @@ const AdminPage: React.FC = () => {
     deposit_network: 'TRC20',
     deposit_address: '',
   });
-
   React.useEffect(() => {
     if (!platformSettings) return;
-    setSettingsDraft({
+    setSettingsDraft({ // eslint-disable-line react-hooks/set-state-in-effect -- syncing API data to local draft
       maintenance_mode: Boolean(platformSettings.maintenance_mode),
       deposits_enabled: Boolean(platformSettings.deposits_enabled),
       withdrawals_enabled: Boolean(platformSettings.withdrawals_enabled),
@@ -107,6 +106,7 @@ const AdminPage: React.FC = () => {
     if (adminBootstrappedForUserRef.current === currentUser.id) return;
     adminBootstrappedForUserRef.current = currentUser.id;
     void refreshAppData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id, currentUser?.role, refreshAppData]);
 
   if (!currentUser || currentUser.role !== 'admin') {

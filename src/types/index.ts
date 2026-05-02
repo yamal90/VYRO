@@ -11,6 +11,9 @@ export interface User {
   demo_usdt_balance: number;
   compute_power: number;
   avatar_url?: string;
+  tier: string;
+  streak: number;
+  account_blocked: boolean;
   created_at: string;
 }
 
@@ -28,36 +31,39 @@ export interface GPUDevice {
 
 export interface UserDevice {
   id: string;
-  user_id: string;
-  device_id: string;
-  device?: GPUDevice;
+  user_id?: string;
+  device_id?: string;
+  device?: GPUDevice | null;
   status: 'pending' | 'processing' | 'active' | 'completed';
   start_date: string;
-  end_date: string | null;
+  end_date?: string | null;
   total_generated: number;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Transaction {
   id: string;
-  user_id: string;
-  type: 'deposit' | 'withdrawal' | 'device_purchase' | 'device_reward' | 'team_bonus' | 'daily_claim' | 'login_bonus';
+  user_id?: string;
+  type: string;
   amount: number;
-  currency: 'VX' | 'USDT';
-  status: 'completed' | 'pending' | 'rejected';
+  currency: string;
+  status: string;
   description: string;
+  tx_hash?: string | null;
   created_at: string;
 }
 
 export interface TeamMember {
   id: string;
   username: string;
-  user_id: string;
+  user_id?: string;
+  avatar_url?: string | null;
+  tier?: string;
   created_at: string;
   device_active: boolean;
   production: number;
-  status: 'active' | 'inactive';
-  level: 1 | 2;
+  status: string;
+  level: number;
 }
 
 export interface DailyClaim {
