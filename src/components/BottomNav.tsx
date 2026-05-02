@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Cpu, Gift, ArrowRightLeft, Users, HelpCircle } from 'lucide-react';
+import { Home, Cpu, Gift, ArrowRightLeft, Users, HelpCircle, Settings } from 'lucide-react';
 
 const navItems: { path: string; icon: React.ElementType; label: string }[] = [
   { path: '/', icon: Home, label: 'Home' },
@@ -10,6 +10,7 @@ const navItems: { path: string; icon: React.ElementType; label: string }[] = [
   { path: '/faq', icon: HelpCircle, label: 'FAQ' },
   { path: '/transactions', icon: ArrowRightLeft, label: 'Transazioni' },
   { path: '/team', icon: Users, label: 'Team' },
+  { path: '/settings', icon: Settings, label: 'Impostazioni' },
 ];
 
 const BottomNav: React.FC = () => {

@@ -1,0 +1,26 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Personnalisez votre expérience VYRO",
+    "general": "Général",
+    "language": "Langue",
+    "languageDesc": "Choisissez la langue de l'interface",
+    "theme": "Thème",
+    "notifications": "Notifications",
+    "pushNotifications": "Notifications push",
+    "pushDesc": "Recevez des mises à jour en temps réel",
+    "security": "Sécurité",
+    "support": "Support",
+    "faq": "FAQ",
+    "faqDesc": "Questions fréquemment posées",
+    "selectLanguage": "Sélectionner la langue"
+  }
+}
