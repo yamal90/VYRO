@@ -1,32 +1,121 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="120" fill="#050816"/>
-  <rect x="38" y="38" width="436" height="436" rx="96" fill="url(#bg)" stroke="url(#stroke)" stroke-width="4"/>
-  <g filter="url(#glow)">
-    <path d="M130 150H196L256 290L316 150H382L281 362H231L130 150Z" fill="url(#main)"/>
-    <path d="M350 352L392 392" stroke="#22D3EE" stroke-width="14" stroke-linecap="round"/>
-    <path d="M338 387L404 321" stroke="#A78BFA" stroke-width="10" stroke-linecap="round"/>
+  <!-- Dark base -->
+  <rect width="512" height="512" rx="100" fill="#050810"/>
+  <rect x="6" y="6" width="500" height="500" rx="96" fill="url(#bg)" stroke="url(#stroke)" stroke-width="3"/>
+
+  <!-- Scratches / claw marks background -->
+  <g opacity="0.08">
+    <path d="M80 60L180 460" stroke="#f0b429" stroke-width="3" stroke-linecap="round"/>
+    <path d="M100 60L200 460" stroke="#f0b429" stroke-width="2" stroke-linecap="round"/>
+    <path d="M120 60L220 460" stroke="#f0b429" stroke-width="3" stroke-linecap="round"/>
+    <path d="M340 60L300 460" stroke="#f0b429" stroke-width="2" stroke-linecap="round"/>
+    <path d="M360 60L320 460" stroke="#f0b429" stroke-width="3" stroke-linecap="round"/>
+    <path d="M380 60L340 460" stroke="#f0b429" stroke-width="2" stroke-linecap="round"/>
   </g>
-  <circle cx="394" cy="118" r="16" fill="#22D3EE"/>
-  <text x="256" y="438" text-anchor="middle" fill="#E2E8F0" font-size="44" font-family="Inter, Arial, sans-serif" font-weight="700" letter-spacing="8">VYRO</text>
+
+  <!-- Monster face outline / skull shape -->
+  <g filter="url(#monsterglow)">
+    <!-- Aggressive V shape - main body with jagged edges -->
+    <path d="M108 120L148 120L192 230L218 170L240 230L256 280L272 230L294 170L320 230L364 120H404L290 370H270L256 340L242 370H222L108 120Z" fill="url(#mainGrad)"/>
+
+    <!-- Sharp fangs hanging from V -->
+    <path d="M180 235L168 270L192 250Z" fill="url(#fangGrad)"/>
+    <path d="M332 235L344 270L320 250Z" fill="url(#fangGrad)"/>
+
+    <!-- Lower jaw fangs -->
+    <path d="M230 355L222 385L242 365Z" fill="url(#fangGrad)"/>
+    <path d="M282 355L290 385L270 365Z" fill="url(#fangGrad)"/>
+  </g>
+
+  <!-- Glowing monster eyes -->
+  <g filter="url(#eyeglow)">
+    <!-- Left eye -->
+    <path d="M168 160L200 148L210 170L200 192L168 180Z" fill="#f0b429"/>
+    <ellipse cx="192" cy="170" rx="8" ry="10" fill="#ff6b00"/>
+    <ellipse cx="192" cy="170" rx="4" ry="7" fill="#ff0000"/>
+    <circle cx="189" cy="167" r="2" fill="white" opacity="0.9"/>
+
+    <!-- Right eye -->
+    <path d="M344 160L312 148L302 170L312 192L344 180Z" fill="#f0b429"/>
+    <ellipse cx="320" cy="170" rx="8" ry="10" fill="#ff6b00"/>
+    <ellipse cx="320" cy="170" rx="4" ry="7" fill="#ff0000"/>
+    <circle cx="317" cy="167" r="2" fill="white" opacity="0.9"/>
+  </g>
+
+  <!-- Horns -->
+  <g filter="url(#hornglow)">
+    <path d="M145 135L100 62L158 120Z" fill="url(#hornGrad)"/>
+    <path d="M367 135L412 62L354 120Z" fill="url(#hornGrad)"/>
+  </g>
+
+  <!-- Electric sparks around -->
+  <g opacity="0.7">
+    <path d="M90 200L80 210L95 208L85 225" stroke="#f0b429" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M422 200L432 210L417 208L427 225" stroke="#f0b429" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M256 90L250 75L260 80L256 62" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Dot accents -->
+  <circle cx="100" cy="110" r="6" fill="#f0b429" opacity="0.8"/>
+  <circle cx="412" cy="110" r="6" fill="#f0b429" opacity="0.8"/>
+  <circle cx="256" cy="50" r="4" fill="#10b981" opacity="0.6"/>
+
+  <!-- VYRO text - aggressive style -->
+  <text x="256" y="445" text-anchor="middle" fill="url(#textGrad)" font-size="52" font-family="'Orbitron', 'Inter', Arial, sans-serif" font-weight="900" letter-spacing="12">VYRO</text>
+
+  <!-- Underline accent -->
+  <rect x="148" y="456" width="216" height="3" rx="1.5" fill="url(#accentGrad)" opacity="0.8"/>
+
   <defs>
-    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0B1024"/>
-      <stop offset="0.52" stop-color="#121938"/>
-      <stop offset="1" stop-color="#0A102A"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06080f"/>
+      <stop offset="0.5" stop-color="#0a0e1a"/>
+      <stop offset="1" stop-color="#06080f"/>
     </linearGradient>
-    <linearGradient id="stroke" x1="66" y1="70" x2="452" y2="446" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8B5CF6" stop-opacity="0.8"/>
-      <stop offset="1" stop-color="#22D3EE" stop-opacity="0.8"/>
+    <linearGradient id="stroke" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0b429" stop-opacity="0.6"/>
+      <stop offset="0.5" stop-color="#f0b429" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#10b981" stop-opacity="0.5"/>
     </linearGradient>
-    <linearGradient id="main" x1="132" y1="152" x2="388" y2="360" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#A78BFA"/>
-      <stop offset="0.54" stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#22D3EE"/>
+    <linearGradient id="mainGrad" x1="108" y1="120" x2="404" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0b429"/>
+      <stop offset="0.4" stop-color="#d4940a"/>
+      <stop offset="0.7" stop-color="#f0b429"/>
+      <stop offset="1" stop-color="#10b981"/>
     </linearGradient>
-    <filter id="glow" x="108" y="128" width="318" height="286" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-      <feGaussianBlur stdDeviation="7" result="effect1_foregroundBlur"/>
+    <linearGradient id="fangGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#f0b429"/>
+      <stop offset="1" stop-color="#ff6b00"/>
+    </linearGradient>
+    <linearGradient id="hornGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#f0b429"/>
+      <stop offset="0.5" stop-color="#d4940a"/>
+      <stop offset="1" stop-color="#8b6914"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="148" y1="400" x2="364" y2="460" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0b429"/>
+      <stop offset="1" stop-color="#fcd34d"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="148" y1="0" x2="364" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0b429" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#f0b429"/>
+      <stop offset="0.7" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="monsterglow" x="80" y="90" width="360" height="320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="bg"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="bg" result="shape"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+    </filter>
+    <filter id="eyeglow" x="140" y="120" width="240" height="100" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="bg"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="bg" result="shape"/>
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+    </filter>
+    <filter id="hornglow" x="70" y="30" width="380" height="140" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="bg"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="bg" result="shape"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
     </filter>
   </defs>
 </svg>
