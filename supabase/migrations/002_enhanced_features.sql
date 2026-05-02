@@ -305,7 +305,7 @@ begin
     end if;
   end if;
   
-  select balance into v_user_balance from profiles where id = v_user_id;
+  select balance into v_user_balance from profiles where id = v_user_id for update;
   if v_user_balance < p_amount then
     return json_build_object('success', false, 'message', 'Insufficient balance');
   end if;
