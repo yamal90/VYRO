@@ -158,14 +158,15 @@ export const useActivateDevice = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ deviceId, userId }: { deviceId: string; userId: string }) => {
+    mutationFn: async ({ deviceId }: { deviceId: string }) => {
       if (!supabase) throw new Error('Supabase not configured');
-      // Implementation would call RPC or direct inserts
-      const { error } = await supabase.rpc('activate_gpu_device', {
+      const { data, error } = await supabase.rpc('purchase_device', {
         p_device_id: deviceId,
-        p_user_id: userId,
       });
       if (error) throw error;
+      const result = data as { success: boolean; message: string };
+      if (!result.success) throw new Error(result.message);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.devices });

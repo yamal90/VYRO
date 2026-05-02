@@ -3,8 +3,8 @@ import { Database, KeyRound, ShieldCheck } from 'lucide-react';
 
 const steps = [
   'Copia .env.example in .env e inserisci URL e publishable key di Supabase.',
-  'Esegui prima /supabase/schema.sql e poi /supabase/migrations/001_rpc_and_rls.sql nel tuo progetto Supabase.',
-  'Ricarica l’app: registrazione, referral, claim, acquisti, leaderboard e admin useranno il database reale.',
+  "Esegui nell'ordine: /supabase/schema.sql, /supabase/migrations/001_rpc_and_rls.sql e /supabase/migrations/002_enhanced_features.sql nel tuo progetto Supabase.",
+  "Ricarica l'app: registrazione, referral, claim, acquisti, staking, leaderboard e admin useranno il database reale.",
 ];
 
 const SupabaseSetupState: React.FC = () => {
@@ -16,7 +16,7 @@ const SupabaseSetupState: React.FC = () => {
         </div>
         <h1 className="font-display text-2xl font-bold text-center tracking-wider">Configura Supabase</h1>
         <p className="text-slate-300 text-sm text-center mt-3 leading-relaxed">
-          L’app ora usa autenticazione, referral e dati reali via Supabase. Mancano solo le variabili ambiente del progetto.
+          L&apos;app ora usa autenticazione, referral e dati reali via Supabase. Mancano solo le variabili ambiente del progetto.
         </p>
 
         <div className="mt-6 grid gap-3">
@@ -47,7 +47,7 @@ const SupabaseSetupState: React.FC = () => {
               <span className="text-sm font-semibold">Schema incluso</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Lo schema è diviso tra tabelle base e migrazione RPC/RLS: entrambi i file sono necessari per il comportamento completo.
+              Lo schema è diviso tra tabelle base, migrazione RPC/RLS e feature avanzate: tutti e tre i file SQL sono necessari per il comportamento completo.
             </p>
           </div>
         </div>
