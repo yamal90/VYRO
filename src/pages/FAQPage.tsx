@@ -4,7 +4,7 @@ import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
   TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star, Play,
-  Wallet, ExternalLink, Activity
+  Wallet, Activity
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -87,7 +87,6 @@ const securityBadges = [
   { icon: Server, label: '99.97% Uptime', color: 'text-emerald-400' }
 ];
 
-const WALLET_ADDRESS = '0xA9D1e08C7793af67e9d92fe308d5697FB81d3E43';
 const WALLET_MASKED = `0xA9D1...3E43`;
 
 const LiveWalletEarnings: React.FC = () => {
@@ -169,14 +168,7 @@ const LiveWalletEarnings: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-slate-400 uppercase tracking-wider">Wallet</span>
             </div>
-            <a
-              href={`https://etherscan.io/address/${WALLET_ADDRESS}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[10px] text-amber-400 hover:text-amber-300 transition-colors"
-            >
-              Verifica <ExternalLink size={10} />
-            </a>
+            <span className="text-[10px] text-emerald-400/60 font-medium">On-chain</span>
           </div>
           <p className="text-white font-mono text-sm mt-1 tracking-wider">{WALLET_MASKED}</p>
         </div>
