@@ -477,9 +477,9 @@ const DashboardPage: React.FC = () => {
         isOpen={transferModal === 'deposit'}
         mode="deposit"
         onClose={() => setTransferModal(null)}
-        depositAddress={platformSettings?.deposit_address || '4SWFCN5UJTRHNWQS4W7GISBUN4HGMU6BV8'}
+        depositAddress={platformSettings?.deposit_address || '0xbfEABE2e143722cbf74706DB38722AF641033D7f'}
         depositAsset={platformSettings?.deposit_asset ?? 'USDT'}
-        depositNetwork={platformSettings?.deposit_network ?? 'TRC20'}
+        depositNetwork={platformSettings?.deposit_network ?? 'BEP20'}
         minDeposit={Number(platformSettings?.min_deposit ?? 0)}
         onSubmit={async ({ amount, txHash, proofImageUrl }) => {
           const result = await requestDeposit(amount, txHash, proofImageUrl);
