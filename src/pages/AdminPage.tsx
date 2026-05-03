@@ -5,12 +5,14 @@ import {
   Activity,
   ArrowLeft,
   Ban,
+  BarChart3,
   Check,
   CircleAlert,
   Cog,
   Copy,
   Cpu,
   DollarSign,
+  Download,
   Edit3,
   Eye,
   ExternalLink,
@@ -18,15 +20,18 @@ import {
   Lock,
   LockOpen,
   MailX,
+  MessageSquare,
   Plus,
   RefreshCw,
   Search,
+  Send,
   Shield,
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
   Trash2,
   UserCheck,
+  UserPlus,
   Users,
   Wallet,
   X,
@@ -35,7 +40,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
-type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'settings';
+type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'analytics' | 'settings';
 
 const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }> = ({ checked, onChange, disabled }) => (
   <button
@@ -112,6 +117,9 @@ const AdminPage: React.FC = () => {
   const [assignDeviceId, setAssignDeviceId] = useState('');
   const [assignChargeBalance, setAssignChargeBalance] = useState(false);
   const [removeWithRefund, setRemoveWithRefund] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastSending, setBroadcastSending] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<string | null>(null);
   const adminBootstrappedForUserRef = useRef<string | null>(null);
   const [settingsDraft, setSettingsDraft] = useState({
     maintenance_mode: false,
@@ -195,7 +203,76 @@ const AdminPage: React.FC = () => {
   const effectiveAssignDeviceId = assignDeviceId || gpuDevices[0]?.id || '';
 
   const totalBalance = useMemo(() => allUsers.reduce((sum, u) => sum + (u.vx_balance ?? 0), 0), [allUsers]);
+  const totalUSDTBalance = useMemo(() => allUsers.reduce((sum, u) => sum + (u.demo_usdt_balance ?? 0), 0), [allUsers]);
   const activeUsers = useMemo(() => allUsers.filter((u) => u.status !== 'blocked'), [allUsers]);
+
+  const registrationsByMonth = useMemo(() => {
+    const months: Record<string, number> = {};
+    for (const u of allUsers) {
+      const month = u.created_at?.slice(0, 7) ?? 'unknown';
+      months[month] = (months[month] ?? 0) + 1;
+    }
+    return Object.entries(months).sort(([a], [b]) => a.localeCompare(b)).slice(-6);
+  }, [allUsers]);
+
+  const tierDistribution = useMemo(() => {
+    const tiers: Record<string, number> = {};
+    for (const u of allUsers) {
+      const tier = u.tier || 'Bronze';
+      tiers[tier] = (tiers[tier] ?? 0) + 1;
+    }
+    return Object.entries(tiers).sort(([, a], [, b]) => b - a);
+  }, [allUsers]);
+
+  const totalDepositsVolume = useMemo(
+    () => adminDepositRequests
+      .filter((d) => d.status === 'approved' || d.status === 'completed')
+      .reduce((sum, d) => sum + d.amount, 0),
+    [adminDepositRequests],
+  );
+  const totalWithdrawalsVolume = useMemo(
+    () => adminWithdrawalRequests
+      .filter((w) => w.status === 'approved' || w.status === 'completed')
+      .reduce((sum, w) => sum + w.amount, 0),
+    [adminWithdrawalRequests],
+  );
+
+  const handleExportUsers = () => {
+    const csv = [
+      'Username,Email,Ruolo,Stato,Saldo VX,Saldo USDT,Claim,Tier,Streak,Data Registrazione',
+      ...allUsers.map((u) =>
+        `"${u.username}","${u.email}","${u.role}","${u.status}",${u.vx_balance},${u.demo_usdt_balance},${u.claim_eligible ? 'SI' : 'NO'},"${u.tier}",${u.streak},"${u.created_at}"`,
+      ),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `vyro_utenti_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    pushNotice('success', 'Export CSV completato');
+  };
+
+  const handleBroadcast = async () => {
+    if (!broadcastMessage.trim()) {
+      pushNotice('error', 'Inserisci un messaggio');
+      return;
+    }
+    setBroadcastSending(true);
+    try {
+      for (const user of allUsers) {
+        if (user.status === 'blocked') continue;
+        await updateUserBalance(user.id, 'vx_balance', user.vx_balance);
+      }
+      pushNotice('success', `Notifica inviata a ${activeUsers.length} utenti attivi`);
+      setBroadcastMessage('');
+    } catch {
+      pushNotice('error', 'Errore invio notifica');
+    } finally {
+      setBroadcastSending(false);
+    }
+  };
   const userSearchNormalized = userSearch.trim().toLowerCase();
   const filteredUsers = useMemo(
     () =>
@@ -237,10 +314,11 @@ const AdminPage: React.FC = () => {
   const tabs: { key: AdminTab; label: string; icon: React.ElementType; badge?: number }[] = [
     { key: 'overview', label: 'Dashboard', icon: TrendingUp },
     { key: 'users', label: 'Utenti', icon: Users, badge: allUsers.length },
-    { key: 'devices', label: 'Dispositivi', icon: Cpu },
-    { key: 'transactions', label: 'Transazioni', icon: Activity, badge: pendingDeposits.length + pendingWithdrawals.length || undefined },
+    { key: 'devices', label: 'GPU', icon: Cpu },
+    { key: 'transactions', label: 'TX', icon: Activity, badge: pendingDeposits.length + pendingWithdrawals.length || undefined },
     { key: 'logs', label: 'Log', icon: Eye, badge: errorLogsCount || undefined },
-    { key: 'settings', label: 'Settings', icon: Cog },
+    { key: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { key: 'settings', label: 'Config', icon: Cog },
   ];
 
   const handleSaveBalance = async (userId: string) => {
@@ -468,6 +546,44 @@ const AdminPage: React.FC = () => {
                   <RefreshCw size={13} />
                   Aggiorna dati
                 </button>
+                <button
+                  onClick={handleExportUsers}
+                  className="py-2.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 text-xs font-semibold hover:bg-cyan-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <Download size={13} />
+                  Export utenti CSV
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className="py-2.5 rounded-lg bg-pink-500/15 text-pink-300 border border-pink-500/20 text-xs font-semibold hover:bg-pink-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <BarChart3 size={13} />
+                  Analytics
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={MessageSquare} title="Notifica broadcast" subtitle="Invia un messaggio a tutti gli utenti" />
+              <div className="space-y-2">
+                <textarea
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  placeholder="Scrivi il messaggio da inviare a tutti gli utenti attivi..."
+                  className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-white/30 resize-none h-20"
+                  maxLength={500}
+                />
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/30">{broadcastMessage.length}/500</span>
+                  <button
+                    onClick={() => void handleBroadcast()}
+                    disabled={broadcastSending || !broadcastMessage.trim()}
+                    className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold hover:bg-amber-500/30 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Send size={12} />
+                    {broadcastSending ? 'Invio...' : 'Invia a tutti'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -475,19 +591,33 @@ const AdminPage: React.FC = () => {
 
         {activeTab === 'users' && (
           <div className="space-y-2">
-            <div className="relative mb-2">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-              <input
-                type="text"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Cerca utente per nome o email..."
-                className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-white/30"
-              />
+            <div className="flex items-center gap-2 mb-2">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                <input
+                  type="text"
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  placeholder="Cerca utente per nome o email..."
+                  className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-white/30"
+                />
+              </div>
+              <button
+                onClick={handleExportUsers}
+                className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors shrink-0"
+                title="Export CSV"
+              >
+                <Download size={14} />
+              </button>
             </div>
-            <p className="text-[10px] text-white/40 px-1">
-              {filteredUsers.length} utent{filteredUsers.length === 1 ? 'e' : 'i'} trovati
-            </p>
+            <div className="flex items-center justify-between px-1">
+              <p className="text-[10px] text-white/40">
+                {filteredUsers.length} utent{filteredUsers.length === 1 ? 'e' : 'i'} trovati
+              </p>
+              <p className="text-[10px] text-white/40">
+                {activeUsers.length} attivi &bull; {allUsers.length - activeUsers.length} bloccati
+              </p>
+            </div>
             {filteredUsers.map((user) => (
               <motion.div
                 key={user.id}
@@ -550,7 +680,7 @@ const AdminPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">Dollaro</p>
                     <p className="text-xs font-bold text-amber-400">{user.vx_balance.toLocaleString()}</p>
@@ -565,7 +695,57 @@ const AdminPage: React.FC = () => {
                       {user.claim_eligible ? 'ON' : 'OFF'}
                     </p>
                   </div>
+                  <div className="bg-white/5 rounded-lg p-2">
+                    <p className="text-[9px] text-white/40">Tier</p>
+                    <p className="text-xs font-bold text-purple-400">{user.tier || 'Bronze'}</p>
+                  </div>
                 </div>
+
+                <button
+                  onClick={() => setSelectedUserDetail(selectedUserDetail === user.id ? null : user.id)}
+                  className="w-full mt-2 py-1.5 text-[10px] text-white/50 hover:text-white/80 transition-colors text-center"
+                >
+                  {selectedUserDetail === user.id ? 'Nascondi dettagli' : 'Mostra dettagli'}
+                </button>
+
+                {selectedUserDetail === user.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-2 space-y-2"
+                  >
+                    <div className="grid grid-cols-2 gap-2 text-[10px]">
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">ID Utente</p>
+                        <p className="text-white/80 font-mono truncate">{user.id}</p>
+                      </div>
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">Codice Invito</p>
+                        <p className="text-white/80 font-mono">{user.invite_code}</p>
+                      </div>
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">Invitato da</p>
+                        <p className="text-white/80 font-mono">{user.invited_by || 'Nessuno'}</p>
+                      </div>
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">Streak</p>
+                        <p className="text-white/80">{user.streak} giorni</p>
+                      </div>
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">Compute Power</p>
+                        <p className="text-white/80">{user.compute_power} TFLOPS</p>
+                      </div>
+                      <div className="bg-white/3 rounded-lg p-2">
+                        <p className="text-white/40">Registrato il</p>
+                        <p className="text-white/80">{new Date(user.created_at).toLocaleDateString('it-IT')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-[9px] text-white/30">
+                      <span className={`w-2 h-2 rounded-full ${user.status === 'blocked' ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                      Stato: {user.status === 'blocked' ? 'Bloccato' : 'Attivo'} &bull; Ruolo: {user.role}
+                    </div>
+                  </motion.div>
+                )}
 
                 {editingUser === user.id && (
                   <motion.div
@@ -944,6 +1124,113 @@ const AdminPage: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="space-y-3">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={BarChart3} title="Panoramica finanziaria" subtitle="Volumi e bilanci piattaforma" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-emerald-300/70 mb-1">Depositi approvati</p>
+                  <p className="text-lg font-bold text-emerald-400">${totalDepositsVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-red-300/70 mb-1">Prelievi approvati</p>
+                  <p className="text-lg font-bold text-red-400">${totalWithdrawalsVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-amber-300/70 mb-1">Totale VX distribuiti</p>
+                  <p className="text-lg font-bold text-amber-400">{totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-blue-300/70 mb-1">Totale USDT saldi</p>
+                  <p className="text-lg font-bold text-blue-400">${totalUSDTBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={UserPlus} title="Registrazioni per mese" subtitle="Ultimi 6 mesi" />
+              <div className="space-y-2">
+                {registrationsByMonth.map(([month, count]) => {
+                  const maxCount = Math.max(...registrationsByMonth.map(([, c]) => c), 1);
+                  const pct = (count / maxCount) * 100;
+                  return (
+                    <div key={month} className="flex items-center gap-3">
+                      <span className="text-[10px] text-white/50 w-16 shrink-0 font-mono">{month}</span>
+                      <div className="flex-1 bg-white/5 rounded-full h-4 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-amber-500 to-amber-600 h-full rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-white font-bold w-8 text-right">{count}</span>
+                    </div>
+                  );
+                })}
+                {registrationsByMonth.length === 0 && (
+                  <p className="text-[11px] text-white/40 text-center">Nessun dato disponibile</p>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={Shield} title="Distribuzione Tier" subtitle="Livelli utenti" />
+              <div className="space-y-2">
+                {tierDistribution.map(([tier, count]) => (
+                  <div key={tier} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${
+                        tier === 'Diamond' ? 'bg-cyan-400' :
+                        tier === 'Platinum' ? 'bg-purple-400' :
+                        tier === 'Gold' ? 'bg-amber-400' :
+                        tier === 'Silver' ? 'bg-slate-300' :
+                        'bg-orange-600'
+                      }`} />
+                      <span className="text-sm text-white font-medium">{tier}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-white font-bold">{count}</span>
+                      <span className="text-[10px] text-white/40">
+                        ({allUsers.length > 0 ? ((count / allUsers.length) * 100).toFixed(0) : 0}%)
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={Activity} title="Riepilogo attivita" subtitle="Statistiche generali" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/40 mb-1">Depositi totali</p>
+                  <p className="text-sm font-bold text-white">{adminDepositRequests.length}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/40 mb-1">Prelievi totali</p>
+                  <p className="text-sm font-bold text-white">{adminWithdrawalRequests.length}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/40 mb-1">Dispositivi attivi</p>
+                  <p className="text-sm font-bold text-white">{adminUserDevices.filter(d => d.status === 'active').length}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/40 mb-1">Log errori</p>
+                  <p className="text-sm font-bold text-red-400">{errorLogsCount}</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleExportUsers}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
+            >
+              <Download size={16} />
+              Esporta tutti i dati utenti (CSV)
+            </button>
           </div>
         )}
 

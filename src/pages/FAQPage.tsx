@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
-  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star
+  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star,
+  Play, Pause, SkipForward, Volume2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -86,6 +87,140 @@ const securityBadges = [
   { icon: Server, label: '99.97% Uptime', color: 'text-emerald-400' }
 ];
 
+const videoSlides = [
+  {
+    title: 'Benvenuto su VYRO GPU',
+    content: 'VYRO e la piattaforma di cloud computing che ti permette di noleggiare potenza GPU e guadagnare passivamente. Registrati con un codice referral per iniziare.',
+    icon: Zap,
+    color: 'from-amber-500 to-orange-500',
+  },
+  {
+    title: 'Come funziona',
+    content: '1. Registrati con email e referral code\n2. Deposita USDT per acquistare GPU\n3. Le GPU generano rendimenti automatici ogni 7 giorni\n4. Ritira i tuoi guadagni quando vuoi',
+    icon: Cpu,
+    color: 'from-blue-500 to-indigo-500',
+  },
+  {
+    title: 'Dashboard e Portfolio',
+    content: 'Dalla dashboard puoi vedere il tuo saldo, la produzione in tempo reale, le transazioni recenti e gestire depositi e prelievi.',
+    icon: TrendingUp,
+    color: 'from-emerald-500 to-teal-500',
+  },
+  {
+    title: 'Sistema Team e Referral',
+    content: 'Invita amici con il tuo codice personale. Guadagna il 5% sugli acquisti diretti (Livello 1) e il 2% sugli acquisti indiretti (Livello 2).',
+    icon: Users,
+    color: 'from-purple-500 to-pink-500',
+  },
+  {
+    title: 'Sicurezza e Protezione',
+    content: 'I tuoi fondi sono protetti da crittografia end-to-end, autenticazione a due fattori, e Row Level Security su tutto il database. Certificazioni SOC 2, ISO 27001, GDPR.',
+    icon: Shield,
+    color: 'from-green-500 to-emerald-600',
+  },
+  {
+    title: 'Daily Claim e Benefici',
+    content: 'Accedi ogni giorno per il claim giornaliero. La ricompensa aumenta con lo streak: da 0.12 USDT al giorno 1 fino a 0.70 USDT dopo 30 giorni consecutivi.',
+    icon: Gift,
+    color: 'from-pink-500 to-rose-500',
+  },
+  {
+    title: 'Tier e Achievement',
+    content: 'Sali di livello da Bronze a Diamond. Ogni tier offre benefici esclusivi: commissioni ridotte, bonus maggiori e accesso a GPU premium.',
+    icon: Award,
+    color: 'from-amber-400 to-yellow-500',
+  },
+];
+
+const VideoGuide: React.FC = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  React.useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => {
+        if (prev >= videoSlides.length - 1) {
+          setIsPlaying(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const slide = videoSlides[currentSlide];
+  const SlideIcon = slide.icon;
+  const progress = ((currentSlide + 1) / videoSlides.length) * 100;
+
+  return (
+    <div className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-white/10 rounded-2xl overflow-hidden">
+      <div className="relative aspect-video flex flex-col items-center justify-center p-6 text-center">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-1/4 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl" />
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="relative z-10"
+          >
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${slide.color} flex items-center justify-center shadow-lg`}>
+              <SlideIcon size={28} className="text-white" />
+            </div>
+            <h3 className="text-white text-lg font-bold mb-3">{slide.title}</h3>
+            <p className="text-white/70 text-sm leading-relaxed max-w-sm mx-auto whitespace-pre-line">
+              {slide.content}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+        <div className="absolute bottom-3 left-0 right-0 flex items-center gap-1.5 justify-center">
+          {videoSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === currentSlide ? 'bg-amber-400 w-6' : 'bg-white/20 hover:bg-white/40'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-black/30 px-4 py-3 flex items-center gap-3">
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-[#06080f] hover:bg-amber-400 transition-colors"
+        >
+          {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
+        </button>
+        <button
+          onClick={() => setCurrentSlide((prev) => (prev + 1) % videoSlides.length)}
+          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+        >
+          <SkipForward size={14} />
+        </button>
+        <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
+          <motion.div
+            className="bg-amber-400 h-full rounded-full"
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+        <span className="text-[10px] text-white/50 tabular-nums">
+          {currentSlide + 1}/{videoSlides.length}
+        </span>
+        <Volume2 size={14} className="text-white/30" />
+      </div>
+    </div>
+  );
+};
+
 const FAQPage: React.FC = () => {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('platform');
@@ -151,8 +286,17 @@ const FAQPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Video Guide */}
+      <div className="px-4 mt-4 mb-4 relative z-10">
+        <div className="flex items-center gap-2 mb-3">
+          <Play size={16} className="text-amber-400" />
+          <h2 className="text-sm font-bold text-white">Guida Video — Come funziona VYRO</h2>
+        </div>
+        <VideoGuide />
+      </div>
+
       {/* Category Tabs */}
-      <div className="px-4 -mt-4 relative z-10">
+      <div className="px-4 -mt-0 relative z-10">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {faqCategories.map((cat) => (
             <motion.button
