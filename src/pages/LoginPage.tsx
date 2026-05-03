@@ -469,6 +469,27 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <Zap size={16} className="text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-emerald-400 text-sm font-bold">Zero commissioni sui prelievi</p>
+                <p className="text-slate-400 text-[10px] mt-0.5">Prelievi sempre gratuiti, senza costi nascosti</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                <UserPlus size={16} className="text-amber-400" />
+              </div>
+              <div>
+                <p className="text-amber-400 text-sm font-bold">Facciamo crescere la community</p>
+                <p className="text-slate-400 text-[10px] mt-0.5">Il nostro unico obiettivo: far crescere la community insieme</p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-4 pt-4 border-t border-white/6 text-center">
             {authStep === 'auth' ? (
               <p className="text-slate-400 text-sm">

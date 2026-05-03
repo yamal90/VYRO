@@ -94,8 +94,8 @@ const computeGeneratedValue = (entry: PortfolioEntryRow, fallbackWeekly: number)
 
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
   const elapsedMs = Math.max(0, Date.now() - cycleStart);
-  const elapsedInCycleMs = elapsedMs % cycleMs;
-  const generated = cycleReward * (elapsedInCycleMs / cycleMs);
+  const progress = Math.min(elapsedMs / cycleMs, 1);
+  const generated = cycleReward * progress;
   return Number(generated.toFixed(2));
 };
 

@@ -21,7 +21,7 @@ interface DevicesActions {
   refresh: () => Promise<void>;
 }
 
-const CYCLE_DAYS = 7;
+const CYCLE_DAYS = 30;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 export const useDevicesStore = create<DevicesState & DevicesActions>()(
@@ -115,8 +115,8 @@ export const useDevicesStore = create<DevicesState & DevicesActions>()(
       }
       
       const elapsedMs = Math.max(0, Date.now() - startMs);
-      const elapsedInCycleMs = elapsedMs % CYCLE_MS;
-      return cycleTarget * (elapsedInCycleMs / CYCLE_MS);
+      const progress = Math.min(elapsedMs / CYCLE_MS, 1);
+      return cycleTarget * progress;
     },
 
     getTotalProduction: () => {
