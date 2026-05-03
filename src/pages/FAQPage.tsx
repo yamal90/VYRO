@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
-  TrendingUp, Gift, RefreshCw
+  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -251,6 +251,262 @@ const FAQPage: React.FC = () => {
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
               <p className="font-display text-xl font-bold text-amber-400">3</p>
               <p className="text-[10px] text-slate-400 mt-1">{t('faq.activeContinents')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════ */}
+      {/* Community Promo Gallery */}
+      {/* ═══════════════════════════════════════════════════════ */}
+      <div className="px-4 mt-6">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+              <Camera size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">VYRO Community</h3>
+              <p className="text-[10px] text-slate-400">La nostra community globale in azione</p>
+            </div>
+          </div>
+
+          {/* Community Stats Bar */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-amber-500/10 rounded-lg p-2 text-center">
+              <p className="font-display text-sm font-bold text-amber-400">12K+</p>
+              <p className="text-[8px] text-slate-400">Utenti attivi</p>
+            </div>
+            <div className="bg-emerald-500/10 rounded-lg p-2 text-center">
+              <p className="font-display text-sm font-bold text-emerald-400">45+</p>
+              <p className="text-[8px] text-slate-400">Paesi</p>
+            </div>
+            <div className="bg-blue-500/10 rounded-lg p-2 text-center">
+              <p className="font-display text-sm font-bold text-blue-400">24/7</p>
+              <p className="text-[8px] text-slate-400">GPU attive</p>
+            </div>
+          </div>
+
+          {/* Promo Image Grid */}
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { img: '/images/promo/promo-1.jpg', caption: 'VYRO App — Dashboard live', tag: 'APP', location: 'Milano, IT' },
+              { img: '/images/promo/promo-2.jpg', caption: 'Team VYRO — Sviluppo continuo', tag: 'TEAM', location: 'Berlin, DE' },
+              { img: '/images/promo/promo-3.jpg', caption: 'Monitoraggio GPU da mobile', tag: 'MOBILE', location: 'London, UK' },
+              { img: '/images/promo/promo-4.jpg', caption: 'VYRO Tech Conference 2025', tag: 'EVENT', location: 'Dubai, AE' },
+              { img: '/images/promo/promo-5.jpg', caption: 'Community member — Guadagni reali', tag: 'COMMUNITY', location: 'Roma, IT' },
+              { img: '/images/promo/promo-6.jpg', caption: 'Data Center VYRO — GPU Farm', tag: 'INFRA', location: 'Frankfurt, DE' },
+              { img: '/images/promo/promo-7.jpg', caption: 'Gestione portfolio da smartphone', tag: 'APP', location: 'Paris, FR' },
+              { img: '/images/promo/promo-8.jpg', caption: 'Workshop VYRO — Formazione team', tag: 'WORKSHOP', location: 'Barcelona, ES' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.06 }}
+                className="relative rounded-xl overflow-hidden group"
+              >
+                <img
+                  src={item.img}
+                  alt={item.caption}
+                  className="w-full h-32 object-cover"
+                  loading="lazy"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* VYRO tag badge */}
+                <div className="absolute top-2 left-2 flex items-center gap-1">
+                  <span className="px-1.5 py-0.5 bg-amber-500/90 text-[7px] font-bold text-black rounded">
+                    VYRO
+                  </span>
+                  <span className="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-[7px] font-bold text-white rounded">
+                    {item.tag}
+                  </span>
+                </div>
+                {/* Caption */}
+                <div className="absolute bottom-0 left-0 right-0 p-2">
+                  <p className="text-[10px] text-white font-semibold leading-tight">{item.caption}</p>
+                  <p className="text-[8px] text-white/60 flex items-center gap-0.5 mt-0.5">
+                    <MapPin size={7} />
+                    {item.location}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Promotional Testimonials */}
+      <div className="px-4 mt-4">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <Star size={16} className="text-amber-400" />
+            <h3 className="text-sm font-bold text-white">Cosa dice la community</h3>
+          </div>
+          <div className="space-y-3">
+            {[
+              {
+                name: 'Marco T.',
+                avatar: '/images/promo/promo-10.jpg',
+                text: 'Ho iniziato con un X-120 e ora ho 3 dispositivi attivi. I guadagni sono costanti e il team è sempre disponibile.',
+                rating: 5,
+                device: 'G-700',
+                country: 'Italia'
+              },
+              {
+                name: 'Sarah K.',
+                avatar: '/images/promo/promo-9.jpg',
+                text: 'La piattaforma è intuitiva e i rendimenti sono reali. La funzione team mi permette di guadagnare passivamente.',
+                rating: 5,
+                device: 'G-900',
+                country: 'Germania'
+              },
+              {
+                name: 'James L.',
+                avatar: '/images/promo/promo-12.jpg',
+                text: 'Sicurezza al top. La verifica QR sui depositi mi dà totale fiducia. Consiglio a chiunque voglia iniziare.',
+                rating: 5,
+                device: 'X-5700',
+                country: 'UK'
+              },
+            ].map((review, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white/5 rounded-xl p-3 border border-white/5"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <img
+                    src={review.avatar}
+                    alt={review.name}
+                    className="w-9 h-9 rounded-full object-cover border border-amber-500/30"
+                  />
+                  <div className="flex-1">
+                    <p className="text-xs text-white font-semibold">{review.name}</p>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-amber-400">{review.device}</span>
+                      <span className="text-[9px] text-white/30">•</span>
+                      <span className="text-[9px] text-white/40">{review.country}</span>
+                    </div>
+                  </div>
+                  <div className="flex">
+                    {Array.from({ length: review.rating }).map((_, j) => (
+                      <Star key={j} size={10} className="text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-white/70 leading-relaxed">&#8220;{review.text}&#8221;</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Phone Mockup - VYRO App Preview */}
+      <div className="px-4 mt-4">
+        <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
+          <div className="flex items-center gap-2 mb-4">
+            <Smartphone size={16} className="text-amber-400" />
+            <h3 className="text-sm font-bold text-white">VYRO App — Sempre con te</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Phone mockup 1 */}
+            <div className="relative">
+              <div className="bg-[#0c101c] rounded-2xl p-2 border-2 border-white/10 shadow-xl">
+                <div className="bg-gradient-to-b from-[#0c101c] to-[#111827] rounded-xl overflow-hidden">
+                  <div className="bg-amber-500/10 px-3 py-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[8px] text-amber-400 font-bold">VYRO GPU</span>
+                      <span className="text-[7px] text-emerald-400">● Live</span>
+                    </div>
+                  </div>
+                  <div className="p-2 space-y-1.5">
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-[7px] text-white/50">Il tuo saldo</p>
+                      <p className="text-sm font-bold text-amber-400">$1,245.80</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="bg-emerald-500/10 rounded p-1.5 text-center">
+                        <p className="text-[6px] text-emerald-300">Oggi</p>
+                        <p className="text-[9px] font-bold text-emerald-400">+$24.00</p>
+                      </div>
+                      <div className="bg-blue-500/10 rounded p-1.5 text-center">
+                        <p className="text-[6px] text-blue-300">7 giorni</p>
+                        <p className="text-[9px] font-bold text-blue-400">+$168.00</p>
+                      </div>
+                    </div>
+                    <div className="bg-white/5 rounded p-1.5 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
+                        <Cpu size={8} className="text-amber-400" />
+                      </div>
+                      <div>
+                        <p className="text-[7px] text-white font-medium">G-700 Attivo</p>
+                        <p className="text-[6px] text-emerald-400">Guadagno: $24/giorno</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[9px] text-center text-white/40 mt-2">Dashboard</p>
+            </div>
+            {/* Phone mockup 2 */}
+            <div className="relative">
+              <div className="bg-[#0c101c] rounded-2xl p-2 border-2 border-white/10 shadow-xl">
+                <div className="bg-gradient-to-b from-[#0c101c] to-[#111827] rounded-xl overflow-hidden">
+                  <div className="bg-emerald-500/10 px-3 py-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[8px] text-emerald-400 font-bold">Team Network</span>
+                      <span className="text-[7px] text-amber-400">5% / 2%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 space-y-1.5">
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-[7px] text-white/50">Team guadagni</p>
+                      <p className="text-sm font-bold text-emerald-400">$387.50</p>
+                    </div>
+                    <div className="space-y-1">
+                      {[{ name: 'Paolo M.', earn: 42 }, { name: 'Giulia R.', earn: 28 }, { name: 'Alex K.', earn: 55 }].map((member, j) => (
+                        <div key={j} className="bg-white/5 rounded p-1.5 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center">
+                              <span className="text-[6px] text-amber-400 font-bold">{member.name[0]}</span>
+                            </div>
+                            <span className="text-[7px] text-white">{member.name}</span>
+                          </div>
+                          <span className="text-[7px] text-emerald-400">+${member.earn}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[9px] text-center text-white/40 mt-2">Team</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-white/30 text-center mt-3">
+            Disponibile su tutti i dispositivi • Monitoraggio in tempo reale
+          </p>
+        </div>
+      </div>
+
+      {/* Promo Banner - Extra images */}
+      <div className="px-4 mt-4">
+        <div className="glass-dark rounded-xl overflow-hidden border border-amber-500/20">
+          <div className="relative">
+            <img
+              src="/images/promo/promo-11.jpg"
+              alt="VYRO networking event"
+              className="w-full h-40 object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+              <span className="px-3 py-1 bg-amber-500/90 text-[9px] font-bold text-black rounded-full mb-2">VYRO GPU CLOUD</span>
+              <p className="font-display text-lg font-bold text-white">Unisciti alla rivoluzione</p>
+              <p className="text-[11px] text-white/70 mt-1">Guadagna ogni giorno con la potenza delle GPU</p>
             </div>
           </div>
         </div>
