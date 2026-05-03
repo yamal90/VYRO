@@ -384,7 +384,7 @@
           },
           {
             "q": "Quanto posso guadagnare?",
-            "a": "I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~12.32 $/settimana\n• G-700 (68 TF): ~209.94 $/settimana\n• X-7900 (900 TF): ~3,703 $/settimana\n• IX-9900 Ultimate (6300 TF): ~31,000 $/settimana"
+            "a": "I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~11.20 $/settimana\n• G-700 (68 TF): ~168.00 $/settimana\n• X-7900 (900 TF): ~2,520 $/settimana\n• IX-9900 (4200 TF): ~10,080 $/settimana"
           },
           {
             "q": "Quando vengono distribuite le ricompense?",
@@ -405,7 +405,7 @@
           },
           {
             "q": "Quali commissioni ricevo?",
-            "a": "Le commissioni si dividono in:\n• Livello 1 (inviti diretti): 3% sulla produzione + 5% bonus attivazione\n• Livello 2 (inviti dei tuoi inviti): 2% sulla produzione + 3% bonus attivazione\nLe commissioni vengono calcolate in tempo reale e accreditate automaticamente."
+            "a": "Le commissioni si basano solo sull'acquisto di dispositivi:\n• Livello 1 (inviti diretti): 5% sull'acquisto dispositivo\n• Livello 2 (inviti dei tuoi inviti): 2% sull'acquisto dispositivo\nLe commissioni vengono calcolate in tempo reale e accreditate automaticamente."
           },
           {
             "q": "Ci sono bonus progressivi?",
@@ -422,11 +422,11 @@
         "items": [
           {
             "q": "Cos'è il Claim Giornaliero?",
-            "a": "Ogni giorno puoi riscattare 2.5 $ gratuitamente visitando la sezione Benefici. Questo bonus è progettato per premiare la costanza degli utenti attivi. Se mantieni uno streak di 7 giorni consecutivi, sblocchi un bonus extra di 10 $."
+            "a": "Ogni giorno puoi riscattare a partire da 0.10 $ USDT visitando la sezione Benefici. L'importo aumenta gradualmente con lo streak. Questo bonus è progettato per premiare la costanza degli utenti attivi."
           },
           {
             "q": "Quali missioni giornaliere esistono?",
-            "a": "Le missioni giornaliere includono:\n• Login giornaliero: +1 $\n• Claim giornaliero: +2.5 $\n• Controllo dispositivi: +0.5 $\n• Invita un amico: +5 $\nCompletare tutte le missioni garantisce bonus aggiuntivi."
+            "a": "Le missioni giornaliere includono:\n• Login giornaliero: +0.05 $\n• Claim giornaliero: +0.10 $\n• Controllo dispositivi: +0.02 $\nCompletare tutte le missioni garantisce bonus aggiuntivi."
           },
           {
             "q": "Come funzionano i badge?",

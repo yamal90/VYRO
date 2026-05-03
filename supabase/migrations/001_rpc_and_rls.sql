@@ -31,15 +31,15 @@ create table if not exists public.gpu_catalog (
 );
 
 insert into public.gpu_catalog (id, name, price, compute_power, reward_7_days) values
-  ('gpu-1', 'Intel Core i3-12100',    80,    4,    12.32),
-  ('gpu-2', 'Intel Core i5-12400F',   160,   8,    26.80),
-  ('gpu-3', 'AMD Ryzen 5 5600',       480,   24,   82.19),
-  ('gpu-4', 'Intel Core i5-13400F',   1200,  68,   209.94),
-  ('gpu-5', 'AMD Ryzen 5 7600',       3000,  160,  548.84),
-  ('gpu-6', 'Intel Core i7-13700KF',  7200,  360,  1379.93),
-  ('gpu-7', 'AMD Ryzen 7 7800X3D',    18000, 900,  3703.00),
-  ('gpu-8', 'Intel Core i9-14900K',   34000, 1800, 7677.00),
-  ('gpu-9', 'AMD Ryzen 9 7950X3D',    72000, 4200, 18666.00)
+  ('gpu-1', 'Intel Core i3-12100',    80,    4,    11.20),
+  ('gpu-2', 'Intel Core i5-12400F',   160,   8,    22.40),
+  ('gpu-3', 'AMD Ryzen 5 5600',       480,   24,   67.20),
+  ('gpu-4', 'Intel Core i5-13400F',   1200,  68,   168.00),
+  ('gpu-5', 'AMD Ryzen 5 7600',       3000,  160,  420.00),
+  ('gpu-6', 'Intel Core i7-13700KF',  7200,  360,  1008.00),
+  ('gpu-7', 'AMD Ryzen 7 7800X3D',    18000, 900,  2520.00),
+  ('gpu-8', 'Intel Core i9-14900K',   34000, 1800, 4760.00),
+  ('gpu-9', 'AMD Ryzen 9 7950X3D',    72000, 4200, 10080.00)
 on conflict (id) do update set
   name = excluded.name,
   price = excluded.price,
@@ -278,8 +278,8 @@ begin
     v_new_streak := 1;
   end if;
 
-  -- Calculate reward (base 0.5 VX + streak bonus capped at 30)
-  v_amount := 0.50 + least(v_new_streak, 30) * 0.10;
+  -- Calculate reward (base 0.10 USDT + streak bonus capped at 30)
+  v_amount := 0.10 + least(v_new_streak, 30) * 0.02;
 
   -- Update profile
   update public.profiles

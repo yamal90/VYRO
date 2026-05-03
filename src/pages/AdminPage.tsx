@@ -21,6 +21,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
 type AdminTab = 'users' | 'devices' | 'transactions' | 'logs' | 'settings';
@@ -49,6 +50,7 @@ const AdminPage: React.FC = () => {
     pushNotice,
   } = useApp();
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<AdminTab>('users');
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
@@ -590,7 +592,7 @@ const AdminPage: React.FC = () => {
                         {item.username} • {item.amount.toFixed(2)} {item.asset}
                       </p>
                       <p className="text-[10px] text-white/45 truncate">{item.email}</p>
-                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>
                       {item.status}
@@ -661,7 +663,7 @@ const AdminPage: React.FC = () => {
                         <Wallet size={11} />
                         {item.wallet_address ?? 'Wallet non impostato'}
                       </p>
-                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString('it-IT')}</p>
+                      <p className="text-[10px] text-white/35">{new Date(item.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>
                       {item.status}
@@ -732,7 +734,7 @@ const AdminPage: React.FC = () => {
                     {tx.amount.toFixed(2)} {tx.currency}
                   </p>
                   <p className="text-white/30 text-[9px]">
-                    {new Date(tx.created_at).toLocaleDateString('it-IT')}
+                    {new Date(tx.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT')}
                   </p>
                 </div>
               </div>
@@ -768,7 +770,7 @@ const AdminPage: React.FC = () => {
                 <div key={log.id} className={`border rounded-xl p-3 ${isError ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/10'}`}>
                   <div className="flex items-center gap-2 mb-1">
                     {isError ? <CircleAlert size={12} className="text-red-400" /> : <Shield size={12} className="text-yellow-400" />}
-                    <p className="text-white/60 text-[10px]">{new Date(log.created_at).toLocaleString('it-IT')}</p>
+                    <p className="text-white/60 text-[10px]">{new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
                     <span className={`text-[10px] font-bold ml-auto ${isError ? 'text-red-300' : 'text-amber-400'}`}>
                       {log.action}
                     </span>

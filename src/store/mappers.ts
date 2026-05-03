@@ -131,10 +131,7 @@ export const mapLogsToTransactions = (
         : row.status === 'rejected'
           ? 'rejected'
           : 'pending',
-    description:
-      row.status === 'pending'
-        ? `Richiesta deposito ${row.asset} ${row.network}`
-        : `Deposito ${row.asset} ${row.network}`,
+    description: `${row.status === 'pending' ? 'Deposit request' : 'Deposit'} ${row.asset} ${row.network}`,
     created_at: row.created_at,
   }));
 
@@ -151,8 +148,8 @@ export const mapLogsToTransactions = (
           ? 'rejected'
           : 'pending',
     description: row.wallet_address
-      ? `${row.status === 'pending' ? 'Richiesta prelievo verso' : 'Prelievo verso'} ${row.wallet_address}`
-      : 'Richiesta prelievo',
+      ? `${row.status === 'pending' ? 'Withdrawal request to' : 'Withdrawal to'} ${row.wallet_address}`
+      : 'Withdrawal request',
     created_at: row.created_at,
   }));
 

@@ -665,6 +665,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async (payload: RegisterPayload): Promise<ActionResult> => {
       if (!supabase) return emptyResult('Configura Supabase prima della registrazione.');
       clearNotice();
+
+      // Block disposable / temporary email providers
+      const emailDomain = payload.email.trim().toLowerCase().split('@')[1] ?? '';
+      const blockedDomains = [
+        'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwaway.email',
+        'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
+        'dispostable.com', 'trashmail.com', 'mailnesia.com', 'maildrop.cc',
+        'fakeinbox.com', 'tempail.com', 'temp-mail.org', 'emailondeck.com',
+        'getnada.com', 'mohmal.com', 'burnermail.io', 'inboxkitten.com',
+        'minutemail.com', '10minutemail.com', 'tempr.email', 'discard.email',
+        'mailsac.com', 'harakirimail.com', 'tmail.ws', 'tmpmail.net',
+        'tmpmail.org', 'bupmail.com', 'mailcatch.com', 'trashmail.net',
+      ];
+      if (blockedDomains.includes(emailDomain)) {
+        return emptyResult('Email temporanee non sono consentite. Usa un indirizzo email reale.');
+      }
+
       const referralCode = payload.referralCode.trim().toUpperCase();
       if (!referralCode) return emptyResult('Il referral code è obbligatorio.');
       if (payload.password !== payload.confirmPassword) return emptyResult('Le password non coincidono.');

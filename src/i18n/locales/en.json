@@ -384,7 +384,7 @@
           },
           {
             "q": "How much can I earn?",
-            "a": "Earnings depend on the power of your GPUs. Here are some examples:\n• X-120 (4 TF): ~$12.32/week\n• G-700 (68 TF): ~$209.94/week\n• X-7900 (900 TF): ~$3,703/week\n• IX-9900 Ultimate (6300 TF): ~$31,000/week"
+            "a": "Earnings depend on the power of your GPUs. Here are some examples:\n• X-120 (4 TF): ~$11.20/week\n• G-700 (68 TF): ~$168.00/week\n• X-7900 (900 TF): ~$2,520/week\n• IX-9900 (4200 TF): ~$10,080/week"
           },
           {
             "q": "When are rewards distributed?",
@@ -405,7 +405,7 @@
           },
           {
             "q": "What commissions do I receive?",
-            "a": "Commissions are divided into:\n• Level 1 (direct invites): 3% on production + 5% activation bonus\n• Level 2 (invites of your invites): 2% on production + 3% activation bonus\nCommissions are calculated in real time and credited automatically."
+            "a": "Commissions are based on device purchases only:\n• Level 1 (direct invites): 5% on device purchase\n• Level 2 (invites of your invites): 2% on device purchase\nCommissions are calculated in real time and credited automatically."
           },
           {
             "q": "Are there progressive bonuses?",
@@ -422,11 +422,11 @@
         "items": [
           {
             "q": "What is the Daily Claim?",
-            "a": "Every day you can claim $2.5 for free by visiting the Benefits section. This bonus is designed to reward the consistency of active users. If you maintain a streak of 7 consecutive days, you unlock an extra bonus of $10."
+            "a": "Every day you can claim starting from $0.10 USDT by visiting the Benefits section. The amount gradually increases with your streak. This bonus is designed to reward the consistency of active users."
           },
           {
             "q": "What daily missions exist?",
-            "a": "Daily missions include:\n• Daily login: +$1\n• Daily claim: +$2.5\n• Check devices: +$0.5\n• Invite a friend: +$5\nCompleting all missions guarantees additional bonuses."
+            "a": "Daily missions include:\n• Daily login: +$0.05\n• Daily claim: +$0.10\n• Check devices: +$0.02\nCompleting all missions guarantees additional bonuses."
           },
           {
             "q": "How do badges work?",

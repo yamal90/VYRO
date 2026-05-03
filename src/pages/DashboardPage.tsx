@@ -21,7 +21,7 @@ const CYCLE_DAYS = 7;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DashboardPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     currentUser,
     balanceVisible,
@@ -72,7 +72,7 @@ const DashboardPage: React.FC = () => {
   }, [userDevices, nowMs]);
 
   const teamProd = useMemo(() => {
-    return teamMembers.reduce((sum, m) => sum + m.production * (m.level === 1 ? 0.03 : 0.02), 0);
+    return teamMembers.reduce((sum, m) => sum + m.production * (m.level === 1 ? 0.05 : 0.02), 0);
   }, [teamMembers]);
 
   const recentTx = transactions.slice(0, 4);
@@ -428,7 +428,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">{tx.description}</p>
-                <p className="text-[10px] text-slate-400">{new Date(tx.created_at).toLocaleDateString('it-IT')}</p>
+                <p className="text-[10px] text-slate-400">{new Date(tx.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
               </div>
               <div className="text-right">
                 <p className={`text-sm font-bold font-display ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
