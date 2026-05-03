@@ -17,7 +17,9 @@
     "copy": "Copia",
     "copied": "Copiato!",
     "seeAll": "Vedi tutto",
-    "noData": "Nessun dato disponibile"
+    "noData": "Nessun dato disponibile",
+    "you": "Tu",
+    "dollar": "Dollaro"
   },
   "auth": {
     "login": "Accedi",
@@ -37,7 +39,28 @@
     "emailSent": "Email inviata",
     "passwordReset": "Password reimpostata",
     "welcomeBack": "Bentornato",
-    "createAccount": "Crea account"
+    "createAccount": "Crea account",
+    "newPassword": "Nuova password",
+    "confirmNewPassword": "Conferma nuova password",
+    "backToLogin": "Torna al login",
+    "sendResetEmail": "Invia email reset",
+    "updatePassword": "Aggiorna password",
+    "registrationComplete": "Registrazione completata.",
+    "recoverPassword": "Recupera la password via email",
+    "setNewPassword": "Imposta una nuova password",
+    "createAccountReferral": "Crea un account con referral obbligatorio",
+    "loginToAccount": "Accedi al tuo account",
+    "secureAccess": "Accesso sicuro con redirect su dominio configurato",
+    "accountProtection": "Protezione account, verifica referral e sessione crittografata",
+    "referralRequired": "Referral code obbligatorio per continuare con Google.",
+    "continueWithGoogle": "Continua con Google",
+    "enterReferralFirst": "Inserisci il referral code prima di usare Google in registrazione.",
+    "goToLogin": "Vai al login",
+    "resetLinkSent": "Riceverai il link di reset all'indirizzo indicato.",
+    "afterResetLogin": "Dopo il reset puoi accedere subito con la nuova password.",
+    "protectedAccess": "Accesso protetto e profilo persistito in piattaforma.",
+    "referralAutoValidated": "Il referral code viene validato automaticamente.",
+    "referralMandatory": "Obbligatorio per creare il profilo."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -55,7 +78,17 @@
     "nodeOnline": "Online",
     "latency": "Latenza",
     "quality": "Qualità",
-    "operationalSnapshot": "Snapshot Operativo"
+    "operationalSnapshot": "Snapshot Operativo",
+    "deposit": "Ricarica",
+    "withdrawal": "Prelievo",
+    "exchange": "Scambio",
+    "invoice": "Fattura",
+    "exchangeNotice": "Per ora lo scambio passa dal catalogo dispositivi e dal saldo Dollaro.",
+    "invoiceNotice": "Apri una transazione per vedere il relativo dettaglio contabile.",
+    "controlCenterDesc": "Monitoraggio continuo, sicurezza attiva, produzione cloud live.",
+    "totalActivities": "Attività Totali",
+    "node": "Nodo",
+    "disclaimer": "VYRO GPU integra strumenti di monitoraggio, protezione account e controllo operativo per offrire un'esperienza stabile, chiara e orientata alla continuità della piattaforma."
   },
   "devices": {
     "title": "Centro GPU",
@@ -73,7 +106,13 @@
     "reward3Days": "3 Giorni",
     "reward7Days": "7 Giorni",
     "activationPrice": "Prezzo attivazione",
-    "yourBalance": "Il tuo saldo"
+    "yourBalance": "Il tuo saldo",
+    "gpuCenter": "Centro GPU",
+    "subtitle": "Hardware per cloud computing",
+    "threeDays": "3 Giorni",
+    "sevenDays": "7 Giorni",
+    "activateGPU": "Attiva GPU",
+    "disclaimer": "Ogni dispositivo amplia la tua presenza nella piattaforma e rende la dashboard più ricca di attività, potenza e progressione visiva."
   },
   "team": {
     "title": "Team & Inviti",
@@ -94,7 +133,17 @@
     "active": "Attivo",
     "inactive": "Inattivo",
     "noMembers": "Nessun membro a questo livello",
-    "activePosition": "Membro Attivo"
+    "activePosition": "Membro Attivo",
+    "inviteFirst": "Invita il tuo primo membro",
+    "yourPosition": "La tua posizione",
+    "teamRewards": "Ricompense team",
+    "level1Direct": "Livello 1 — Diretti",
+    "level2Indirect": "Livello 2 — Indiretti",
+    "activity": "Attività",
+    "level": "Livello",
+    "gpuActive": "GPU attiva",
+    "noGPU": "Nessun GPU",
+    "disclaimer": "Il programma team valorizza la crescita della tua rete con bonus progressivi, attività condivise e una panoramica chiara dei risultati generati dai membri invitati."
   },
   "transactions": {
     "title": "Transazioni",
@@ -113,16 +162,59 @@
     "minDeposit": "Deposito minimo",
     "minWithdraw": "Prelievo minimo",
     "walletAddress": "Indirizzo wallet",
-    "txHash": "Hash transazione"
+    "txHash": "Hash transazione",
+    "subtitle": "Storico completo dei movimenti account",
+    "all": "Tutte",
+    "income": "Entrate",
+    "expenses": "Uscite",
+    "totalIncome": "Totale entrate",
+    "totalExpenses": "Totale uscite",
+    "noTransactions": "Nessuna transazione trovata",
+    "transactionId": "ID Transazione",
+    "gpuPurchase": "Acquisto GPU",
+    "gpuProduction": "Produzione GPU",
+    "teamBonus": "Bonus Team",
+    "dailyClaim": "Claim Giornaliero",
+    "loginBonus": "Bonus Login"
   },
   "benefits": {
-    "title": "Benefici",
-    "dailyClaim": "Claim Giornaliero",
+    "title": "Centro Benefici",
+    "dailyClaim": "Claim giornaliero",
     "claimNow": "Riscatta ora",
-    "claimed": "Riscattato",
+    "claimed": "Riscosso",
     "nextClaim": "Prossimo claim tra",
     "streak": "Serie consecutiva",
-    "days": "giorni"
+    "days": "giorni",
+    "subtitle": "Missioni, ricompense e classifiche",
+    "dailyReward": "Ricompensa giornaliera",
+    "claim": "Riscuoti",
+    "weeklyProgress": "Progresso settimanale",
+    "daysCompleted": "giorni completati",
+    "weekBonus": "Bonus settimana",
+    "dailyMissions": "Missioni giornaliere",
+    "dailyLogin": "Login giornaliero",
+    "checkDevices": "Controlla dispositivi",
+    "inviteFriend": "Invita un amico",
+    "badgesEarned": "Badge ottenuti",
+    "leaderboard": "Classifica utenti",
+    "firstLogin": "Primo Login",
+    "firstGPU": "Primo GPU",
+    "firstLoginDesc": "Accesso alla piattaforma",
+    "firstGPUDesc": "Attivazione primo dispositivo",
+    "teamBuilderDesc": "Invita 3 membri",
+    "streak7Desc": "7 claim consecutivi",
+    "powerUserDesc": "100 TFLOPS potenza",
+    "topEarnerDesc": "10.000 Dollari generati",
+    "legendDesc": "100.000 Dollari generati",
+    "pioneerDesc": "GPU Ultimate posseduta",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Gio",
+    "fri": "Ven",
+    "sat": "Sab",
+    "sun": "Dom",
+    "disclaimer": "Missioni, streak e badge rendono l'esperienza VYRO GPU più coinvolgente, premiando la costanza e la crescita del tuo profilo giorno dopo giorno."
   },
   "achievements": {
     "title": "Achievement",
@@ -173,5 +265,158 @@
     "unauthorized": "Non autorizzato",
     "forbidden": "Accesso negato",
     "validation": "Dati non validi"
+  },
+  "faq": {
+    "title": "FAQ & Sicurezza",
+    "subtitle": "Tutto quello che devi sapere sulla piattaforma",
+    "platformStats": "Statistiche Piattaforma",
+    "guaranteedUptime": "Uptime garantito",
+    "protectedAssets": "Asset protetti",
+    "activeSupport": "Supporto attivo",
+    "activeContinents": "Continenti attivi",
+    "ourTeam": "Il Nostro Team",
+    "engineers": "Ingegneri e esperti di sicurezza",
+    "motto": "Innovazione. Sicurezza. Potenza.",
+    "mottoSub": "Il team VYRO lavora 24/7 per garantire la migliore esperienza",
+    "needHelp": "Hai bisogno di aiuto?",
+    "supportAvailable": "Il nostro team di supporto è disponibile 24/7 per rispondere a qualsiasi domanda.",
+    "contactSupport": "Contatta Supporto",
+    "disclaimer": "Le informazioni fornite in questa FAQ sono a scopo informativo. VYRO GPU si riserva il diritto di modificare parametri e policy con preavviso agli utenti.",
+    "categories": {
+      "platform": {
+        "title": "Cos'è VYRO GPU",
+        "items": [
+          {
+            "q": "Cos'è VYRO GPU?",
+            "a": "VYRO GPU è una piattaforma innovativa di cloud computing che permette agli utenti di attivare potenti unità di elaborazione GPU per generare Dollari interni attraverso la potenza di calcolo distribuita. Ogni GPU attiva contribuisce alla rete e genera ricompense proporzionali alla sua potenza in TFLOPS."
+          },
+          {
+            "q": "Come funziona il sistema?",
+            "a": "Il funzionamento è semplice: acquisti e attivi una GPU dal nostro catalogo, il sistema la registra nella tua dashboard, e da quel momento inizia a produrre Dollari automaticamente. La produzione è calcolata in base ai TFLOPS della GPU e viene aggiornata in tempo reale nella Live Production Bar."
+          },
+          {
+            "q": "Cosa sono i TFLOPS?",
+            "a": "TFLOPS (Tera Floating-point Operations Per Second) è l'unità di misura della potenza di calcolo di una GPU. Più TFLOPS ha una GPU, maggiore è la sua capacità di elaborazione e quindi la sua produzione di Dollari. Le nostre GPU vanno da 4 TFLOPS (X-120) a 6300 TFLOPS (IX-9900 Ultimate)."
+          },
+          {
+            "q": "Quali sono le GPU Ultimate Edition?",
+            "a": "Le Ultimate Edition sono versioni premium delle nostre GPU più potenti, con potenza incrementata del 50% e design esclusivo. Sono identificate dal suffisso \"ULTIMATE\" nel nome e offrono la massima capacità produttiva della piattaforma."
+          }
+        ]
+      },
+      "security": {
+        "title": "Sicurezza Portafogli",
+        "items": [
+          {
+            "q": "Cos'è VYRO Vault™?",
+            "a": "VYRO Vault™ è il nostro sistema di cold storage offline dove conserviamo il 98% degli asset degli utenti. Le chiavi private sono mantenute in camere blindate con accesso biometrico, distribuite in 3 continenti per garantire la massima sicurezza e ridondanza."
+          },
+          {
+            "q": "Come funziona Neural Shield™?",
+            "a": "Neural Shield™ è il nostro sistema di protezione basato su AI che monitora tutte le transazioni in tempo reale. Utilizza pattern recognition avanzata per rilevare anomalie e blocca automaticamente le operazioni sospette prima che vengano eseguite, proteggendo il tuo account da frodi e accessi non autorizzati."
+          },
+          {
+            "q": "Cos'è Quantum Lock™?",
+            "a": "Quantum Lock™ è il nostro sistema di crittografia militare che utilizza AES-256 combinato con curve ellittiche per proteggere tutti i dati sensibili. Le chiavi di crittografia vengono ruotate ogni 24 ore e il sistema utilizza zero-knowledge proof per l'autenticazione, garantendo che le tue credenziali non siano mai esposte."
+          },
+          {
+            "q": "Cos'è il Trust Score™?",
+            "a": "Trust Score™ è un punteggio di reputazione da 0 a 100 che viene assegnato al tuo account basato sulla tua attività, storico transazioni e comportamento sulla piattaforma. Un punteggio alto sblocca limiti di prelievo più elevati, bonus esclusivi e priorità nel supporto."
+          },
+          {
+            "q": "Come funziona Secure Recovery™?",
+            "a": "Secure Recovery™ ti permette di recuperare l'accesso al tuo account attraverso una seed phrase di 12 parole generata alla registrazione. Opzionalmente, puoi attivare il Social Recovery, che permette a contatti fidati di approvare il ripristino del tuo account. Tutti i recovery includono un time-lock di 48 ore per massima sicurezza."
+          },
+          {
+            "q": "Quali autenticazioni sono supportate?",
+            "a": "Supportiamo molteplici metodi di autenticazione: 2FA via app (Google Authenticator, Authy), SMS OTP, autenticazione biometrica (impronta digitale, Face ID), e hardware keys (YubiKey). Raccomandiamo di attivare almeno due metodi per la massima sicurezza."
+          }
+        ]
+      },
+      "production": {
+        "title": "Produzione GPU",
+        "items": [
+          {
+            "q": "Come vengono calcolati i guadagni?",
+            "a": "I guadagni sono calcolati moltiplicando i TFLOPS della tua GPU per un coefficiente di produzione base (0.05 $ per TFLOPS al minuto). Il sistema aggiorna il calcolo ogni secondo e puoi visualizzare la produzione in tempo reale nella Live Production Bar nella sezione \"I Miei Dispositivi\"."
+          },
+          {
+            "q": "Quanto posso guadagnare?",
+            "a": "I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~12.32 $/settimana\n• G-700 (68 TF): ~209.94 $/settimana\n• X-7900 (900 TF): ~3,703 $/settimana\n• IX-9900 Ultimate (6300 TF): ~31,000 $/settimana"
+          },
+          {
+            "q": "Quando vengono distribuite le ricompense?",
+            "a": "La produzione in Dollari viene accreditata automaticamente ogni secondo e visibile istantaneamente nel tuo saldo. I Dollari generati sono immediatamente disponibili per essere utilizzati per nuove attivazioni, trasferimenti o conversioni."
+          },
+          {
+            "q": "Posso avere più GPU attive?",
+            "a": "Assolutamente sì! Puoi attivare quante GPU desideri. La produzione totale sarà la somma della potenza di tutte le tue GPU attive. Più GPU possiedi, maggiore sarà la tua capacità produttiva e i tuoi guadagni."
+          }
+        ]
+      },
+      "team": {
+        "title": "Sistema Team",
+        "items": [
+          {
+            "q": "Come funzionano i referral?",
+            "a": "Ogni utente ha un codice invito unico e un link QR condivisibile. Quando qualcuno si registra tramite il tuo link, entra nel tuo team come membro di Livello 1. I membri che loro invitano diventano il tuo Livello 2."
+          },
+          {
+            "q": "Quali commissioni ricevo?",
+            "a": "Le commissioni si dividono in:\n• Livello 1 (inviti diretti): 3% sulla produzione + 5% bonus attivazione\n• Livello 2 (inviti dei tuoi inviti): 2% sulla produzione + 3% bonus attivazione\nLe commissioni vengono calcolate in tempo reale e accreditate automaticamente."
+          },
+          {
+            "q": "Ci sono bonus progressivi?",
+            "a": "Sì! Il sistema team include bonus progressivi:\n• 3 membri attivi: +10% su tutte le commissioni\n• 10 membri attivi: +25% + badge \"Team Builder\"\n• 50 membri attivi: +50% + badge \"Network Leader\"\n• 100+ membri: Accesso esclusivo alle GPU Collector Edition"
+          },
+          {
+            "q": "Come monitoro il mio team?",
+            "a": "Nella sezione Team puoi vedere tutti i membri dei Livelli 1 e 2, il loro stato (attivo/inattivo), se hanno GPU attive, la loro produzione totale, e i guadagni che generano per te. Il dashboard si aggiorna in tempo reale."
+          }
+        ]
+      },
+      "benefits": {
+        "title": "Benefici & Missioni",
+        "items": [
+          {
+            "q": "Cos'è il Claim Giornaliero?",
+            "a": "Ogni giorno puoi riscattare 2.5 $ gratuitamente visitando la sezione Benefici. Questo bonus è progettato per premiare la costanza degli utenti attivi. Se mantieni uno streak di 7 giorni consecutivi, sblocchi un bonus extra di 10 $."
+          },
+          {
+            "q": "Quali missioni giornaliere esistono?",
+            "a": "Le missioni giornaliere includono:\n• Login giornaliero: +1 $\n• Claim giornaliero: +2.5 $\n• Controllo dispositivi: +0.5 $\n• Invita un amico: +5 $\nCompletare tutte le missioni garantisce bonus aggiuntivi."
+          },
+          {
+            "q": "Come funzionano i badge?",
+            "a": "I badge sono riconoscimenti che ottieni raggiungendo obiettivi specifici:\n• \"Primo Login\" - Accesso alla piattaforma\n• \"Primo GPU\" - Attivazione primo dispositivo\n• \"Team Builder\" - Invita 3 membri\n• \"Streak 7\" - 7 claim consecutivi\n• \"Power User\" - Raggiungi 100 TFLOPS\n• \"Top Earner\" - Genera 10,000 $ totali"
+          },
+          {
+            "q": "Cos'è la classifica?",
+            "a": "La classifica mostra i top performer della piattaforma basandosi su Dollari totali e potenza TFLOPS. Essere nei primi 3 posti garantisce visibilità speciale, bonus settimanali, e l'ambito badge \"Crown\" che appare nel tuo profilo."
+          }
+        ]
+      },
+      "certifications": {
+        "title": "Certificazioni",
+        "items": [
+          {
+            "q": "Quali certificazioni possiede VYRO?",
+            "a": "VYRO GPU è certificata:\n• SOC 2 Type II Compliant - Security & Availability\n• ISO 27001 Certified - Information Security\n• GDPR Compliant - Data Protection\n• PCI DSS Level 1 - Payment Security\nQueste certificazioni vengono rinnovate annualmente con audit esterni."
+          },
+          {
+            "q": "Avete un Bug Bounty Program?",
+            "a": "Sì! Il nostro Bug Bounty Program premia ricercatori di sicurezza che trovano vulnerabilità nel nostro sistema. I premi vanno da $100 a $50,000 a seconda della gravità. Tutti i dettagli sono disponibili su security.vyrogpu.com"
+          },
+          {
+            "q": "Chi sono i partner strategici?",
+            "a": "Collaboriamo con leader del settore per garantire la massima qualità:\n• NVIDIA - Partnership hardware GPU\n• AWS - Infrastruttura cloud\n• Cloudflare - Protezione DDoS\n• Ledger - Cold storage solutions\n• Chainalysis - Compliance & Monitoring"
+          },
+          {
+            "q": "Come garantite l'uptime?",
+            "a": "La nostra infrastruttura è progettata per il 99.97% di uptime garantito. Utilizziamo:\n• Datacenter distribuiti su 3 continenti\n• Load balancing automatico\n• Failover in tempo reale\n• Backup incrementali ogni ora\nLo stato dei sistemi è sempre visibile nel dashboard."
+          }
+        ]
+      }
+    }
   }
 }

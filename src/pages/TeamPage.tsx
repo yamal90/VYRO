@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, ChevronDown, GitBranch } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
 const TeamPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, teamMembers } = useApp();
   const [activeLevel, setActiveLevel] = useState<1 | 2>(1);
   const [copied, setCopied] = useState(false);
@@ -36,9 +38,9 @@ const TeamPage: React.FC = () => {
         
         <div className="gradient-dark px-4 pt-6 pb-8 relative z-10">
           <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10 mb-2">
-            Team & Inviti
+            {t('team.title')}
           </h1>
-          <p className="text-white/50 text-xs relative z-10">Costruisci il tuo team di cloud computing</p>
+          <p className="text-white/50 text-xs relative z-10">{t('team.buildTeam')}</p>
 
           {/* Team Flow Visualization - You at center top, members branching down */}
           <div className="mt-6 relative z-10">
@@ -139,7 +141,7 @@ const TeamPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-center py-3">
-                  <p className="text-slate-500 text-[10px]">Invita il tuo primo membro</p>
+                  <p className="text-slate-500 text-[10px]">{t('team.inviteFirst')}</p>
                   <ChevronDown size={14} className="text-amber-400/40 mx-auto mt-1 animate-bounce" />
                 </div>
               )}
@@ -157,9 +159,9 @@ const TeamPage: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-white/60 text-[10px] uppercase tracking-wider">La tua posizione</p>
+              <p className="text-white/60 text-[10px] uppercase tracking-wider">{t('team.yourPosition')}</p>
               <p className="font-display font-bold text-lg flex items-center gap-2">
-                Membro Attivo
+                {t('team.activePosition')}
                 <Sparkles size={14} className="text-amber-400" />
               </p>
             </div>
@@ -169,7 +171,7 @@ const TeamPage: React.FC = () => {
           </div>
 
           <div className="bg-white/5 rounded-xl p-3 mb-3 border border-white/6">
-            <p className="text-white/60 text-[10px] uppercase tracking-wider mb-1">Codice invito</p>
+            <p className="text-white/60 text-[10px] uppercase tracking-wider mb-1">{t('team.inviteCode')}</p>
             <div className="flex items-center justify-between">
               <p className="font-display font-bold text-lg tracking-widest text-amber-400">{currentUser.invite_code}</p>
               <button
@@ -193,14 +195,14 @@ const TeamPage: React.FC = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-slate-800 text-xs font-medium mb-1">Link invito</p>
+              <p className="text-slate-800 text-xs font-medium mb-1">{t('team.inviteLink')}</p>
               <p className="text-slate-500 text-[10px] truncate">{inviteLink}</p>
               <button
                 onClick={handleCopy}
                 className="mt-2 px-3 py-1.5 bg-amber-500/10 text-amber-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-amber-500/25"
               >
                 {copied ? <Check size={10} /> : <Copy size={10} />}
-                {copied ? 'Copiato!' : 'Copia link'}
+                {copied ? t('common.copied') : t('team.copyLink')}
               </button>
             </div>
           </div>
@@ -211,23 +213,23 @@ const TeamPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <Users size={16} className="text-amber-400" />
-          Il mio team
+          {t('team.myTeam')}
         </h3>
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-[#0c101c] rounded-xl p-3 text-center border border-amber-500/15">
             <Zap size={16} className="text-amber-400 mx-auto mb-1" />
             <p className="font-display font-bold text-amber-400">{teamEarnings.toFixed(2)}</p>
-            <p className="text-[9px] text-slate-400 mt-0.5">Guadagni Dollaro</p>
+            <p className="text-[9px] text-slate-400 mt-0.5">{t('team.teamEarnings')}</p>
           </div>
           <div className="bg-[#0c101c] rounded-xl p-3 text-center border border-emerald-500/15">
             <Cpu size={16} className="text-emerald-400 mx-auto mb-1" />
             <p className="font-display font-bold text-emerald-400">{teamPower}</p>
-            <p className="text-[9px] text-slate-400 mt-0.5">TFLOPS Team</p>
+            <p className="text-[9px] text-slate-400 mt-0.5">{t('team.teamPower')}</p>
           </div>
           <div className="bg-[#0c101c] rounded-xl p-3 text-center border border-white/8">
             <Users size={16} className="text-green-400 mx-auto mb-1" />
             <p className="font-display font-bold text-green-400">{teamMembers.length}</p>
-            <p className="text-[9px] text-slate-400 mt-0.5">Membri</p>
+            <p className="text-[9px] text-slate-400 mt-0.5">{t('team.members')}</p>
           </div>
         </div>
       </div>
@@ -235,17 +237,17 @@ const TeamPage: React.FC = () => {
       {/* Team Rates */}
       <div className="px-4 mt-4">
         <div className="bg-[#0c101c] rounded-xl p-4 border border-white/6">
-          <p className="text-xs font-bold text-amber-400 mb-2">Ricompense team</p>
+          <p className="text-xs font-bold text-amber-400 mb-2">{t('team.teamRewards')}</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-amber-500/5 rounded-lg p-3 border border-amber-500/15">
-              <p className="text-[10px] text-amber-400 font-semibold mb-1">Livello 1 — Diretti</p>
-              <p className="text-xs text-slate-300">Attività: <span className="font-bold text-white">3%</span></p>
-              <p className="text-xs text-slate-300">Bonus invito: <span className="font-bold text-white">5%</span></p>
+              <p className="text-[10px] text-amber-400 font-semibold mb-1">{t('team.level1Direct')}</p>
+              <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">3%</span></p>
+              <p className="text-xs text-slate-300">{t('team.inviteBonus')}: <span className="font-bold text-white">5%</span></p>
             </div>
             <div className="bg-emerald-500/5 rounded-lg p-3 border border-emerald-500/15">
-              <p className="text-[10px] text-emerald-400 font-semibold mb-1">Livello 2 — Indiretti</p>
-              <p className="text-xs text-slate-300">Attività: <span className="font-bold text-white">2%</span></p>
-              <p className="text-xs text-slate-300">Bonus invito: <span className="font-bold text-white">3%</span></p>
+              <p className="text-[10px] text-emerald-400 font-semibold mb-1">{t('team.level2Indirect')}</p>
+              <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">2%</span></p>
+              <p className="text-xs text-slate-300">{t('team.inviteBonus')}: <span className="font-bold text-white">3%</span></p>
             </div>
           </div>
         </div>
@@ -264,7 +266,7 @@ const TeamPage: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Livello {lvl} ({lvl === 1 ? level1.length : level2.length})
+              {t('team.level')} {lvl} ({lvl === 1 ? level1.length : level2.length})
             </button>
           ))}
         </div>
@@ -283,7 +285,7 @@ const TeamPage: React.FC = () => {
             {activeMembers.length === 0 ? (
               <div className="text-center py-10">
                 <Users className="w-12 h-12 text-amber-500/30 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">Nessun membro a questo livello</p>
+                <p className="text-slate-400 text-sm">{t('team.noMembers')}</p>
               </div>
             ) : (
               activeMembers.map((member, i) => (
@@ -315,7 +317,7 @@ const TeamPage: React.FC = () => {
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                           member.status === 'active' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25' : 'bg-white/5 text-slate-400 border border-white/6'
                         }`}>
-                          {member.status === 'active' ? 'Attivo' : 'Inattivo'}
+                          {member.status === 'active' ? t('team.active') : t('team.inactive')}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 mt-1">
@@ -323,7 +325,7 @@ const TeamPage: React.FC = () => {
                           {new Date(member.created_at).toLocaleDateString('it-IT')}
                         </span>
                         <span className={`text-[10px] ${member.device_active ? 'text-emerald-400' : 'text-slate-500'}`}>
-                          {member.device_active ? '● GPU attiva' : '○ Nessun GPU'}
+                          {member.device_active ? `● ${t('team.gpuActive')}` : `○ ${t('team.noGPU')}`}
                         </span>
                         <span className="text-[10px] text-amber-400 font-semibold">
                           {member.production} $
@@ -342,8 +344,7 @@ const TeamPage: React.FC = () => {
       <div className="px-4 mt-6">
         <div className="bg-[#0c101c] rounded-xl p-4 border border-white/6">
           <p className="text-[10px] text-slate-400 leading-relaxed text-center">
-            Il programma team valorizza la crescita della tua rete con bonus progressivi,
-            attività condivise e una panoramica chiara dei risultati generati dai membri invitati.
+            {t('team.disclaimer')}
           </p>
         </div>
       </div>
