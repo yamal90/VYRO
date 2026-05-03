@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-[#06080f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden border border-white/6">
+      <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative min-h-screen bg-[#06080f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-x-hidden overflow-y-auto border border-white/6">
         <ParticleBackground intensity="low" />
 
         <AnimatePresence>

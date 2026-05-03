@@ -387,8 +387,8 @@ const DevicesPage: React.FC = () => {
                           <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={() => void handleClaim(ud.id)}
-                            disabled={claimingId === ud.id || liveGenerated <= 0}
-                            className="mt-3 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-amber-500 to-emerald-500 text-[#06080f] hover:opacity-90 disabled:opacity-50"
+                            disabled={claimingId === ud.id || livePercent < 100}
+                            className="mt-3 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-amber-500 to-emerald-500 text-[#06080f] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {claimingId === ud.id ? (
                               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
