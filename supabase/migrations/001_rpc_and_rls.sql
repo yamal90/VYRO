@@ -1177,3 +1177,25 @@ create policy "withdrawals_delete_admin_only"
 on public.withdrawals for delete
 to authenticated
 using (public.is_admin(auth.uid()));
+
+-- ============================================================
+-- CLEANUP: Remove old/unused tables and prelaunch functions
+-- ============================================================
+
+drop function if exists public.get_prelaunch_live_stats();
+drop function if exists public.get_prelaunch_recent_signups();
+drop function if exists public.get_prelaunch_recent_signups(integer);
+drop function if exists public.get_prelaunch_registrations();
+
+drop table if exists public.user_devices cascade;
+drop table if exists public.daily_claims cascade;
+drop table if exists public.gpu_devices cascade;
+
+-- ============================================================
+-- Set deposit address in platform_settings
+-- ============================================================
+
+update public.platform_settings
+set deposit_address = '4SWFCN5UJTRHNWQS4W7GISBUN4HGMU6BV8',
+    updated_at = now()
+where id = 1;
