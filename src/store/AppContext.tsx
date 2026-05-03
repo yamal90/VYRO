@@ -27,6 +27,7 @@ import type {
 import { GPU_DEVICES } from './data';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getAppBaseUrl } from '../lib/app-url';
+import { checkRateLimit, sanitizeEmail, validatePassword } from '../lib/security';
 import {
   makeDailyClaims,
   mapLogsToTransactions,
@@ -560,10 +561,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const login = useCallback(
     async (email: string, password: string): Promise<ActionResult> => {
       if (!supabase) return emptyResult('Configura Supabase prima del login.');
+      if (!checkRateLimit('login')) {
+        return emptyResult('Troppi tentativi di accesso. Riprova tra un minuto.');
+      }
       clearNotice();
       setAuthLoading(true);
       try {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { error } = await supabase.auth.signInWithPassword({ email: sanitizeEmail(email), password });
         if (error) throw error;
         return { success: true, message: 'Accesso completato.' };
       } catch (err) {
@@ -580,7 +584,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const requestPasswordReset = useCallback(
     async (email: string): Promise<ActionResult> => {
       if (!supabase) return emptyResult('Configura Supabase prima del reset password.');
-      const normalizedEmail = email.trim().toLowerCase();
+      if (!checkRateLimit('password_reset')) {
+        return emptyResult('Troppi tentativi. Riprova tra un minuto.');
+      }
+      const normalizedEmail = sanitizeEmail(email);
       if (!normalizedEmail) return emptyResult('Inserisci una email valida.');
       clearNotice();
       setAuthLoading(true);
@@ -605,12 +612,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async (newPassword: string, confirmPassword: string): Promise<ActionResult> => {
       if (!supabase) return emptyResult('Configura Supabase prima del reset password.');
       if (newPassword !== confirmPassword) return emptyResult('Le password non coincidono.');
-      if (newPassword.length < 8)
-        return emptyResult('La password deve avere almeno 8 caratteri.');
-      if (!/[A-Z]/.test(newPassword))
-        return emptyResult('La password deve contenere almeno una lettera maiuscola.');
-      if (!/[0-9]/.test(newPassword))
-        return emptyResult('La password deve contenere almeno un numero.');
+      const pwCheck = validatePassword(newPassword);
+      if (!pwCheck.valid) return emptyResult(pwCheck.errors[0]);
       clearNotice();
       setAuthLoading(true);
       try {
@@ -685,11 +688,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const referralCode = payload.referralCode.trim().toUpperCase();
       if (!referralCode) return emptyResult('Il referral code è obbligatorio.');
       if (payload.password !== payload.confirmPassword) return emptyResult('Le password non coincidono.');
-      if (payload.password.length < 8) return emptyResult('La password deve avere almeno 8 caratteri.');
-      if (!/[A-Z]/.test(payload.password))
-        return emptyResult('La password deve contenere almeno una lettera maiuscola.');
-      if (!/[0-9]/.test(payload.password))
-        return emptyResult('La password deve contenere almeno un numero.');
+      const pwValidation = validatePassword(payload.password);
+      if (!pwValidation.valid) return emptyResult(pwValidation.errors[0]);
 
       setAuthLoading(true);
       try {
