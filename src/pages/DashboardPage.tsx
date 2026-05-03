@@ -481,8 +481,8 @@ const DashboardPage: React.FC = () => {
         depositAsset={platformSettings?.deposit_asset ?? 'USDT'}
         depositNetwork={platformSettings?.deposit_network ?? 'TRC20'}
         minDeposit={Number(platformSettings?.min_deposit ?? 0)}
-        onSubmit={async ({ amount, txHash }) => {
-          const result = await requestDeposit(amount, txHash);
+        onSubmit={async ({ amount, txHash, proofImageUrl }) => {
+          const result = await requestDeposit(amount, txHash, proofImageUrl);
           pushNotice(result.success ? 'success' : 'error', result.message);
           return result;
         }}

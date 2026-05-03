@@ -62,6 +62,7 @@ export type DepositRow = {
   asset: string;
   network: string;
   tx_hash: string | null;
+  proof_image_url: string | null;
   status: string;
   created_at: string;
 };

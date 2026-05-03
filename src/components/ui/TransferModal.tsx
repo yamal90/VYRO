@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDownCircle, ArrowUpCircle, Check, Copy, X, Wallet, Shield } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Check, Copy, X, Wallet, Shield, Camera, AlertTriangle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { ActionResult } from '../../types';
 
@@ -10,7 +10,7 @@ interface TransferModalProps {
   isOpen: boolean;
   mode: TransferMode;
   onClose: () => void;
-  onSubmit: (payload: { amount: number; txHash?: string; walletAddress?: string }) => Promise<ActionResult>;
+  onSubmit: (payload: { amount: number; txHash?: string; walletAddress?: string; proofImageUrl?: string }) => Promise<ActionResult>;
   depositAddress?: string;
   depositAsset?: string;
   depositNetwork?: string;
@@ -22,7 +22,7 @@ interface TransferModalProps {
 interface TransferModalContentProps {
   mode: TransferMode;
   onClose: () => void;
-  onSubmit: (payload: { amount: number; txHash?: string; walletAddress?: string }) => Promise<ActionResult>;
+  onSubmit: (payload: { amount: number; txHash?: string; walletAddress?: string; proofImageUrl?: string }) => Promise<ActionResult>;
   depositAddress: string;
   depositAsset: string;
   depositNetwork: string;
@@ -45,9 +45,28 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
   const [amount, setAmount] = useState('');
   const [txHash, setTxHash] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [uploadingProof, setUploadingProof] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const handleProofSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Seleziona un file immagine (JPG, PNG, WEBP).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Immagine troppo grande (max 10MB).');
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+    setError('');
+  };
 
   const submitLabel = mode === 'deposit' ? 'Salva deposito' : 'Salva prelievo';
   const title = mode === 'deposit' ? 'Ricarica account' : 'Richiedi prelievo';
@@ -83,6 +102,18 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
         setError('Indirizzo deposito non configurato dall\'admin.');
         return;
       }
+      if (!txHash.trim()) {
+        setError('Hash transazione obbligatorio. Inserisci l\'hash TX della transazione.');
+        return;
+      }
+      if (txHash.trim().length < 10) {
+        setError('Hash transazione non valido. Controlla e riprova.');
+        return;
+      }
+      if (!proofFile) {
+        setError('Screenshot dell\'hash obbligatorio. Carica la foto della transazione.');
+        return;
+      }
     } else {
       if (!walletAddress.trim()) {
         setError('Inserisci il tuo wallet di prelievo.');
@@ -103,10 +134,36 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
     }
 
     setLoading(true);
+
+    let proofImageUrl: string | undefined;
+    if (mode === 'deposit' && proofFile) {
+      try {
+        setUploadingProof(true);
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').toString().trim();
+        const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').toString().trim();
+        const sb = createClient(supabaseUrl, supabaseKey);
+        const ext = (proofFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+        const path = `deposit-proofs/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${safeExt}`;
+        const { error: upErr } = await sb.storage.from('avatars').upload(path, proofFile, { upsert: true });
+        if (upErr) throw upErr;
+        const { data: pubData } = sb.storage.from('avatars').getPublicUrl(path);
+        proofImageUrl = pubData.publicUrl;
+      } catch {
+        setError('Upload screenshot fallito. Riprova.');
+        setLoading(false);
+        setUploadingProof(false);
+        return;
+      }
+      setUploadingProof(false);
+    }
+
     const result = await onSubmit({
       amount: normalizedAmount,
       txHash: mode === 'deposit' ? txHash.trim() || undefined : undefined,
       walletAddress: mode === 'withdrawal' ? walletAddress.trim() : undefined,
+      proofImageUrl,
     });
     setLoading(false);
 
@@ -225,16 +282,70 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
           />
 
           {mode === 'deposit' ? (
-            <label className="block text-sm text-slate-400 mt-4">
-              Hash transazione opzionale
-              <input
-                type="text"
-                value={txHash}
-                onChange={(e) => setTxHash(e.target.value)}
-                className="mt-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25 text-white placeholder-white/30 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                placeholder="TX hash / memo"
-              />
-            </label>
+            <>
+              {/* Warning banner */}
+              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 flex items-start gap-2">
+                <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-300 text-xs font-bold">Obbligatorio: Hash + Screenshot</p>
+                  <p className="text-amber-200/70 text-[10px] mt-0.5">
+                    Ad ogni deposito devi caricare l'hash della transazione E la foto/screenshot dell'hash. Senza entrambi il deposito non verrà accettato.
+                  </p>
+                </div>
+              </div>
+
+              {/* TX Hash - REQUIRED */}
+              <label className="block text-sm text-slate-400 mt-4">
+                Hash transazione <span className="text-red-400">*</span>
+                <input
+                  type="text"
+                  value={txHash}
+                  onChange={(e) => setTxHash(e.target.value)}
+                  className="mt-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-amber-500/25 text-white placeholder-white/30 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  placeholder="Inserisci l'hash TX della transazione"
+                />
+              </label>
+
+              {/* Proof screenshot - REQUIRED */}
+              <label className="block text-sm text-slate-400 mt-4">
+                Screenshot dell'hash <span className="text-red-400">*</span>
+              </label>
+              <div
+                className={`mt-2 relative rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
+                  proofFile
+                    ? 'border-emerald-500/40 bg-emerald-500/5'
+                    : 'border-amber-500/25 bg-white/5 hover:border-amber-400/50 hover:bg-white/10'
+                }`}
+                onClick={() => document.getElementById('proof-upload')?.click()}
+              >
+                <input
+                  id="proof-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleProofSelect}
+                />
+                {proofPreview ? (
+                  <div className="flex items-center gap-3">
+                    <img src={proofPreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover border border-white/10" />
+                    <div className="text-left flex-1">
+                      <p className="text-emerald-400 text-xs font-semibold">Screenshot caricato</p>
+                      <p className="text-slate-400 text-[10px] mt-0.5">{proofFile?.name}</p>
+                      <p className="text-slate-500 text-[10px]">Tocca per cambiare</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <Camera size={24} className="text-amber-400" />
+                    <p className="text-white/70 text-xs font-semibold">Carica la foto dell'hash</p>
+                    <p className="text-slate-500 text-[10px]">JPG, PNG, WEBP — max 10MB</p>
+                  </div>
+                )}
+              </div>
+              {uploadingProof && (
+                <p className="text-amber-400 text-[10px] mt-1 animate-pulse">Caricamento screenshot...</p>
+              )}
+            </>
           ) : (
             <label className="block text-sm text-slate-400 mt-4">
               Il tuo wallet di prelievo
