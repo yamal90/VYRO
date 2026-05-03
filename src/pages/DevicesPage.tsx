@@ -29,7 +29,7 @@ const CYCLE_DAYS = 7;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DevicesPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { gpuDevices, userDevices, activateDevice, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState<'center' | 'my'>('center');
   const [activatingId, setActivatingId] = useState<string | null>(null);
@@ -347,7 +347,7 @@ const DevicesPage: React.FC = () => {
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
                           <p className="text-[9px] text-slate-400 uppercase mb-1">{t('devices.started')}</p>
                           <p className="text-sm font-bold text-white font-display">
-                            {new Date(ud.start_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
+                            {new Date(ud.start_date).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT', { day: '2-digit', month: 'short' })}
                           </p>
                         </div>
                       </div>

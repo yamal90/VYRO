@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Gift, Calendar, Award, Trophy, Star,
-  CheckCircle, Lock, Target, Flame, Crown
+  CheckCircle, Lock, Target, Crown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
@@ -72,10 +72,9 @@ const BenefitsPage: React.FC = () => {
 
   // Missions
   const missions = [
-    { name: t('benefits.dailyLogin'), reward: 1, completed: true, icon: Star },
-    { name: t('benefits.dailyClaim'), reward: 2.5, completed: claimedToday, icon: Gift },
-    { name: t('benefits.checkDevices'), reward: 0.5, completed: false, icon: Target },
-    { name: t('benefits.inviteFriend'), reward: 5, completed: false, icon: Flame },
+    { name: t('benefits.dailyLogin'), reward: 0.05, completed: true, icon: Star },
+    { name: t('benefits.dailyClaim'), reward: 0.10, completed: claimedToday, icon: Gift },
+    { name: t('benefits.checkDevices'), reward: 0.02, completed: false, icon: Target },
   ];
 
   return (

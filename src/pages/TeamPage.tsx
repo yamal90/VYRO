@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
 const TeamPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currentUser, teamMembers } = useApp();
   const [activeLevel, setActiveLevel] = useState<1 | 2>(1);
   const [copied, setCopied] = useState(false);
@@ -18,7 +18,7 @@ const TeamPage: React.FC = () => {
   const level2 = teamMembers.filter(m => m.level === 2);
   const activeMembers = activeLevel === 1 ? level1 : level2;
 
-  const teamEarnings = teamMembers.reduce((s, m) => s + m.production * (m.level === 1 ? 0.03 : 0.02), 0);
+  const teamEarnings = teamMembers.reduce((s, m) => s + m.production * (m.level === 1 ? 0.05 : 0.02), 0);
   const teamPower = teamMembers.reduce((s, m) => s + (m.device_active ? 4 : 0), 0);
 
   const handleCopy = () => {
@@ -55,7 +55,7 @@ const TeamPage: React.FC = () => {
                   <img src="/vyro-wow-logo.svg" alt="Tu" className="w-full h-full object-cover" />
                 </div>
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-amber-500 rounded-full text-[8px] font-bold text-[#06080f] whitespace-nowrap">
-                  TU
+                  {t('common.you')}
                 </div>
               </motion.div>
 
@@ -241,13 +241,11 @@ const TeamPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-amber-500/5 rounded-lg p-3 border border-amber-500/15">
               <p className="text-[10px] text-amber-400 font-semibold mb-1">{t('team.level1Direct')}</p>
-              <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">3%</span></p>
-              <p className="text-xs text-slate-300">{t('team.inviteBonus')}: <span className="font-bold text-white">5%</span></p>
+              <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">5%</span></p>
             </div>
             <div className="bg-emerald-500/5 rounded-lg p-3 border border-emerald-500/15">
               <p className="text-[10px] text-emerald-400 font-semibold mb-1">{t('team.level2Indirect')}</p>
               <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">2%</span></p>
-              <p className="text-xs text-slate-300">{t('team.inviteBonus')}: <span className="font-bold text-white">3%</span></p>
             </div>
           </div>
         </div>
@@ -322,7 +320,7 @@ const TeamPage: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-[10px] text-slate-400">
-                          {new Date(member.created_at).toLocaleDateString('it-IT')}
+                          {new Date(member.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT')}
                         </span>
                         <span className={`text-[10px] ${member.device_active ? 'text-emerald-400' : 'text-slate-500'}`}>
                           {member.device_active ? `● ${t('team.gpuActive')}` : `○ ${t('team.noGPU')}`}
