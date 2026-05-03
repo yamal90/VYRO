@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { UserDevice } from '../types';
 
-const CYCLE_DAYS = 7;
+const CYCLE_DAYS = 30;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const getCycleGenerated = (device: UserDevice, nowMs: number) => {
@@ -14,8 +14,8 @@ const getCycleGenerated = (device: UserDevice, nowMs: number) => {
     return Number(device.total_generated ?? 0);
   }
   const elapsedMs = Math.max(0, nowMs - startMs);
-  const elapsedInCycleMs = elapsedMs % CYCLE_MS;
-  return reward7Days * (elapsedInCycleMs / CYCLE_MS);
+  const progress = Math.min(elapsedMs / CYCLE_MS, 1);
+  return reward7Days * progress;
 };
 
 export function useProductionStats(userDevices: UserDevice[]) {

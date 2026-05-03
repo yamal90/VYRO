@@ -72,6 +72,7 @@ interface AppState {
   setAuthMode: (mode: AuthMode) => void;
   toggleBalanceVisibility: () => void;
   activateDevice: (deviceId: string) => Promise<ActionResult>;
+  claimDeviceProduction: (entryId: string) => Promise<ActionResult>;
   claimDailyReward: () => Promise<ActionResult>;
   requestDeposit: (amount: number, txHash?: string) => Promise<ActionResult>;
   requestWithdrawal: (amount: number, walletAddress: string) => Promise<ActionResult>;
@@ -840,6 +841,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [currentUser, gpuDevices, logOperationalError, pushNotice, refreshAppData],
   );
 
+  const claimDeviceProduction = useCallback(
+    async (entryId: string): Promise<ActionResult> => {
+      if (!supabase || !currentUser) return emptyResult('Non autenticato');
+
+      try {
+        const { data, error } = await supabase.rpc('claim_device_production', {
+          p_entry_id: entryId,
+        });
+        if (error) throw error;
+        const result = data as { success: boolean; message: string };
+        if (!result.success) return emptyResult(result.message);
+
+        await refreshAppData();
+        return { success: true, message: result.message };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Riscossione non riuscita';
+        void logOperationalError('claim_device', message);
+        pushNotice('error', message);
+        return emptyResult(message);
+      }
+    },
+    [currentUser, logOperationalError, pushNotice, refreshAppData],
+  );
+
   const claimDailyReward = useCallback(async (): Promise<ActionResult> => {
     if (!supabase || !currentUser) return emptyResult('Non autenticato');
 
@@ -1205,6 +1230,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthMode,
     toggleBalanceVisibility,
     activateDevice,
+    claimDeviceProduction,
     claimDailyReward,
     requestDeposit,
     requestWithdrawal,
@@ -1229,7 +1255,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     platformSettings, balanceVisible, notice,
     login, loginWithGoogle, requestPasswordReset, completePasswordReset,
     register, updateNickname, updateAvatar, logout, setAuthMode,
-    toggleBalanceVisibility, activateDevice, claimDailyReward,
+    toggleBalanceVisibility, activateDevice, claimDeviceProduction, claimDailyReward,
     requestDeposit, requestWithdrawal,
     updateDepositRequestStatus, updateWithdrawalRequestStatus,
     updateUserBalance, updateDeviceStatus, assignDeviceToUser,

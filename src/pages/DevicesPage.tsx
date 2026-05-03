@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Zap, Clock, Check, AlertCircle, Loader2, Activity, Power, TrendingUp } from 'lucide-react';
+import { Cpu, Zap, Clock, Check, AlertCircle, Loader2, Activity, Power, TrendingUp, Gift } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 import type { GPUDevice } from '../types';
@@ -25,14 +25,15 @@ const statusConfig = {
   completed: { labelKey: 'devices.completed', color: 'bg-slate-100 text-slate-600', icon: Check },
 };
 
-const CYCLE_DAYS = 7;
+const CYCLE_DAYS = 30;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DevicesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { gpuDevices, userDevices, activateDevice, currentUser } = useApp();
+  const { gpuDevices, userDevices, activateDevice, claimDeviceProduction, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState<'center' | 'my'>('center');
   const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -51,8 +52,8 @@ const DevicesPage: React.FC = () => {
         continue;
       }
       const elapsedMs = Math.max(0, nowMs - startMs);
-      const elapsedInCycleMs = elapsedMs % CYCLE_MS;
-      result.set(ud.id, Number((cycleTarget * (elapsedInCycleMs / CYCLE_MS)).toFixed(2)));
+      const progress = Math.min(elapsedMs / CYCLE_MS, 1);
+      result.set(ud.id, Number((cycleTarget * progress).toFixed(2)));
     }
     return result;
   }, [userDevices, nowMs]);
@@ -64,6 +65,14 @@ const DevicesPage: React.FC = () => {
     setActivatingId(null);
     setTimeout(() => setToast(null), 3000);
     if (result.success) setActiveTab('my');
+  };
+
+  const handleClaim = async (entryId: string) => {
+    setClaimingId(entryId);
+    const result = await claimDeviceProduction(entryId);
+    setToast({ msg: result.message, ok: result.success });
+    setClaimingId(null);
+    setTimeout(() => setToast(null), 3000);
   };
 
   return (
@@ -223,16 +232,16 @@ const DevicesPage: React.FC = () => {
                     <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-amber-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <TrendingUp size={12} className="text-green-400" />
-                        <p className="text-[10px] text-amber-300 uppercase tracking-wider">{t('devices.threeDays')}</p>
+                        <p className="text-[10px] text-amber-300 uppercase tracking-wider">10 {t('common.days', 'giorni')}</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-amber-400">$</span></p>
+                      <p className="text-lg font-bold text-white font-display">{(device.reward_7_days * 10 / 7).toFixed(2)} <span className="text-xs text-amber-400">$</span></p>
                     </div>
                     <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-emerald-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <Activity size={12} className="text-emerald-400" />
-                        <p className="text-[10px] text-emerald-400 uppercase tracking-wider">{t('devices.sevenDays')}</p>
+                        <p className="text-[10px] text-emerald-400 uppercase tracking-wider">{t('devices.monthly', 'Mensile')}</p>
                       </div>
-                      <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-emerald-400">$</span></p>
+                      <p className="text-lg font-bold text-white font-display">{(device.reward_7_days * 30 / 7).toFixed(2)} <span className="text-xs text-emerald-400">$</span></p>
                     </div>
                   </div>
 
@@ -357,7 +366,11 @@ const DevicesPage: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                             <Activity size={14} />
-                            <span className="font-medium">{t('devices.productionInProgress')}</span>
+                            <span className="font-medium">
+                              {livePercent >= 100
+                                ? t('devices.cycleComplete', 'Ciclo completato!')
+                                : t('devices.productionInProgress')}
+                            </span>
                           </div>
                           <div className="mt-2">
                             <div className="flex items-center justify-between text-[10px] text-green-300 mb-1">
@@ -366,11 +379,26 @@ const DevicesPage: React.FC = () => {
                             </div>
                             <div className="w-full h-2 rounded-full bg-[#0c101c]/50 overflow-hidden">
                               <div
-                                className="h-full bg-gradient-to-r from-amber-500 to-emerald-500"
+                                className={`h-full ${livePercent >= 100 ? 'bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 animate-pulse' : 'bg-gradient-to-r from-amber-500 to-emerald-500'}`}
                                 style={{ width: `${livePercent}%` }}
                               />
                             </div>
                           </div>
+                          <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => void handleClaim(ud.id)}
+                            disabled={claimingId === ud.id || liveGenerated <= 0}
+                            className="mt-3 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-amber-500 to-emerald-500 text-[#06080f] hover:opacity-90 disabled:opacity-50"
+                          >
+                            {claimingId === ud.id ? (
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                              <>
+                                <Gift size={16} />
+                                {t('devices.claimRestart', 'Riscuoti e Riavvia')} ({liveGenerated.toFixed(2)} $)
+                              </>
+                            )}
+                          </motion.button>
                         </div>
                       )}
                     </div>
