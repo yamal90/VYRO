@@ -59,8 +59,8 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
       setError('Seleziona un file immagine (JPG, PNG, WEBP).');
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Immagine troppo grande (max 10MB).');
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Immagine troppo grande (max 5MB).');
       return;
     }
     setProofFile(file);
@@ -143,9 +143,12 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
         const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').toString().trim();
         const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').toString().trim();
         const sb = createClient(supabaseUrl, supabaseKey);
+        const { data: sessionData } = await sb.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        if (!userId) throw new Error('Non autenticato');
         const ext = (proofFile.name.split('.').pop() || 'jpg').toLowerCase();
         const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
-        const path = `deposit-proofs/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${safeExt}`;
+        const path = `${userId}/${Date.now()}-proof-${Math.random().toString(36).slice(2, 9)}.${safeExt}`;
         const { error: upErr } = await sb.storage.from('avatars').upload(path, proofFile, { upsert: true });
         if (upErr) throw upErr;
         const { data: pubData } = sb.storage.from('avatars').getPublicUrl(path);
@@ -338,7 +341,7 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
                   <div className="flex flex-col items-center gap-2 py-2">
                     <Camera size={24} className="text-amber-400" />
                     <p className="text-white/70 text-xs font-semibold">Carica la foto dell'hash</p>
-                    <p className="text-slate-500 text-[10px]">JPG, PNG, WEBP — max 10MB</p>
+                    <p className="text-slate-500 text-[10px]">JPG, PNG, WEBP — max 5MB</p>
                   </div>
                 )}
               </div>
