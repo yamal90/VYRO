@@ -11,7 +11,7 @@ describe('Mappers', () => {
         username: 'testuser',
         role: 'user',
         avatar_url: 'https://example.com/avatar.png',
-        tier: 'ZYRA',
+        tier: 'GTX 1650',
         balance: 100,
         referral_code: 'VYRO-TEST',
         referred_by: 'SYSTEM',
@@ -36,7 +36,7 @@ describe('Mappers', () => {
       expect(user.demo_usdt_balance).toBe(150);
       expect(user.invite_code).toBe('VYRO-TEST');
       expect(user.role).toBe('user');
-      expect(user.tier).toBe('ZYRA');
+      expect(user.tier).toBe('GTX 1650');
       expect(user.streak).toBe(5);
       expect(user.account_blocked).toBe(false);
     });
@@ -56,7 +56,7 @@ describe('Mappers', () => {
         member_user_id: 'member-1',
         username: 'teammate',
         avatar_url: null,
-        tier: 'ZYRA',
+        tier: 'GTX 1650',
         joined: '2024-01-15T00:00:00Z',
         contribution: 50,
         active_balance: 100,
