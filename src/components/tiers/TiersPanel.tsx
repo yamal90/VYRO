@@ -193,7 +193,7 @@ interface TiersPanelProps {
   };
 }
 
-export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'zyra', userStats }) => {
+export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'gtx-1650', userStats }) => {
   const { t } = useTranslation();
 
   const calculateProgress = (tier: Tier) => {
