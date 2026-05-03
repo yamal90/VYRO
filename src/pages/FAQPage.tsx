@@ -91,12 +91,12 @@ const VYRO_VIDEO_POSTER = '/images/gpu-hero.png';
 
 const videoChapters = [
   { time: '0:00', title: 'Introduzione a VYRO GPU', icon: Zap, color: 'text-amber-400' },
-  { time: '1:30', title: 'Come registrarsi e iniziare', icon: Users, color: 'text-blue-400' },
-  { time: '3:00', title: 'Dashboard e gestione GPU', icon: Cpu, color: 'text-emerald-400' },
-  { time: '4:30', title: 'Depositi e prelievi USDT', icon: TrendingUp, color: 'text-purple-400' },
-  { time: '6:00', title: 'Sistema referral e team', icon: Users, color: 'text-pink-400' },
-  { time: '7:30', title: 'Tier: da GTX 1650 a RTX 4090', icon: Award, color: 'text-yellow-400' },
-  { time: '9:00', title: 'Sicurezza e protezione', icon: Shield, color: 'text-green-400' },
+  { time: '0:08', title: 'Come registrarsi e iniziare', icon: Users, color: 'text-blue-400' },
+  { time: '0:17', title: 'Dashboard e gestione GPU', icon: Cpu, color: 'text-emerald-400' },
+  { time: '0:27', title: 'Depositi e prelievi USDT', icon: TrendingUp, color: 'text-purple-400' },
+  { time: '0:37', title: 'Sistema referral e team', icon: Users, color: 'text-pink-400' },
+  { time: '0:45', title: 'Tier: da GTX 1650 a RTX 4090', icon: Award, color: 'text-yellow-400' },
+  { time: '0:52', title: 'Sicurezza e protezione', icon: Shield, color: 'text-green-400' },
 ];
 
 const VideoGuide: React.FC = () => {
