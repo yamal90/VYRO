@@ -218,7 +218,7 @@ const AdminPage: React.FC = () => {
   const tierDistribution = useMemo(() => {
     const tiers: Record<string, number> = {};
     for (const u of allUsers) {
-      const tier = u.tier || 'ZYRA';
+      const tier = u.tier || 'GTX 1650';
       tiers[tier] = (tiers[tier] ?? 0) + 1;
     }
     return Object.entries(tiers).sort(([, a], [, b]) => b - a);
@@ -725,7 +725,7 @@ const AdminPage: React.FC = () => {
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">Tier</p>
-                    <p className="text-xs font-bold text-purple-400">{user.tier || 'ZYRA'}</p>
+                    <p className="text-xs font-bold text-purple-400">{user.tier || 'GTX 1650'}</p>
                   </div>
                 </div>
 
@@ -1221,10 +1221,10 @@ const AdminPage: React.FC = () => {
                   <div key={tier} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-3 h-3 rounded-full ${
-                        tier === 'INFINITY' ? 'bg-amber-400' :
-                        tier === 'QUANTUM' ? 'bg-emerald-400' :
-                        tier === 'NEBULA' ? 'bg-amber-500' :
-                        tier === 'VORTEX' ? 'bg-blue-400' :
+                        tier === 'RTX 4090' ? 'bg-amber-400' :
+                        tier === 'RTX 4080 Super' ? 'bg-emerald-400' :
+                        tier === 'RTX 4060 Ti' ? 'bg-amber-500' :
+                        tier === 'RTX 3060' ? 'bg-blue-400' :
                         'bg-slate-400'
                       }`} />
                       <span className="text-sm text-white font-medium">{tier}</span>

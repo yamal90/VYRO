@@ -235,11 +235,11 @@
     "totalXp": "Total XP"
   },
   "tiers": {
-    "zyra": "ZYRA",
-    "vortex": "VORTEX",
-    "nebula": "NEBULA",
-    "quantum": "QUANTUM",
-    "infinity": "INFINITY"
+    "gtx-1650": "GTX 1650",
+    "rtx-3060": "RTX 3060",
+    "rtx-4060ti": "RTX 4060 Ti",
+    "rtx-4080": "RTX 4080 Super",
+    "rtx-4090": "RTX 4090"
   },
   "nav": {
     "home": "Home",

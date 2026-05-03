@@ -95,7 +95,7 @@ const videoChapters = [
   { time: '3:00', title: 'Dashboard e gestione GPU', icon: Cpu, color: 'text-emerald-400' },
   { time: '4:30', title: 'Depositi e prelievi USDT', icon: TrendingUp, color: 'text-purple-400' },
   { time: '6:00', title: 'Sistema referral e team', icon: Users, color: 'text-pink-400' },
-  { time: '7:30', title: 'Tier: da ZYRA a INFINITY', icon: Award, color: 'text-yellow-400' },
+  { time: '7:30', title: 'Tier: da GTX 1650 a RTX 4090', icon: Award, color: 'text-yellow-400' },
   { time: '9:00', title: 'Sicurezza e protezione', icon: Shield, color: 'text-green-400' },
 ];
 
