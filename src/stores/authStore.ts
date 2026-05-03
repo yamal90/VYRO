@@ -5,6 +5,7 @@ import type { User } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getAppBaseUrl } from '@/lib/app-url';
 import { checkRateLimit, sanitizeEmail, validatePassword } from '@/lib/security';
+import { normalizeTierName } from '@/store/mappers';
 
 interface AuthState {
   currentUser: User | null;
@@ -307,7 +308,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                   status: profile.account_blocked ? 'blocked' : 'active',
                   claim_eligible: Boolean(profile.claim_eligible),
                   avatar_url: profile.avatar_url,
-                  tier: profile.tier ?? 'GTX 1650',
+                  tier: normalizeTierName(profile.tier),
                   vx_balance: Number(profile.balance ?? 0),
                   demo_usdt_balance: demoUsdtBalance,
                   compute_power: computePower,

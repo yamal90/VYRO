@@ -23,6 +23,20 @@ const LEGACY_DEVICE_NAME_MAP: Record<string, string> = {
 
 const DEFAULT_CYCLE_DAYS = 7;
 
+const LEGACY_TIER_NAME_MAP: Record<string, string> = {
+  ZYRA: 'GTX 1650',
+  VORTEX: 'RTX 3060',
+  NEBULA: 'RTX 4060 Ti',
+  QUANTUM: 'RTX 4080 Super',
+  INFINITY: 'RTX 4090',
+};
+
+export const normalizeTierName = (tier?: string | null) => {
+  const value = tier?.trim();
+  if (!value) return 'GTX 1650';
+  return LEGACY_TIER_NAME_MAP[value.toUpperCase()] ?? value;
+};
+
 const parseTimestamp = (value: string | null | undefined) => {
   if (!value) return NaN;
   const direct = Date.parse(value);
@@ -48,7 +62,7 @@ export const mapProfileToUser = (
   demo_usdt_balance: demoUsdtBalance,
   compute_power: computePower,
   avatar_url: profile.avatar_url || undefined,
-  tier: profile.tier ?? 'GTX 1650',
+  tier: normalizeTierName(profile.tier),
   streak: profile.streak ?? 0,
   account_blocked: profile.account_blocked ?? false,
   created_at: profile.created_at || profile.joined_at,

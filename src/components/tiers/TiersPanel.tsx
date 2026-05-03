@@ -195,6 +195,10 @@ interface TiersPanelProps {
 
 export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'gtx-1650', userStats }) => {
   const { t } = useTranslation();
+  const currentTierEntry = React.useMemo(
+    () => TIERS.find((tier) => tier.id === currentTier || tier.name === currentTier) || TIERS[0],
+    [currentTier],
+  );
 
   const calculateProgress = (tier: Tier) => {
     const balanceProgress = Math.min(100, (userStats.balance / tier.minBalance) * 100);
@@ -229,17 +233,16 @@ export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'gtx-1650'
               <p className="text-xs text-slate-400 mb-2">Il tuo tier attuale</p>
               <div className="flex items-center gap-3">
                 {(() => {
-                  const tier = TIERS.find(t => t.id === currentTier) || TIERS[0];
-                  const Icon = tier.icon;
+                  const Icon = currentTierEntry.icon;
                   return (
                     <>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${tier.color}`}>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${currentTierEntry.color}`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="font-display font-bold text-white text-xl">{tier.name}</p>
+                        <p className="font-display font-bold text-white text-xl">{currentTierEntry.name}</p>
                         <p className="text-xs text-slate-400">
-                          {t(`tiers.${currentTier}`)}
+                          {t(`tiers.${currentTierEntry.id}`)}
                         </p>
                       </div>
                     </>
@@ -255,7 +258,7 @@ export const TiersPanel: React.FC<TiersPanelProps> = ({ currentTier = 'gtx-1650'
       <div className="px-4 mt-4">
         <div className="space-y-4">
           {TIERS.map((tier) => {
-            const isCurrent = tier.id === currentTier;
+            const isCurrent = tier.id === currentTierEntry.id;
             const progress = calculateProgress(tier);
             
             return (
