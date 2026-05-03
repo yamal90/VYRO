@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type {
   ActionResult,
@@ -229,7 +229,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('portfolio_entries').select('*').eq('owner_id', profileId).order('position', { ascending: true }),
         supabase.from('deposits').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('withdrawals').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
-        supabase.from('activity_logs').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
+        supabase.from('activity_logs').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }).limit(200),
       ]);
 
     if (profileRes.error) throw profileRes.error;
@@ -266,7 +266,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           supabase.from('portfolio_entries').select('*').order('created_at', { ascending: false }),
           supabase.from('deposits').select('*').order('created_at', { ascending: false }),
           supabase.from('withdrawals').select('*').order('created_at', { ascending: false }),
-          supabase.from('activity_logs').select('*').order('created_at', { ascending: false }),
+          supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(500),
         ]);
 
       if (profilesAllRes.error) throw profilesAllRes.error;
@@ -1174,57 +1174,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* ── Provide ── */
 
+  const contextValue = useMemo<AppState>(() => ({
+    currentUser,
+    isLoggedIn: Boolean(currentUser),
+    authMode,
+    authLoading,
+    bootstrapped,
+    userDevices,
+    transactions,
+    teamMembers,
+    dailyClaims,
+    gpuDevices,
+    allUsers,
+    adminUserDevices,
+    adminTransactions,
+    adminLogs,
+    adminDepositRequests,
+    adminWithdrawalRequests,
+    platformSettings,
+    balanceVisible,
+    notice,
+    login,
+    loginWithGoogle,
+    requestPasswordReset,
+    completePasswordReset,
+    register,
+    updateNickname,
+    updateAvatar,
+    logout,
+    setAuthMode,
+    toggleBalanceVisibility,
+    activateDevice,
+    claimDailyReward,
+    requestDeposit,
+    requestWithdrawal,
+    updateDepositRequestStatus,
+    updateWithdrawalRequestStatus,
+    updateUserBalance,
+    updateDeviceStatus,
+    assignDeviceToUser,
+    removeDeviceFromUser,
+    blockUser,
+    unblockUser,
+    setUserClaimEligibility,
+    updatePlatformSettings,
+    refreshAppData,
+    pushNotice,
+    clearNotice,
+  }), [
+    currentUser, authMode, authLoading, bootstrapped,
+    userDevices, transactions, teamMembers, dailyClaims, gpuDevices,
+    allUsers, adminUserDevices, adminTransactions, adminLogs,
+    adminDepositRequests, adminWithdrawalRequests,
+    platformSettings, balanceVisible, notice,
+    login, loginWithGoogle, requestPasswordReset, completePasswordReset,
+    register, updateNickname, updateAvatar, logout, setAuthMode,
+    toggleBalanceVisibility, activateDevice, claimDailyReward,
+    requestDeposit, requestWithdrawal,
+    updateDepositRequestStatus, updateWithdrawalRequestStatus,
+    updateUserBalance, updateDeviceStatus, assignDeviceToUser,
+    removeDeviceFromUser, blockUser, unblockUser,
+    setUserClaimEligibility, updatePlatformSettings,
+    refreshAppData, pushNotice, clearNotice,
+  ]);
+
   return (
-    <AppContext.Provider
-      value={{
-        currentUser,
-        isLoggedIn: Boolean(currentUser),
-        authMode,
-        authLoading,
-        bootstrapped,
-        userDevices,
-        transactions,
-        teamMembers,
-        dailyClaims,
-        gpuDevices,
-        allUsers,
-        adminUserDevices,
-        adminTransactions,
-        adminLogs,
-        adminDepositRequests,
-        adminWithdrawalRequests,
-        platformSettings,
-        balanceVisible,
-        notice,
-        login,
-        loginWithGoogle,
-        requestPasswordReset,
-        completePasswordReset,
-        register,
-        updateNickname,
-        updateAvatar,
-        logout,
-        setAuthMode,
-        toggleBalanceVisibility,
-        activateDevice,
-        claimDailyReward,
-        requestDeposit,
-        requestWithdrawal,
-        updateDepositRequestStatus,
-        updateWithdrawalRequestStatus,
-        updateUserBalance,
-        updateDeviceStatus,
-        assignDeviceToUser,
-        removeDeviceFromUser,
-        blockUser,
-        unblockUser,
-        setUserClaimEligibility,
-        updatePlatformSettings,
-        refreshAppData,
-        pushNotice,
-        clearNotice,
-      }}
-    >
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

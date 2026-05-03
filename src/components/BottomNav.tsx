@@ -14,7 +14,7 @@ const navItems: { path: string; icon: React.ElementType; labelKey: string }[] = 
   { path: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 
-const BottomNav: React.FC = () => {
+const BottomNav: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -65,6 +65,8 @@ const BottomNav: React.FC = () => {
       </div>
     </nav>
   );
-};
+});
+
+BottomNav.displayName = 'BottomNav';
 
 export default BottomNav;

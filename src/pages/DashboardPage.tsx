@@ -45,7 +45,7 @@ const DashboardPage: React.FC = () => {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    const timer = window.setInterval(() => setNowMs(Date.now()), 5000);
     return () => window.clearInterval(timer);
   }, []);
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ParticleBackground: React.FC<{ intensity?: 'low' | 'medium' | 'high' }> = ({
+const ParticleBackgroundInner: React.FC<{ intensity?: 'low' | 'medium' | 'high' }> = ({
   intensity = 'medium',
 }) => {
   const opacityMap = { low: 0.2, medium: 0.35, high: 0.5 };
@@ -29,5 +29,7 @@ const ParticleBackground: React.FC<{ intensity?: 'low' | 'medium' | 'high' }> = 
     </div>
   );
 };
+
+const ParticleBackground = React.memo(ParticleBackgroundInner);
 
 export default ParticleBackground;

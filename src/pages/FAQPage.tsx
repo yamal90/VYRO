@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
-  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star
+  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star, Play
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -445,6 +445,7 @@ const FAQPage: React.FC = () => {
                     src={review.avatar}
                     alt={review.name}
                     className="w-9 h-9 rounded-full object-cover border border-amber-500/30"
+                    loading="lazy"
                   />
                   <div className="flex-1">
                     <p className="text-xs text-white font-semibold">{review.name}</p>
@@ -623,6 +624,7 @@ const FAQPage: React.FC = () => {
                         src={member.image}
                         alt={member.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
