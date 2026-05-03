@@ -47,6 +47,8 @@ const BenefitsPage: React.FC = () => {
 
   const today = new Date().toISOString().slice(0, 10);
   const claimedToday = dailyClaims.some(c => c.claim_date === today);
+  const nextStreak = Math.min((currentUser.streak ?? 0) + 1, 30);
+  const claimAmount = (0.10 + nextStreak * 0.02).toFixed(2);
 
   const handleClaim = () => {
     setClaiming(true);
@@ -119,8 +121,8 @@ const BenefitsPage: React.FC = () => {
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-white/80 text-xs font-medium mb-1">{t('benefits.dailyClaim')}</p>
-              <p className="font-display text-3xl font-bold">2.5 $</p>
-              <p className="text-white/60 text-[10px] mt-1">{t('benefits.dailyReward')}</p>
+              <p className="font-display text-3xl font-bold">{claimAmount} USDT</p>
+              <p className="text-white/60 text-[10px] mt-1">{t('benefits.dailyReward')} (streak: {currentUser.streak ?? 0})</p>
             </div>
             <motion.button
               whileTap={{ scale: 0.95 }}
