@@ -29,14 +29,22 @@ const GPUImageOverlay: React.FC<GPUImageOverlayProps> = ({
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           target.style.display = 'none';
-          target.parentElement!.innerHTML = `
-            <div class="w-full h-full bg-gradient-to-br from-amber-600 to-emerald-600 flex items-center justify-center">
-              <div class="text-center">
-                <div class="text-3xl font-display font-bold text-white">${alt}</div>
-                <div class="text-sm text-white/60">${power} TFLOPS</div>
-              </div>
-            </div>
-          `;
+          const container = target.parentElement;
+          if (!container) return;
+          const fallback = document.createElement('div');
+          fallback.className = 'w-full h-full bg-gradient-to-br from-amber-600 to-emerald-600 flex items-center justify-center';
+          const inner = document.createElement('div');
+          inner.className = 'text-center';
+          const label = document.createElement('div');
+          label.className = 'text-3xl font-display font-bold text-white';
+          label.textContent = alt;
+          const sub = document.createElement('div');
+          sub.className = 'text-sm text-white/60';
+          sub.textContent = `${power} TFLOPS`;
+          inner.appendChild(label);
+          inner.appendChild(sub);
+          fallback.appendChild(inner);
+          container.appendChild(fallback);
         }}
       />
 
