@@ -477,7 +477,7 @@ const DashboardPage: React.FC = () => {
         isOpen={transferModal === 'deposit'}
         mode="deposit"
         onClose={() => setTransferModal(null)}
-        depositAddress={platformSettings?.deposit_address ?? ''}
+        depositAddress={platformSettings?.deposit_address || '4SWFCN5UJTRHNWQS4W7GISBUN4HGMU6BV8'}
         depositAsset={platformSettings?.deposit_asset ?? 'USDT'}
         depositNetwork={platformSettings?.deposit_network ?? 'TRC20'}
         minDeposit={Number(platformSettings?.min_deposit ?? 0)}

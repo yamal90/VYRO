@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDownCircle, ArrowUpCircle, Check, Copy, X, Wallet } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Check, Copy, X, Wallet, Shield } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import type { ActionResult } from '../../types';
 
 type TransferMode = 'deposit' | 'withdrawal';
@@ -163,10 +164,23 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
 
         {mode === 'deposit' && (
           <div className="mb-4 rounded-xl border border-green-500/20 bg-green-500/10 p-4">
+            {/* Security Scan QR Code */}
+            {depositAddress && (
+              <div className="flex flex-col items-center mb-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Shield size={12} className="text-green-400" />
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-green-300 font-semibold">Security Scan</p>
+                </div>
+                <div className="bg-white p-3 rounded-xl">
+                  <QRCodeSVG value={depositAddress} size={160} level="H" />
+                </div>
+                <p className="text-[9px] text-green-200/60 mt-2">Scansiona per verificare l'indirizzo</p>
+              </div>
+            )}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-green-200/80">Wallet deposito admin</p>
-                <p className="text-sm text-white break-all mt-1">{depositAddress || 'Non configurato'}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-green-200/80">Wallet deposito</p>
+                <p className="text-sm text-white break-all mt-1 font-mono">{depositAddress || 'Non configurato'}</p>
                 <p className="text-[11px] text-green-100/70 mt-2">
                   {depositAsset} • {depositNetwork}
                   {minDeposit > 0 ? ` • Minimo ${minDeposit.toFixed(2)}` : ''}
