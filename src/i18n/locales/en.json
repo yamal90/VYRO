@@ -19,7 +19,12 @@
     "seeAll": "See all",
     "noData": "No data available",
     "you": "You",
-    "dollar": "Dollar"
+    "dollar": "Dollar",
+    "active": "Active",
+    "model": "Model",
+    "online": "Online",
+    "photo": "Photo",
+    "power": "Power"
   },
   "auth": {
     "login": "Login",
@@ -112,7 +117,11 @@
     "threeDays": "3 Days",
     "sevenDays": "7 Days",
     "activateGPU": "Activate GPU",
-    "disclaimer": "Each device expands your presence on the platform and makes the dashboard richer in activity, power and visual progression."
+    "disclaimer": "Each device expands your presence on the platform and makes the dashboard richer in activity, power and visual progression.",
+    "pending": "Pending",
+    "processing": "Processing",
+    "active": "Active",
+    "completed": "Completed"
   },
   "team": {
     "title": "Team & Invites",
