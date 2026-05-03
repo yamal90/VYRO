@@ -4,7 +4,7 @@ import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
   TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star,
-  Play, Pause, SkipForward, Volume2
+  Play
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -87,135 +87,78 @@ const securityBadges = [
   { icon: Server, label: '99.97% Uptime', color: 'text-emerald-400' }
 ];
 
-const videoSlides = [
-  {
-    title: 'Benvenuto su VYRO GPU',
-    content: 'VYRO e la piattaforma di cloud computing che ti permette di noleggiare potenza GPU e guadagnare passivamente. Registrati con un codice referral per iniziare.',
-    icon: Zap,
-    color: 'from-amber-500 to-orange-500',
-  },
-  {
-    title: 'Come funziona',
-    content: '1. Registrati con email e referral code\n2. Deposita USDT per acquistare GPU\n3. Le GPU generano rendimenti automatici ogni 7 giorni\n4. Ritira i tuoi guadagni quando vuoi',
-    icon: Cpu,
-    color: 'from-blue-500 to-indigo-500',
-  },
-  {
-    title: 'Dashboard e Portfolio',
-    content: 'Dalla dashboard puoi vedere il tuo saldo, la produzione in tempo reale, le transazioni recenti e gestire depositi e prelievi.',
-    icon: TrendingUp,
-    color: 'from-emerald-500 to-teal-500',
-  },
-  {
-    title: 'Sistema Team e Referral',
-    content: 'Invita amici con il tuo codice personale. Guadagna il 5% sugli acquisti diretti (Livello 1) e il 2% sugli acquisti indiretti (Livello 2).',
-    icon: Users,
-    color: 'from-purple-500 to-pink-500',
-  },
-  {
-    title: 'Sicurezza e Protezione',
-    content: 'I tuoi fondi sono protetti da crittografia end-to-end, autenticazione a due fattori, e Row Level Security su tutto il database. Certificazioni SOC 2, ISO 27001, GDPR.',
-    icon: Shield,
-    color: 'from-green-500 to-emerald-600',
-  },
-  {
-    title: 'Daily Claim e Benefici',
-    content: 'Accedi ogni giorno per il claim giornaliero. La ricompensa aumenta con lo streak: da 0.12 USDT al giorno 1 fino a 0.70 USDT dopo 30 giorni consecutivi.',
-    icon: Gift,
-    color: 'from-pink-500 to-rose-500',
-  },
-  {
-    title: 'Tier e Achievement',
-    content: 'Sali di livello da Bronze a Diamond. Ogni tier offre benefici esclusivi: commissioni ridotte, bonus maggiori e accesso a GPU premium.',
-    icon: Award,
-    color: 'from-amber-400 to-yellow-500',
-  },
+const VYRO_VIDEO_URL = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+
+const videoChapters = [
+  { time: '0:00', title: 'Introduzione a VYRO GPU', icon: Zap, color: 'text-amber-400' },
+  { time: '1:30', title: 'Come registrarsi e iniziare', icon: Users, color: 'text-blue-400' },
+  { time: '3:00', title: 'Dashboard e gestione GPU', icon: Cpu, color: 'text-emerald-400' },
+  { time: '4:30', title: 'Depositi e prelievi USDT', icon: TrendingUp, color: 'text-purple-400' },
+  { time: '6:00', title: 'Sistema referral e team', icon: Users, color: 'text-pink-400' },
+  { time: '7:30', title: 'Tier: da ZYRA a INFINITY', icon: Award, color: 'text-yellow-400' },
+  { time: '9:00', title: 'Sicurezza e protezione', icon: Shield, color: 'text-green-400' },
 ];
 
 const VideoGuide: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  React.useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => {
-        if (prev >= videoSlides.length - 1) {
-          setIsPlaying(false);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
-
-  const slide = videoSlides[currentSlide];
-  const SlideIcon = slide.icon;
-  const progress = ((currentSlide + 1) / videoSlides.length) * 100;
+  const [showVideo, setShowVideo] = useState(false);
 
   return (
     <div className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-white/10 rounded-2xl overflow-hidden">
-      <div className="relative aspect-video flex flex-col items-center justify-center p-6 text-center">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-1/4 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl" />
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="relative z-10"
-          >
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${slide.color} flex items-center justify-center shadow-lg`}>
-              <SlideIcon size={28} className="text-white" />
+      {!showVideo ? (
+        <div className="relative aspect-video flex flex-col items-center justify-center cursor-pointer group" onClick={() => setShowVideo(true)}>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-[#0c101c] to-emerald-900/20" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="grid grid-cols-3 gap-4 opacity-15 absolute inset-0 p-8">
+              {[Zap, Cpu, Shield, Users, TrendingUp, Award].map((Icon, i) => (
+                <div key={i} className="flex items-center justify-center">
+                  <Icon size={32} className="text-white" />
+                </div>
+              ))}
             </div>
-            <h3 className="text-white text-lg font-bold mb-3">{slide.title}</h3>
-            <p className="text-white/70 text-sm leading-relaxed max-w-sm mx-auto whitespace-pre-line">
-              {slide.content}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-        <div className="absolute bottom-3 left-0 right-0 flex items-center gap-1.5 justify-center">
-          {videoSlides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentSlide(i)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentSlide ? 'bg-amber-400 w-6' : 'bg-white/20 hover:bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-black/30 px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-[#06080f] hover:bg-amber-400 transition-colors"
-        >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
-        </button>
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % videoSlides.length)}
-          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-        >
-          <SkipForward size={14} />
-        </button>
-        <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
+          </div>
           <motion.div
-            className="bg-amber-400 h-full rounded-full"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            className="relative z-10 flex flex-col items-center"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/30 group-hover:scale-110 transition-transform mb-4">
+              <Play size={32} className="text-[#06080f] ml-1" />
+            </div>
+            <h3 className="text-white text-lg font-bold mb-1">Guida Video VYRO</h3>
+            <p className="text-white/50 text-sm">Guarda il video tutorial in italiano</p>
+            <p className="text-white/30 text-xs mt-1">10 min • Italiano</p>
+          </motion.div>
+        </div>
+      ) : (
+        <div className="relative aspect-video">
+          <iframe
+            src={VYRO_VIDEO_URL + '?autoplay=1&rel=0&modestbranding=1'}
+            title="VYRO GPU - Guida completa in italiano"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
           />
         </div>
-        <span className="text-[10px] text-white/50 tabular-nums">
-          {currentSlide + 1}/{videoSlides.length}
-        </span>
-        <Volume2 size={14} className="text-white/30" />
+      )}
+
+      <div className="p-4">
+        <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Capitoli</h4>
+        <div className="space-y-1">
+          {videoChapters.map((chapter, i) => {
+            const ChapterIcon = chapter.icon;
+            return (
+              <button
+                key={i}
+                onClick={() => setShowVideo(true)}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-left"
+              >
+                <span className="text-[10px] text-white/30 tabular-nums w-8">{chapter.time}</span>
+                <ChapterIcon size={14} className={chapter.color} />
+                <span className="text-sm text-white/80">{chapter.title}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
