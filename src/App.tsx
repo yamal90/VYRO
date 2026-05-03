@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider, useApp } from './store/AppContext';
-import LoginPage from './pages/LoginPage';
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 import BottomNav from './components/BottomNav';
 import SupabaseSetupState from './components/SupabaseSetupState';
 import ParticleBackground from './components/ParticleBackground';
@@ -94,7 +94,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!isLoggedIn) {
-    return <LoginPage />;
+    return <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>;
   }
 
   const isAdmin = currentUser?.role === 'admin';

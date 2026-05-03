@@ -223,7 +223,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ) => {
     if (!supabase) return null;
 
-    const [profileRes, settingsRes, portfolioRes, depositsRes, withdrawalsRes, activitiesRes] =
+    const [profileRes, settingsRes, portfolioRes, depositsRes, withdrawalsRes, activitiesRes, teamRows] =
       await Promise.all([
         supabase.from('profiles').select('*').eq('id', profileId).single<ProfileRow>(),
         supabase.from('platform_settings').select('*').eq('id', 1).maybeSingle<PlatformSettingsRow>(),
@@ -231,6 +231,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('deposits').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('withdrawals').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }),
         supabase.from('activity_logs').select('*').eq('owner_id', profileId).order('created_at', { ascending: false }).limit(200),
+        loadTeamMembers(profileId),
       ]);
 
     if (profileRes.error) throw profileRes.error;
@@ -244,7 +245,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const deposits = (depositsRes.data ?? []) as DepositRow[];
     const withdrawals = (withdrawalsRes.data ?? []) as WithdrawalRow[];
     const activities = (activitiesRes.data ?? []) as ActivityLogRow[];
-    const teamRows = await loadTeamMembers(profileId);
 
     const computePower = portfolio.reduce((sum, e) => sum + Number(e.allocation ?? 0), 0);
     const demoUsdtBalance =
@@ -472,8 +472,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const referralFromUrl = normalizeReferralCode(new URLSearchParams(window.location.search).get('ref') ?? '');
         const referralFromProfile = normalizeReferralCode(data.referred_by ?? '');
         const referralForSync = referralFromMetadata || referralFromUrl || referralFromProfile;
+
+        // Run referral sync in background — don't block data loading
         if (!isReferralSentinel(referralForSync)) {
-          await syncReferral(data, referralForSync);
+          void syncReferral(data, referralForSync);
         }
 
         await fetchAppData(effectiveSession.user.id, data.role === 'admin' ? 'admin' : 'user', {
