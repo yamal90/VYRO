@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 import type { User } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getAppBaseUrl } from '@/lib/app-url';
+import { checkRateLimit, sanitizeEmail, validatePassword } from '@/lib/security';
 
 interface AuthState {
   currentUser: User | null;
@@ -65,10 +66,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       login: async (email, password) => {
         if (!supabase) return { success: false, message: 'Configura Supabase' };
+        if (!checkRateLimit('login')) {
+          return { success: false, message: 'Troppi tentativi. Riprova tra un minuto.' };
+        }
         set({ authLoading: true });
         try {
           const { error } = await supabase.auth.signInWithPassword({ 
-            email: email.trim().toLowerCase(), 
+            email: sanitizeEmail(email), 
             password 
           });
           if (error) throw error;
@@ -115,9 +119,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         const referralCode = payload.referralCode.trim().toUpperCase();
         if (!referralCode) return { success: false, message: 'Codice referral obbligatorio' };
         if (payload.password !== payload.confirmPassword) return { success: false, message: 'Le password non coincidono' };
-        if (payload.password.length < 8) return { success: false, message: 'Password minimo 8 caratteri' };
-        if (!/[A-Z]/.test(payload.password)) return { success: false, message: 'Password deve contenere una maiuscola' };
-        if (!/[0-9]/.test(payload.password)) return { success: false, message: 'Password deve contenere un numero' };
+        const pwCheck = validatePassword(payload.password);
+        if (!pwCheck.valid) return { success: false, message: pwCheck.errors[0] };
 
         set({ authLoading: true });
         try {
@@ -176,9 +179,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       completePasswordReset: async (newPassword, confirmPassword) => {
         if (!supabase) return { success: false, message: 'Configura Supabase' };
         if (newPassword !== confirmPassword) return { success: false, message: 'Le password non coincidono' };
-        if (newPassword.length < 8) return { success: false, message: 'Password minimo 8 caratteri' };
-        if (!/[A-Z]/.test(newPassword)) return { success: false, message: 'Password deve contenere una maiuscola' };
-        if (!/[0-9]/.test(newPassword)) return { success: false, message: 'Password deve contenere un numero' };
+        const pwCheck = validatePassword(newPassword);
+        if (!pwCheck.valid) return { success: false, message: pwCheck.errors[0] };
 
         set({ authLoading: true });
         try {
