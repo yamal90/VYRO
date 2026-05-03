@@ -5,174 +5,26 @@ import {
   Server, Key, Fingerprint, Globe, AlertTriangle,
   TrendingUp, Gift, RefreshCw
 } from 'lucide-react';
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+import { useTranslation } from 'react-i18next';
 
 interface FAQCategory {
   id: string;
-  title: string;
   icon: React.ElementType;
   color: string;
-  items: FAQItem[];
 }
 
-const faqCategories: FAQCategory[] = [
-  {
-    id: 'platform',
-    title: 'Cos\'è VYRO GPU',
-    icon: Cpu,
-    color: 'from-amber-500 to-amber-600',
-    items: [
-      {
-        question: 'Cos\'è VYRO GPU?',
-        answer: 'VYRO GPU è una piattaforma innovativa di cloud computing che permette agli utenti di attivare potenti unità di elaborazione GPU per generare Dollari interni attraverso la potenza di calcolo distribuita. Ogni GPU attiva contribuisce alla rete e genera ricompense proporzionali alla sua potenza in TFLOPS.'
-      },
-      {
-        question: 'Come funziona il sistema?',
-        answer: 'Il funzionamento è semplice: acquisti e attivi una GPU dal nostro catalogo, il sistema la registra nella tua dashboard, e da quel momento inizia a produrre Dollari automaticamente. La produzione è calcolata in base ai TFLOPS della GPU e viene aggiornata in tempo reale nella Live Production Bar.'
-      },
-      {
-        question: 'Cosa sono i TFLOPS?',
-        answer: 'TFLOPS (Tera Floating-point Operations Per Second) è l\'unità di misura della potenza di calcolo di una GPU. Più TFLOPS ha una GPU, maggiore è la sua capacità di elaborazione e quindi la sua produzione di Dollari. Le nostre GPU vanno da 4 TFLOPS (X-120) a 6300 TFLOPS (IX-9900 Ultimate).'
-      },
-      {
-        question: 'Quali sono le GPU Ultimate Edition?',
-        answer: 'Le Ultimate Edition sono versioni premium delle nostre GPU più potenti, con potenza incrementata del 50% e design esclusivo. Sono identificate dal suffisso "ULTIMATE" nel nome e offrono la massima capacità produttiva della piattaforma.'
-      }
-    ]
-  },
-  {
-    id: 'security',
-    title: 'Sicurezza Portafogli',
-    icon: Shield,
-    color: 'from-green-500 to-emerald-600',
-    items: [
-      {
-        question: 'Cos\'è VYRO Vault™?',
-        answer: 'VYRO Vault™ è il nostro sistema di cold storage offline dove conserviamo il 98% degli asset degli utenti. Le chiavi private sono mantenute in camere blindate con accesso biometrico, distribuite in 3 continenti per garantire la massima sicurezza e ridondanza.'
-      },
-      {
-        question: 'Come funziona Neural Shield™?',
-        answer: 'Neural Shield™ è il nostro sistema di protezione basato su AI che monitora tutte le transazioni in tempo reale. Utilizza pattern recognition avanzata per rilevare anomalie e blocca automaticamente le operazioni sospette prima che vengano eseguite, proteggendo il tuo account da frodi e accessi non autorizzati.'
-      },
-      {
-        question: 'Cos\'è Quantum Lock™?',
-        answer: 'Quantum Lock™ è il nostro sistema di crittografia militare che utilizza AES-256 combinato con curve ellittiche per proteggere tutti i dati sensibili. Le chiavi di crittografia vengono ruotate ogni 24 ore e il sistema utilizza zero-knowledge proof per l\'autenticazione, garantendo che le tue credenziali non siano mai esposte.'
-      },
-      {
-        question: 'Cos\'è il Trust Score™?',
-        answer: 'Trust Score™ è un punteggio di reputazione da 0 a 100 che viene assegnato al tuo account basato sulla tua attività, storico transazioni e comportamento sulla piattaforma. Un punteggio alto sblocca limiti di prelievo più elevati, bonus esclusivi e priorità nel supporto.'
-      },
-      {
-        question: 'Come funziona Secure Recovery™?',
-        answer: 'Secure Recovery™ ti permette di recuperare l\'accesso al tuo account attraverso una seed phrase di 12 parole generata alla registrazione. Opzionalmente, puoi attivare il Social Recovery, che permette a contatti fidati di approvare il ripristino del tuo account. Tutti i recovery includono un time-lock di 48 ore per massima sicurezza.'
-      },
-      {
-        question: 'Quali autenticazioni sono supportate?',
-        answer: 'Supportiamo molteplici metodi di autenticazione: 2FA via app (Google Authenticator, Authy), SMS OTP, autenticazione biometrica (impronta digitale, Face ID), e hardware keys (YubiKey). Raccomandiamo di attivare almeno due metodi per la massima sicurezza.'
-      }
-    ]
-  },
-  {
-    id: 'production',
-    title: 'Produzione GPU',
-    icon: Zap,
-    color: 'from-amber-500 to-orange-600',
-    items: [
-      {
-        question: 'Come vengono calcolati i guadagni?',
-        answer: 'I guadagni sono calcolati moltiplicando i TFLOPS della tua GPU per un coefficiente di produzione base (0.05 $ per TFLOPS al minuto). Il sistema aggiorna il calcolo ogni secondo e puoi visualizzare la produzione in tempo reale nella Live Production Bar nella sezione "I Miei Dispositivi".'
-      },
-      {
-        question: 'Quanto posso guadagnare?',
-        answer: 'I guadagni dipendono dalla potenza delle tue GPU. Ecco alcuni esempi:\n• X-120 (4 TF): ~12.32 $/settimana\n• G-700 (68 TF): ~209.94 $/settimana\n• X-7900 (900 TF): ~3,703 $/settimana\n• IX-9900 Ultimate (6300 TF): ~31,000 $/settimana'
-      },
-      {
-        question: 'Quando vengono distribuite le ricompense?',
-        answer: 'La produzione in Dollari viene accreditata automaticamente ogni secondo e visibile istantaneamente nel tuo saldo. I Dollari generati sono immediatamente disponibili per essere utilizzati per nuove attivazioni, trasferimenti o conversioni.'
-      },
-      {
-        question: 'Posso avere più GPU attive?',
-        answer: 'Assolutamente sì! Puoi attivare quante GPU desideri. La produzione totale sarà la somma della potenza di tutte le tue GPU attive. Più GPU possiedi, maggiore sarà la tua capacità produttiva e i tuoi guadagni.'
-      }
-    ]
-  },
-  {
-    id: 'team',
-    title: 'Sistema Team',
-    icon: Users,
-    color: 'from-blue-500 to-indigo-600',
-    items: [
-      {
-        question: 'Come funzionano i referral?',
-        answer: 'Ogni utente ha un codice invito unico e un link QR condivisibile. Quando qualcuno si registra tramite il tuo link, entra nel tuo team come membro di Livello 1. I membri che loro invitano diventano il tuo Livello 2.'
-      },
-      {
-        question: 'Quali commissioni ricevo?',
-        answer: 'Le commissioni si dividono in:\n• Livello 1 (inviti diretti): 3% sulla produzione + 5% bonus attivazione\n• Livello 2 (inviti dei tuoi inviti): 2% sulla produzione + 3% bonus attivazione\nLe commissioni vengono calcolate in tempo reale e accreditate automaticamente.'
-      },
-      {
-        question: 'Ci sono bonus progressivi?',
-        answer: 'Sì! Il sistema team include bonus progressivi:\n• 3 membri attivi: +10% su tutte le commissioni\n• 10 membri attivi: +25% + badge "Team Builder"\n• 50 membri attivi: +50% + badge "Network Leader"\n• 100+ membri: Accesso esclusivo alle GPU Collector Edition'
-      },
-      {
-        question: 'Come monitoro il mio team?',
-        answer: 'Nella sezione Team puoi vedere tutti i membri dei Livelli 1 e 2, il loro stato (attivo/inattivo), se hanno GPU attive, la loro produzione totale, e i guadagni che generano per te. Il dashboard si aggiorna in tempo reale.'
-      }
-    ]
-  },
-  {
-    id: 'benefits',
-    title: 'Benefici & Missioni',
-    icon: Gift,
-    color: 'from-pink-500 to-rose-600',
-    items: [
-      {
-        question: 'Cos\'è il Claim Giornaliero?',
-        answer: 'Ogni giorno puoi riscattare 2.5 $ gratuitamente visitando la sezione Benefici. Questo bonus è progettato per premiare la costanza degli utenti attivi. Se mantieni uno streak di 7 giorni consecutivi, sblocchi un bonus extra di 10 $.'
-      },
-      {
-        question: 'Quali missioni giornaliere esistono?',
-        answer: 'Le missioni giornaliere includono:\n• Login giornaliero: +1 $\n• Claim giornaliero: +2.5 $\n• Controllo dispositivi: +0.5 $\n• Invita un amico: +5 $\nCompletare tutte le missioni garantisce bonus aggiuntivi.'
-      },
-      {
-        question: 'Come funzionano i badge?',
-        answer: 'I badge sono riconoscimenti che ottieni raggiungendo obiettivi specifici:\n• "Primo Login" - Accesso alla piattaforma\n• "Primo GPU" - Attivazione primo dispositivo\n• "Team Builder" - Invita 3 membri\n• "Streak 7" - 7 claim consecutivi\n• "Power User" - Raggiungi 100 TFLOPS\n• "Top Earner" - Genera 10,000 $ totali'
-      },
-      {
-        question: 'Cos\'è la classifica?',
-        answer: 'La classifica mostra i top performer della piattaforma basandosi su Dollari totali e potenza TFLOPS. Essere nei primi 3 posti garantisce visibilità speciale, bonus settimanali, e l\'ambito badge "Crown" che appare nel tuo profilo.'
-      }
-    ]
-  },
-  {
-    id: 'certifications',
-    title: 'Certificazioni',
-    icon: Award,
-    color: 'from-emerald-500 to-teal-600',
-    items: [
-      {
-        question: 'Quali certificazioni possiede VYRO?',
-        answer: 'VYRO GPU è certificata:\n• SOC 2 Type II Compliant - Security & Availability\n• ISO 27001 Certified - Information Security\n• GDPR Compliant - Data Protection\n• PCI DSS Level 1 - Payment Security\nQueste certificazioni vengono rinnovate annualmente con audit esterni.'
-      },
-      {
-        question: 'Avete un Bug Bounty Program?',
-        answer: 'Sì! Il nostro Bug Bounty Program premia ricercatori di sicurezza che trovano vulnerabilità nel nostro sistema. I premi vanno da $100 a $50,000 a seconda della gravità. Tutti i dettagli sono disponibili su security.vyrogpu.com'
-      },
-      {
-        question: 'Chi sono i partner strategici?',
-        answer: 'Collaboriamo con leader del settore per garantire la massima qualità:\n• NVIDIA - Partnership hardware GPU\n• AWS - Infrastruttura cloud\n• Cloudflare - Protezione DDoS\n• Ledger - Cold storage solutions\n• Chainalysis - Compliance & Monitoring'
-      },
-      {
-        question: 'Come garantite l\'uptime?',
-        answer: 'La nostra infrastruttura è progettata per il 99.97% di uptime garantito. Utilizziamo:\n• Datacenter distribuiti su 3 continenti\n• Load balancing automatico\n• Failover in tempo reale\n• Backup incrementali ogni ora\nLo stato dei sistemi è sempre visibile nel dashboard.'
-      }
-    ]
-  }
+const faqCategoryDefs: FAQCategory[] = [
+  { id: 'platform', icon: Cpu, color: 'from-amber-500 to-amber-600' },
+  { id: 'security', icon: Shield, color: 'from-green-500 to-emerald-600' },
+  { id: 'production', icon: Zap, color: 'from-amber-500 to-orange-600' },
+  { id: 'team', icon: Users, color: 'from-blue-500 to-indigo-600' },
+  { id: 'benefits', icon: Gift, color: 'from-pink-500 to-rose-600' },
+  { id: 'certifications', icon: Award, color: 'from-emerald-500 to-teal-600' },
 ];
+
+const faqItemCounts: Record<string, number> = {
+  platform: 4, security: 6, production: 4, team: 4, benefits: 4, certifications: 4,
+};
 
 const teamMembers = [
   {
@@ -235,9 +87,19 @@ const securityBadges = [
 ];
 
 const FAQPage: React.FC = () => {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('platform');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [showTeam, setShowTeam] = useState(false);
+
+  const faqCategories = faqCategoryDefs.map(def => ({
+    ...def,
+    title: t(`faq.categories.${def.id}.title`),
+    items: Array.from({ length: faqItemCounts[def.id] || 0 }, (_, i) => ({
+      question: t(`faq.categories.${def.id}.items.${i}.q`),
+      answer: t(`faq.categories.${def.id}.items.${i}.a`),
+    })),
+  }));
 
   const toggleItem = (id: string) => {
     const newSet = new Set(expandedItems);
@@ -264,11 +126,11 @@ const FAQPage: React.FC = () => {
           <div className="flex items-center gap-3 mb-2">
             <HelpCircle className="w-8 h-8 text-white" />
             <h1 className="font-display text-2xl font-bold text-white tracking-wider">
-              FAQ & Sicurezza
+              {t('faq.title')}
             </h1>
           </div>
           <p className="text-white/60 text-sm">
-            Tutto quello che devi sapere sulla piattaforma
+            {t('faq.subtitle')}
           </p>
 
           {/* Security Badges */}
@@ -371,24 +233,24 @@ const FAQPage: React.FC = () => {
         <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
             <TrendingUp size={16} className="text-green-400" />
-            Statistiche Piattaforma
+            {t('faq.platformStats')}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
               <p className="font-display text-xl font-bold text-amber-400">99.97%</p>
-              <p className="text-[10px] text-slate-400 mt-1">Uptime garantito</p>
+              <p className="text-[10px] text-slate-400 mt-1">{t('faq.guaranteedUptime')}</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
               <p className="font-display text-xl font-bold text-green-400">$50M+</p>
-              <p className="text-[10px] text-slate-400 mt-1">Asset protetti</p>
+              <p className="text-[10px] text-slate-400 mt-1">{t('faq.protectedAssets')}</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
               <p className="font-display text-xl font-bold text-emerald-400">24/7</p>
-              <p className="text-[10px] text-slate-400 mt-1">Supporto attivo</p>
+              <p className="text-[10px] text-slate-400 mt-1">{t('faq.activeSupport')}</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-3 text-center">
               <p className="font-display text-xl font-bold text-amber-400">3</p>
-              <p className="text-[10px] text-slate-400 mt-1">Continenti attivi</p>
+              <p className="text-[10px] text-slate-400 mt-1">{t('faq.activeContinents')}</p>
             </div>
           </div>
         </div>
@@ -405,8 +267,8 @@ const FAQPage: React.FC = () => {
               <Users size={20} className="text-white" />
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-white">Il Nostro Team</p>
-              <p className="text-[10px] text-slate-400">Ingegneri e esperti di sicurezza</p>
+              <p className="text-sm font-bold text-white">{t('faq.ourTeam')}</p>
+              <p className="text-[10px] text-slate-400">{t('faq.engineers')}</p>
             </div>
           </div>
           <motion.div
@@ -474,10 +336,10 @@ const FAQPage: React.FC = () => {
             <div className="px-4 mt-4">
               <div className="bg-gradient-to-r from-[#0c101c]/60 via-[#0a0e1a]/50 to-[#0c101c]/60 rounded-xl p-4 text-center border border-amber-500/20">
                 <p className="font-display text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">
-                  Innovazione. Sicurezza. Potenza.
+                  {t('faq.motto')}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Il team VYRO lavora 24/7 per garantire la migliore esperienza
+                  {t('faq.mottoSub')}
                 </p>
               </div>
             </div>
@@ -490,17 +352,17 @@ const FAQPage: React.FC = () => {
         <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <AlertTriangle size={16} className="text-amber-400" />
-            Hai bisogno di aiuto?
+            {t('faq.needHelp')}
           </h3>
           <p className="text-xs text-slate-400 mb-3">
-            Il nostro team di supporto è disponibile 24/7 per rispondere a qualsiasi domanda.
+            {t('faq.supportAvailable')}
           </p>
           <button
             onClick={() => window.location.href = 'mailto:support@vyrogpu.com'}
             className="w-full py-3 gradient-primary rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2"
           >
             <RefreshCw size={16} />
-            Contatta Supporto
+            {t('faq.contactSupport')}
           </button>
         </div>
       </div>
@@ -509,8 +371,7 @@ const FAQPage: React.FC = () => {
       <div className="px-4 mt-6">
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
           <p className="text-[10px] text-amber-300 leading-relaxed text-center">
-            Le informazioni fornite in questa FAQ sono a scopo informativo. VYRO GPU si riserva
-            il diritto di modificare parametri e policy con preavviso agli utenti.
+            {t('faq.disclaimer')}
           </p>
         </div>
       </div>

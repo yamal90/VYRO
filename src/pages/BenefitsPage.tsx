@@ -4,10 +4,12 @@ import {
   Gift, Calendar, Award, Trophy, Star,
   CheckCircle, Lock, Target, Flame, Crown
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 import { supabase } from '../lib/supabase';
 
 const BenefitsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, claimDailyReward, dailyClaims, userDevices, teamMembers } = useApp();
   const [claimResult, setClaimResult] = useState<{ msg: string; ok: boolean } | null>(null);
   const [claiming, setClaiming] = useState(false);
@@ -16,16 +18,16 @@ const BenefitsPage: React.FC = () => {
   const badges = useMemo(() => {
     if (!currentUser) return [];
     return [
-      { name: 'Primo Login', icon: '🚀', earned: Boolean(currentUser), desc: 'Accesso alla piattaforma', tier: 'bronze' },
-      { name: 'Primo GPU', icon: '⚡', earned: userDevices.length > 0, desc: 'Attivazione primo dispositivo', tier: 'silver' },
-      { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: 'Invita 3 membri', tier: 'silver' },
-      { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: '7 claim consecutivi', tier: 'gold' },
-      { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: '100 TFLOPS potenza', tier: 'platinum' },
-      { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: '10.000 Dollari generati', tier: 'diamond' },
-      { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: '100.000 Dollari generati', tier: 'ultimate' },
-      { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: 'GPU Ultimate posseduta', tier: 'ultimate' },
+      { name: t('benefits.firstLogin'), icon: '🚀', earned: Boolean(currentUser), desc: t('benefits.firstLoginDesc'), tier: 'bronze' },
+      { name: t('benefits.firstGPU'), icon: '⚡', earned: userDevices.length > 0, desc: t('benefits.firstGPUDesc'), tier: 'silver' },
+      { name: 'Team Builder', icon: '👥', earned: teamMembers.length >= 3, desc: t('benefits.teamBuilderDesc'), tier: 'silver' },
+      { name: 'Streak 7', icon: '🔥', earned: dailyClaims.length >= 7, desc: t('benefits.streak7Desc'), tier: 'gold' },
+      { name: 'Power User', icon: '💎', earned: currentUser.compute_power >= 100, desc: t('benefits.powerUserDesc'), tier: 'platinum' },
+      { name: 'Top Earner', icon: '🏆', earned: currentUser.vx_balance >= 10000, desc: t('benefits.topEarnerDesc'), tier: 'diamond' },
+      { name: 'Legend', icon: '👑', earned: currentUser.vx_balance >= 100000, desc: t('benefits.legendDesc'), tier: 'ultimate' },
+      { name: 'Pioneer', icon: '🌟', earned: userDevices.some(d => (d.device?.price ?? 0) >= 2000), desc: t('benefits.pioneerDesc'), tier: 'ultimate' },
     ];
-  }, [currentUser, userDevices, teamMembers, dailyClaims]);
+  }, [currentUser, userDevices, teamMembers, dailyClaims, t]);
 
   useEffect(() => {
     if (!supabase || !currentUser) return;
@@ -56,7 +58,7 @@ const BenefitsPage: React.FC = () => {
     }, 800);
   };
 
-  const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+  const weekDays = [t('benefits.mon'), t('benefits.tue'), t('benefits.wed'), t('benefits.thu'), t('benefits.fri'), t('benefits.sat'), t('benefits.sun')];
   const daysCompleted = Math.min(dailyClaims.length, 7);
 
   const tierColors: Record<string, string> = {
@@ -70,10 +72,10 @@ const BenefitsPage: React.FC = () => {
 
   // Missions
   const missions = [
-    { name: 'Login giornaliero', reward: 1, completed: true, icon: Star },
-    { name: 'Claim giornaliero', reward: 2.5, completed: claimedToday, icon: Gift },
-    { name: 'Controlla dispositivi', reward: 0.5, completed: false, icon: Target },
-    { name: 'Invita un amico', reward: 5, completed: false, icon: Flame },
+    { name: t('benefits.dailyLogin'), reward: 1, completed: true, icon: Star },
+    { name: t('benefits.dailyClaim'), reward: 2.5, completed: claimedToday, icon: Gift },
+    { name: t('benefits.checkDevices'), reward: 0.5, completed: false, icon: Target },
+    { name: t('benefits.inviteFriend'), reward: 5, completed: false, icon: Flame },
   ];
 
   return (
@@ -92,9 +94,9 @@ const BenefitsPage: React.FC = () => {
           </div>
           
           <h1 className="font-display text-2xl font-bold text-white tracking-wider relative z-10">
-            Centro Benefici
+            {t('benefits.title')}
           </h1>
-          <p className="text-white/50 text-xs mt-1 relative z-10">Missioni, ricompense e classifiche</p>
+          <p className="text-white/50 text-xs mt-1 relative z-10">{t('benefits.subtitle')}</p>
         </div>
       </div>
 
@@ -117,9 +119,9 @@ const BenefitsPage: React.FC = () => {
 
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-white/80 text-xs font-medium mb-1">Claim giornaliero</p>
+              <p className="text-white/80 text-xs font-medium mb-1">{t('benefits.dailyClaim')}</p>
               <p className="font-display text-3xl font-bold">2.5 $</p>
-              <p className="text-white/60 text-[10px] mt-1">Ricompensa giornaliera</p>
+              <p className="text-white/60 text-[10px] mt-1">{t('benefits.dailyReward')}</p>
             </div>
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -136,12 +138,12 @@ const BenefitsPage: React.FC = () => {
               ) : claimedToday ? (
                 <>
                   <CheckCircle size={16} />
-                  Riscosso
+                  {t('benefits.claimed')}
                 </>
               ) : (
                 <>
                   <Gift size={16} />
-                  Riscuoti
+                  {t('benefits.claim')}
                 </>
               )}
             </motion.button>
@@ -165,7 +167,7 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <Calendar size={16} className="text-amber-400" />
-          Progresso settimanale
+          {t('benefits.weeklyProgress')}
         </h3>
         <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <div className="flex items-center justify-between mb-3">
@@ -194,7 +196,7 @@ const BenefitsPage: React.FC = () => {
             />
           </div>
           <p className="text-[10px] text-slate-400 mt-2 text-center">
-            {daysCompleted}/7 giorni completati — Bonus settimana: <span className="font-bold text-amber-400">10 $</span>
+            {daysCompleted}/7 {t('benefits.daysCompleted')} — {t('benefits.weekBonus')}: <span className="font-bold text-amber-400">10 $</span>
           </p>
         </div>
       </div>
@@ -203,7 +205,7 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <Target size={16} className="text-amber-400" />
-          Missioni giornaliere
+          {t('benefits.dailyMissions')}
         </h3>
         <div className="space-y-2">
           {missions.map((mission, i) => {
@@ -239,7 +241,7 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <Award size={16} className="text-amber-400" />
-          Badge ottenuti
+          {t('benefits.badgesEarned')}
         </h3>
         <div className="grid grid-cols-4 gap-2">
           {badges.map((badge, i) => (
@@ -266,7 +268,7 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mt-6 mb-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <Trophy size={16} className="text-amber-400" />
-          Classifica utenti
+          {t('benefits.leaderboard')}
         </h3>
         <div className="glass-dark rounded-xl overflow-hidden border border-amber-500/20">
           {leaderboard.map((entry, i) => (
@@ -289,7 +291,7 @@ const BenefitsPage: React.FC = () => {
                   entry.name === currentUser.username ? 'text-amber-400 font-bold' : 'text-white'
                 }`}>
                   {entry.name}
-                  {entry.name === currentUser.username && ' (Tu)'}
+                  {entry.name === currentUser.username && ` (${t('common.you')})`}
                 </p>
               </div>
               <div className="text-right">
@@ -305,8 +307,7 @@ const BenefitsPage: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="glass-dark rounded-xl p-4 border border-amber-500/20">
           <p className="text-[10px] text-slate-400 leading-relaxed text-center">
-            Missioni, streak e badge rendono l'esperienza VYRO GPU più coinvolgente,
-            premiando la costanza e la crescita del tuo profilo giorno dopo giorno.
+            {t('benefits.disclaimer')}
           </p>
         </div>
       </div>

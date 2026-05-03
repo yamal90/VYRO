@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, EyeOff, KeyRound, Ticket, UserPlus, Zap, ShieldCheck, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
 type AuthStep = 'auth' | 'forgot' | 'reset';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     authMode,
     setAuthMode,
@@ -64,10 +66,10 @@ const LoginPage: React.FC = () => {
   };
 
   const submitLabel = useMemo(() => {
-    if (authStep === 'forgot') return 'Invia email reset';
-    if (authStep === 'reset') return 'Aggiorna password';
-    return isRegister ? 'Crea account' : 'Accedi';
-  }, [authStep, isRegister]);
+    if (authStep === 'forgot') return t('auth.sendResetEmail');
+    if (authStep === 'reset') return t('auth.updatePassword');
+    return isRegister ? t('auth.createAccount') : t('auth.login');
+  }, [authStep, isRegister, t]);
 
   const googleReferralMissing = isRegister && !referralCode.trim();
 
@@ -117,7 +119,7 @@ const LoginPage: React.FC = () => {
 
     if (isRegister) {
       resetForm();
-      setSuccess('Registrazione completata.');
+      setSuccess(t('auth.registrationComplete'));
     }
   };
 
@@ -152,20 +154,20 @@ const LoginPage: React.FC = () => {
           <p className="text-amber-400/90 mt-1 text-[11px] uppercase tracking-[0.34em]">Experience</p>
           <p className="text-slate-400 mt-2 text-sm">
             {authStep === 'forgot'
-              ? 'Recupera la password via email'
+              ? t('auth.recoverPassword')
               : authStep === 'reset'
-                ? 'Imposta una nuova password'
+                ? t('auth.setNewPassword')
                 : isRegister
-                  ? 'Crea un account con referral obbligatorio'
-                  : 'Accedi al tuo account'}
+                  ? t('auth.createAccountReferral')
+                  : t('auth.loginToAccount')}
           </p>
           <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] text-amber-200">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(240,180,41,0.9)]" />
-            Accesso sicuro con redirect su dominio configurato
+            {t('auth.secureAccess')}
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-[11px] text-slate-300/90">
             <ShieldCheck size={13} className="text-emerald-300" />
-            Protezione account, verifica referral e sessione crittografata
+            {t('auth.accountProtection')}
           </div>
         </div>
 
@@ -181,7 +183,7 @@ const LoginPage: React.FC = () => {
                   !isRegister ? 'bg-amber-500 text-[#06080f]' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Accedi
+                {t('auth.login')}
               </button>
               <button
                 type="button"
@@ -190,7 +192,7 @@ const LoginPage: React.FC = () => {
                   isRegister ? 'bg-amber-500 text-[#06080f]' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Registrati
+                {t('auth.register')}
               </button>
             </div>
           ) : (
@@ -204,7 +206,7 @@ const LoginPage: React.FC = () => {
               className="mb-6 inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors"
             >
               <ArrowLeft size={14} />
-              Torna al login
+              {t('auth.backToLogin')}
             </button>
           )}
 
@@ -238,7 +240,7 @@ const LoginPage: React.FC = () => {
             {authStep !== 'forgot' && (
               <div>
                 <label className="text-sm font-medium text-slate-300 mb-1.5 block">
-                  {authStep === 'reset' ? 'Nuova password' : 'Password'}
+                  {authStep === 'reset' ? t('auth.newPassword') : t('auth.password')}
                 </label>
                 <div className="relative">
                   <input
@@ -263,7 +265,7 @@ const LoginPage: React.FC = () => {
             {(authStep === 'reset' || (authStep === 'auth' && isRegister)) && (
               <div>
                 <label className="text-sm font-medium text-slate-300 mb-1.5 block">
-                  {authStep === 'reset' ? 'Conferma nuova password' : 'Conferma password'}
+                  {authStep === 'reset' ? t('auth.confirmNewPassword') : t('auth.confirmPassword')}
                 </label>
                 <div className="relative">
                   <input
@@ -299,7 +301,7 @@ const LoginPage: React.FC = () => {
                   />
                   <Ticket size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-400" />
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Obbligatorio per creare il profilo.</p>
+                <p className="text-[11px] text-slate-500 mt-1">{t('auth.referralMandatory')}</p>
               </div>
             )}
 
@@ -315,7 +317,7 @@ const LoginPage: React.FC = () => {
                 className="text-xs text-amber-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1"
               >
                 <KeyRound size={12} />
-                Password dimenticata?
+                {t('auth.forgotPassword')}
               </button>
             )}
 
@@ -379,7 +381,7 @@ const LoginPage: React.FC = () => {
                     setError('');
                     setSuccess('');
                     if (isRegister && !referralCode.trim()) {
-                      setError('Referral code obbligatorio per continuare con Google.');
+                      setError(t('auth.referralRequired'));
                       return;
                     }
                     const result = await loginWithGoogle(isRegister ? referralCode : undefined);
@@ -393,11 +395,11 @@ const LoginPage: React.FC = () => {
                     <path fill="#FBBC05" d="M12 21.3c2.5 0 4.6-.8 6.2-2.3l-2.9-2.3c-.8.5-1.8.9-3.3.9-2.4 0-4.5-1.6-5.2-3.8L3.5 16c1.4 3.1 4.6 5.3 8.5 5.3z" />
                     <path fill="#4285F4" d="M20.8 12.4c0-.6-.1-1.1-.2-1.6H12v3.9h5.4c-.3 1.4-1.2 2.6-2.5 3.4l2.9 2.3c1.7-1.5 3-4 3-7z" />
                   </svg>
-                  Continua con Google
+                  {t('auth.continueWithGoogle')}
                 </button>
                 {googleReferralMissing && (
                   <p className="text-center text-[11px] text-amber-400">
-                    Inserisci il referral code prima di usare Google in registrazione.
+                    {t('auth.enterReferralFirst')}
                   </p>
                 )}
               </div>
@@ -411,7 +413,7 @@ const LoginPage: React.FC = () => {
             </div>
             <div className="rounded-xl border border-white/6 bg-white/3 px-2 py-2">
               <p className="text-[10px] text-slate-400">Shield</p>
-              <p className="text-sm font-semibold text-emerald-400">Attivo</p>
+              <p className="text-sm font-semibold text-emerald-400">{t('common.active')}</p>
             </div>
             <div className="rounded-xl border border-white/6 bg-white/3 px-2 py-2">
               <p className="text-[10px] text-slate-400">Cloud</p>
@@ -422,28 +424,28 @@ const LoginPage: React.FC = () => {
           <div className="mt-4 pt-4 border-t border-white/6 text-center">
             {authStep === 'auth' ? (
               <p className="text-slate-400 text-sm">
-                {isRegister ? 'Hai già un account?' : 'Non hai un account?'}{' '}
+                {isRegister ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
                 <button
                   type="button"
                   onClick={toggleMode}
                   className="text-amber-400 font-semibold hover:text-amber-300 transition-colors"
                 >
-                  {isRegister ? 'Vai al login' : 'Registrati'}
+                  {isRegister ? t('auth.goToLogin') : t('auth.register')}
                 </button>
               </p>
             ) : (
               <p className="text-slate-500 text-xs">
                 {authStep === 'forgot'
-                  ? 'Riceverai il link di reset all’indirizzo indicato.'
-                  : 'Dopo il reset puoi accedere subito con la nuova password.'}
+                  ? t('auth.resetLinkSent')
+                  : t('auth.afterResetLogin')}
               </p>
             )}
           </div>
         </div>
 
         <p className="text-center text-slate-600 text-[10px] mt-6 leading-relaxed">
-          Accesso protetto e profilo persistito in piattaforma.<br />
-          Il referral code viene validato automaticamente.
+          {t('auth.protectedAccess')}<br />
+          {t('auth.referralAutoValidated')}
         </p>
         <p className="text-center text-slate-500 text-[10px] mt-2 flex items-center justify-center gap-1">
           <Sparkles size={10} />

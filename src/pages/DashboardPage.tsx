@@ -6,6 +6,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Repeat, FileText,
   Zap, TrendingUp, Users, Activity, ChevronRight, Shield, Sparkles, LogOut, Settings
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 import NicknameModal from '../components/ui/NicknameModal';
 import TransferModal from '../components/ui/TransferModal';
@@ -20,6 +21,7 @@ const CYCLE_DAYS = 7;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     currentUser,
     balanceVisible,
@@ -78,32 +80,32 @@ const DashboardPage: React.FC = () => {
   const actionButtons = [
     {
       icon: ArrowDownCircle,
-      label: 'Ricarica',
+      label: t('dashboard.deposit'),
       color: 'bg-amber-500/12 text-amber-400 border border-amber-500/25',
       onClick: () => setTransferModal('deposit'),
     },
     {
       icon: ArrowUpCircle,
-      label: 'Prelievo',
+      label: t('dashboard.withdrawal'),
       color: 'bg-blue-500/12 text-blue-400 border border-blue-500/25',
       onClick: () => setTransferModal('withdrawal'),
     },
     {
       icon: Repeat,
-      label: 'Scambio',
+      label: t('dashboard.exchange'),
       color: 'bg-emerald-500/12 text-emerald-400 border border-emerald-500/25',
       onClick: () => {
         navigate('/devices');
-        pushNotice('info', 'Per ora lo scambio passa dal catalogo dispositivi e dal saldo Dollaro.');
+        pushNotice('info', t('dashboard.exchangeNotice'));
       },
     },
     {
       icon: FileText,
-      label: 'Fattura',
+      label: t('dashboard.invoice'),
       color: 'bg-green-500/12 text-green-400 border border-green-500/25',
       onClick: () => {
         navigate('/transactions');
-        pushNotice('info', 'Apri una transazione per vedere il relativo dettaglio contabile.');
+        pushNotice('info', t('dashboard.invoiceNotice'));
       },
     },
   ];
@@ -194,7 +196,7 @@ const DashboardPage: React.FC = () => {
                 onClick={() => setAvatarModalOpen(true)}
                 className="shrink-0 px-3 py-1.5 rounded-xl bg-white/6 text-xs font-semibold text-amber-200 border border-amber-400/25 hover:bg-white/10 transition-colors"
               >
-                Foto
+                {t('common.photo')}
               </button>
               <div className="min-w-0">
                 <p className="text-white font-bold text-base flex items-center gap-2">
@@ -251,7 +253,7 @@ const DashboardPage: React.FC = () => {
               <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-10 w-10 rounded-xl border border-amber-400/20" />
               <div>
                 <p className="text-xs text-amber-400/90 uppercase tracking-[0.22em]">Realtime Control Center</p>
-                <p className="text-sm text-white/90">Monitoraggio continuo, sicurezza attiva, produzione cloud live.</p>
+                <p className="text-sm text-white/90">{t('dashboard.controlCenterDesc')}</p>
               </div>
             </div>
           </div>
@@ -263,7 +265,7 @@ const DashboardPage: React.FC = () => {
             className="relative z-10"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-white/80 text-sm font-medium">Attività Totali</span>
+              <span className="text-white/80 text-sm font-medium">{t('dashboard.totalActivities')}</span>
               <button onClick={toggleBalanceVisibility} className="text-white/60 hover:text-white transition-colors">
                 {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
@@ -271,7 +273,7 @@ const DashboardPage: React.FC = () => {
 
             <div className="flex items-end gap-6">
               <div>
-                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">Dollaro</p>
+                <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">{t('common.dollar')}</p>
                 <p className="text-white font-display text-3xl font-bold tracking-wide">
                   {mask(currentUser.vx_balance)}
                 </p>
@@ -319,13 +321,13 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mt-6">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
           <TrendingUp size={16} className="text-amber-400" />
-          I miei guadagni
+          {t('dashboard.myEarnings')}
         </h3>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Entrate oggi', value: todayIncome, icon: Zap, gradient: 'from-amber-600/80 to-amber-700/80' },
-            { label: 'Produzione', value: personalProd, icon: Activity, gradient: 'from-emerald-600/80 to-emerald-700/80' },
-            { label: 'Team oggi', value: teamProd, icon: Users, gradient: 'from-blue-600/80 to-blue-700/80' },
+            { label: t('dashboard.todayIncome'), value: todayIncome, icon: Zap, gradient: 'from-amber-600/80 to-amber-700/80' },
+            { label: t('dashboard.production'), value: personalProd, icon: Activity, gradient: 'from-emerald-600/80 to-emerald-700/80' },
+            { label: t('dashboard.teamToday'), value: teamProd, icon: Users, gradient: 'from-blue-600/80 to-blue-700/80' },
           ].map((item, i) => (
             <motion.div
               key={item.label}
@@ -346,18 +348,18 @@ const DashboardPage: React.FC = () => {
 
       <div className="px-4 mt-6">
         <div className="surface-card rounded-2xl p-4">
-          <h3 className="text-sm font-bold text-white mb-3">Snapshot Operativo</h3>
+          <h3 className="text-sm font-bold text-white mb-3">{t('dashboard.operationalSnapshot')}</h3>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-xl border border-emerald-400/25 bg-emerald-500/10 p-3 text-center">
-              <p className="text-[10px] text-emerald-200/80">Nodo</p>
-              <p className="text-sm font-bold text-emerald-300">Online</p>
+              <p className="text-[10px] text-emerald-200/80">{t('dashboard.node')}</p>
+              <p className="text-sm font-bold text-emerald-300">{t('common.online')}</p>
             </div>
             <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/8 p-3 text-center">
-              <p className="text-[10px] text-emerald-200/80">Latenza</p>
+              <p className="text-[10px] text-emerald-200/80">{t('dashboard.latency')}</p>
               <p className="text-sm font-bold text-emerald-400">9 ms</p>
             </div>
             <div className="rounded-xl border border-amber-400/20 bg-amber-500/8 p-3 text-center">
-              <p className="text-[10px] text-amber-200/80">Qualità</p>
+              <p className="text-[10px] text-amber-200/80">{t('dashboard.quality')}</p>
               <p className="text-sm font-bold text-amber-400">Ultra</p>
             </div>
           </div>
@@ -368,10 +370,10 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mt-6">
         <div className="surface-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-white">Guadagni personali</h3>
+            <h3 className="text-sm font-bold text-white">{t('dashboard.personalEarnings')}</h3>
             <span className="px-3 py-1.5 bg-green-500/20 text-green-400 text-[10px] font-bold rounded-full flex items-center gap-1.5 border border-green-500/30">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              In corso
+              {t('dashboard.inProgress')}
             </span>
           </div>
 
@@ -391,7 +393,7 @@ const DashboardPage: React.FC = () => {
           {/* Compute Power */}
           <div className="soft-divider mb-3" />
           <div className="flex items-center justify-between py-1">
-            <span className="text-xs text-slate-400">Potenza di calcolo</span>
+            <span className="text-xs text-slate-400">{t('dashboard.computePower')}</span>
             <span className="text-sm font-bold text-amber-400 font-display">{currentUser.compute_power} TFLOPS</span>
           </div>
         </div>
@@ -400,12 +402,12 @@ const DashboardPage: React.FC = () => {
       {/* Recent Activity */}
       <div className="px-4 mt-6 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-white">Ultime attività</h3>
+          <h3 className="text-sm font-bold text-white">{t('dashboard.recentActivity')}</h3>
           <button
             onClick={() => navigate('/transactions')}
             className="text-amber-400 text-xs font-semibold flex items-center gap-0.5 hover:text-amber-300 transition-colors"
           >
-            Vedi tutto <ChevronRight size={14} />
+            {t('common.seeAll')} <ChevronRight size={14} />
           </button>
         </div>
 
@@ -443,8 +445,7 @@ const DashboardPage: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
           <p className="text-[10px] text-amber-300 leading-relaxed text-center">
-            VYRO GPU integra strumenti di monitoraggio, protezione account e controllo operativo
-            per offrire un'esperienza stabile, chiara e orientata alla continuità della piattaforma.
+            {t('dashboard.disclaimer')}
           </p>
         </div>
       </div>

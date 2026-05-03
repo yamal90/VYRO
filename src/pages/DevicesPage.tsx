@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Zap, Clock, Check, AlertCircle, Loader2, Activity, Power, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 import type { GPUDevice } from '../types';
 import LiveProductionInline from '../components/LiveProductionInline';
@@ -18,16 +19,17 @@ const gpuColors = [
 ];
 
 const statusConfig = {
-  pending: { label: 'In attesa', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
-  processing: { label: 'In elaborazione', color: 'bg-blue-100 text-blue-700', icon: Loader2 },
-  active: { label: 'Attivo', color: 'bg-green-100 text-green-700', icon: Check },
-  completed: { label: 'Completato', color: 'bg-slate-100 text-slate-600', icon: Check },
+  pending: { labelKey: 'devices.pending', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
+  processing: { labelKey: 'devices.processing', color: 'bg-blue-100 text-blue-700', icon: Loader2 },
+  active: { labelKey: 'devices.active', color: 'bg-green-100 text-green-700', icon: Check },
+  completed: { labelKey: 'devices.completed', color: 'bg-slate-100 text-slate-600', icon: Check },
 };
 
 const CYCLE_DAYS = 7;
 const CYCLE_MS = CYCLE_DAYS * 24 * 60 * 60 * 1000;
 
 const DevicesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { gpuDevices, userDevices, activateDevice, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState<'center' | 'my'>('center');
   const [activatingId, setActivatingId] = useState<string | null>(null);
@@ -93,8 +95,8 @@ const DevicesPage: React.FC = () => {
           
           <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h1 className="font-display text-2xl font-bold text-white tracking-wider">Centro GPU</h1>
-              <p className="text-white/60 text-xs mt-1">Hardware per cloud computing</p>
+              <h1 className="font-display text-2xl font-bold text-white tracking-wider">{t('devices.title')}</h1>
+              <p className="text-white/60 text-xs mt-1">{t('devices.subtitle')}</p>
             </div>
             <img src="/vyro-wow-logo.svg" alt="VYRO" className="h-11 w-11 rounded-xl border border-white/15 bg-[#0c101c]/50" />
           </div>
@@ -107,7 +109,7 @@ const DevicesPage: React.FC = () => {
             </div>
             <div className="glass-dark rounded-lg px-3 py-2 flex items-center gap-2">
               <Power size={14} className="text-emerald-400" />
-              <span className="text-white text-xs font-medium">{userDevices.filter(d => d.status === 'active').length} Attive</span>
+              <span className="text-white text-xs font-medium">{userDevices.filter(d => d.status === 'active').length} {t('devices.active')}</span>
             </div>
           </div>
         </div>
@@ -117,8 +119,8 @@ const DevicesPage: React.FC = () => {
       <div className="px-4 -mt-4 relative z-10">
         <div className="glass-dark rounded-xl p-1 flex gap-1">
           {[
-            { key: 'center' as const, label: 'Centro GPU', count: gpuDevices.length },
-            { key: 'my' as const, label: 'I Miei Dispositivi', count: userDevices.length },
+            { key: 'center' as const, label: t('devices.gpuCenter'), count: gpuDevices.length },
+            { key: 'my' as const, label: t('devices.myDevices'), count: userDevices.length },
           ].map(tab => (
             <button
               key={tab.key}
@@ -184,7 +186,7 @@ const DevicesPage: React.FC = () => {
                   
                   <div className="flex items-center justify-between relative z-10">
                     <div>
-                      <p className="text-white/60 text-[10px] uppercase tracking-widest mb-1">Modello</p>
+                      <p className="text-white/60 text-[10px] uppercase tracking-widest mb-1">{t('common.model')}</p>
                       <p className="font-display text-2xl font-bold text-white leading-tight">{device.name}</p>
                       {device.description && <p className="text-white/85 text-[11px] mt-1">{device.description}</p>}
                       <div className="flex items-center gap-2 mt-2">
@@ -221,14 +223,14 @@ const DevicesPage: React.FC = () => {
                     <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-amber-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <TrendingUp size={12} className="text-green-400" />
-                        <p className="text-[10px] text-amber-300 uppercase tracking-wider">3 Giorni</p>
+                        <p className="text-[10px] text-amber-300 uppercase tracking-wider">{t('devices.threeDays')}</p>
                       </div>
                       <p className="text-lg font-bold text-white font-display">{device.reward_3_days} <span className="text-xs text-amber-400">$</span></p>
                     </div>
                     <div className="bg-gradient-to-br from-[#0c101c]/60 to-[#0c101c]/40 rounded-xl p-3 border border-emerald-500/20">
                       <div className="flex items-center gap-2 mb-1">
                         <Activity size={12} className="text-emerald-400" />
-                        <p className="text-[10px] text-emerald-400 uppercase tracking-wider">7 Giorni</p>
+                        <p className="text-[10px] text-emerald-400 uppercase tracking-wider">{t('devices.sevenDays')}</p>
                       </div>
                       <p className="text-lg font-bold text-white font-display">{device.reward_7_days} <span className="text-xs text-emerald-400">$</span></p>
                     </div>
@@ -236,11 +238,11 @@ const DevicesPage: React.FC = () => {
 
                   <div className="flex items-center justify-between mb-4 p-3 bg-slate-800/50 rounded-xl">
                     <div>
-                      <p className="text-[10px] text-amber-300 uppercase tracking-wider mb-1">Prezzo attivazione</p>
+                      <p className="text-[10px] text-amber-300 uppercase tracking-wider mb-1">{t('devices.activationPrice')}</p>
                       <p className="text-2xl font-display font-bold text-neon-purple">{device.price.toLocaleString()} $</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-slate-400 mb-1">Il tuo saldo</p>
+                      <p className="text-[10px] text-slate-400 mb-1">{t('devices.yourBalance')}</p>
                       <p className={`text-sm font-bold font-display ${(currentUser?.vx_balance ?? 0) >= device.price ? 'text-green-400' : 'text-red-400'}`}>
                         {currentUser?.vx_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })} $
                       </p>
@@ -262,7 +264,7 @@ const DevicesPage: React.FC = () => {
                     ) : (
                       <>
                         <Zap size={18} />
-                        {(currentUser?.vx_balance ?? 0) >= device.price ? 'Attiva GPU' : 'Saldo Dollaro insufficiente'}
+                        {(currentUser?.vx_balance ?? 0) >= device.price ? t('devices.activateGPU') : t('devices.insufficientBalance')}
                       </>
                     )}
                   </motion.button>
@@ -278,13 +280,13 @@ const DevicesPage: React.FC = () => {
             {userDevices.length === 0 ? (
               <div className="text-center py-16">
                 <Cpu className="w-16 h-16 text-amber-500/50 mx-auto mb-4" />
-                <p className="text-white font-medium">Nessun dispositivo attivato</p>
-                <p className="text-slate-400 text-sm mt-1">Attiva il tuo primo dispositivo GPU</p>
+                <p className="text-white font-medium">{t('devices.noDevices')}</p>
+                <p className="text-slate-400 text-sm mt-1">{t('devices.activateFirst')}</p>
                 <button
                   onClick={() => setActiveTab('center')}
                   className="mt-4 px-6 py-3 gradient-primary text-white rounded-xl text-sm font-semibold glow-purple"
                 >
-                  Vai al Centro GPU
+                  {t('devices.goToCenter')}
                 </button>
               </div>
             ) : (
@@ -329,21 +331,21 @@ const DevicesPage: React.FC = () => {
                         </div>
                         <span className={`px-3 py-1.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 ${sc.color}`}>
                           <StatusIcon size={12} className={ud.status === 'processing' ? 'animate-spin' : ''} />
-                          {sc.label}
+                          {t(sc.labelKey)}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
-                          <p className="text-[9px] text-slate-400 uppercase mb-1">Potenza</p>
+                          <p className="text-[9px] text-slate-400 uppercase mb-1">{t('common.power')}</p>
                           <p className="text-sm font-bold text-amber-400 font-display">{ud.device?.compute_power} TF</p>
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
-                          <p className="text-[9px] text-slate-400 uppercase mb-1">Generato</p>
+                          <p className="text-[9px] text-slate-400 uppercase mb-1">{t('devices.generated')}</p>
                           <p className="text-sm font-bold text-green-400 font-display">{liveGenerated.toFixed(2)} $</p>
                         </div>
                         <div className="bg-slate-800/50 rounded-lg p-3 text-center border border-white/6">
-                          <p className="text-[9px] text-slate-400 uppercase mb-1">Avviato</p>
+                          <p className="text-[9px] text-slate-400 uppercase mb-1">{t('devices.started')}</p>
                           <p className="text-sm font-bold text-white font-display">
                             {new Date(ud.start_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
                           </p>
@@ -355,11 +357,11 @@ const DevicesPage: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                             <Activity size={14} />
-                            <span className="font-medium">Produzione in corso...</span>
+                            <span className="font-medium">{t('devices.productionInProgress')}</span>
                           </div>
                           <div className="mt-2">
                             <div className="flex items-center justify-between text-[10px] text-green-300 mb-1">
-                              <span>Produzione live</span>
+                              <span>{t('devices.liveProduction')}</span>
                               <span>{livePercent.toFixed(2)}%</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-[#0c101c]/50 overflow-hidden">
@@ -384,8 +386,7 @@ const DevicesPage: React.FC = () => {
       <div className="px-4 mt-6">
         <div className="glass-dark rounded-xl p-4">
           <p className="text-[11px] text-slate-400 leading-relaxed text-center">
-            Ogni dispositivo amplia la tua presenza nella piattaforma e rende la dashboard
-            più ricca di attività, potenza e progressione visiva.
+            {t('devices.disclaimer')}
           </p>
         </div>
       </div>

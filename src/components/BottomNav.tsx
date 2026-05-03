@@ -1,21 +1,23 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Home, Cpu, Gift, ArrowRightLeft, Users, HelpCircle, Settings } from 'lucide-react';
 
-const navItems: { path: string; icon: React.ElementType; label: string }[] = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/devices', icon: Cpu, label: 'GPU' },
-  { path: '/benefits', icon: Gift, label: 'Benefici' },
-  { path: '/faq', icon: HelpCircle, label: 'FAQ' },
-  { path: '/transactions', icon: ArrowRightLeft, label: 'Movimenti' },
-  { path: '/team', icon: Users, label: 'Team' },
-  { path: '/settings', icon: Settings, label: 'Opzioni' },
+const navItems: { path: string; icon: React.ElementType; labelKey: string }[] = [
+  { path: '/', icon: Home, labelKey: 'nav.home' },
+  { path: '/devices', icon: Cpu, labelKey: 'nav.gpu' },
+  { path: '/benefits', icon: Gift, labelKey: 'nav.benefits' },
+  { path: '/faq', icon: HelpCircle, labelKey: 'nav.faq' },
+  { path: '/transactions', icon: ArrowRightLeft, labelKey: 'nav.transactions' },
+  { path: '/team', icon: Users, labelKey: 'nav.team' },
+  { path: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 
 const BottomNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50" aria-label="Navigazione principale">
@@ -30,7 +32,7 @@ const BottomNav: React.FC = () => {
                   key={item.path}
                   onClick={() => navigate(item.path)}
                   whileTap={{ scale: 0.92 }}
-                  aria-label={item.label}
+                  aria-label={t(item.labelKey)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl transition-all relative flex-1 min-w-0 ${
                     isActive ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'
@@ -53,7 +55,7 @@ const BottomNav: React.FC = () => {
                   <span className={`text-[8px] font-semibold whitespace-nowrap leading-tight ${
                     isActive ? 'text-amber-400' : 'text-slate-500'
                   }`}>
-                    {item.label}
+                    {t(item.labelKey)}
                   </span>
                 </motion.button>
               );
