@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
+import { normalizeTierName } from '../store/mappers';
 
 type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'analytics' | 'settings';
 
@@ -202,6 +203,36 @@ const AdminPage: React.FC = () => {
   const effectiveAssignUserId = assignUserId || allUsers[0]?.id || '';
   const effectiveAssignDeviceId = assignDeviceId || gpuDevices[0]?.id || '';
 
+  const formatTierLabel = React.useCallback((tier?: string | null) => normalizeTierName(tier), []);
+  const formatAdminActor = React.useCallback((userId?: string | null) => {
+    if (!userId) return 'Sistema';
+    const user = userMap.get(userId);
+    if (!user) return 'Sistema';
+    return user.email || user.username || 'Sistema';
+  }, [userMap]);
+  const formatAdminCurrency = React.useCallback((currency?: string) => (currency === 'VX' ? '$' : currency || ''), []);
+  const simplifyAdminText = React.useCallback((value?: string | null) => {
+    if (!value) return 'Operazione admin';
+    return value
+      .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '')
+      .replace(/\s+→\s+rejected/gi, ' rifiutato')
+      .replace(/\s+→\s+approved/gi, ' approvato')
+      .replace(/\s+→\s+completed/gi, ' completato')
+      .replace(/\s+→\s+pending/gi, ' in attesa')
+      .replace(/admin\s+/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim() || 'Operazione admin';
+  }, []);
+  const formatLogAction = React.useCallback((action?: string) => {
+    const normalized = (action || '').toLowerCase();
+    if (normalized.includes('admin_manage_deposit')) return 'Depositi';
+    if (normalized.includes('admin_manage_withdraw')) return 'Prelievi';
+    if (normalized.includes('admin_device_assign')) return 'Assegnazione GPU';
+    if (normalized.includes('device_purchase')) return 'Acquisto GPU';
+    if (normalized.includes('daily_claim')) return 'Daily claim';
+    return action || 'Attività';
+  }, []);
+
   const totalBalance = useMemo(() => allUsers.reduce((sum, u) => sum + (u.vx_balance ?? 0), 0), [allUsers]);
   const totalUSDTBalance = useMemo(() => allUsers.reduce((sum, u) => sum + (u.demo_usdt_balance ?? 0), 0), [allUsers]);
   const activeUsers = useMemo(() => allUsers.filter((u) => u.status !== 'blocked'), [allUsers]);
@@ -218,11 +249,11 @@ const AdminPage: React.FC = () => {
   const tierDistribution = useMemo(() => {
     const tiers: Record<string, number> = {};
     for (const u of allUsers) {
-      const tier = u.tier || 'GTX 1650';
+      const tier = formatTierLabel(u.tier);
       tiers[tier] = (tiers[tier] ?? 0) + 1;
     }
     return Object.entries(tiers).sort(([, a], [, b]) => b - a);
-  }, [allUsers]);
+  }, [allUsers, formatTierLabel]);
 
   const totalDepositsVolume = useMemo(
     () => adminDepositRequests
@@ -239,9 +270,9 @@ const AdminPage: React.FC = () => {
 
   const handleExportUsers = () => {
     const csv = [
-      'Username,Email,Ruolo,Stato,Saldo VX,Saldo USDT,Claim,Tier,Streak,Data Registrazione',
+      'Username,Email,Ruolo,Stato,Saldo account,Saldo USDT,Claim,Tier,Streak,Data Registrazione',
       ...allUsers.map((u) =>
-        `"${u.username}","${u.email}","${u.role}","${u.status}",${u.vx_balance},${u.demo_usdt_balance},${u.claim_eligible ? 'SI' : 'NO'},"${u.tier}",${u.streak},"${u.created_at}"`,
+        `"${u.username}","${u.email}","${u.role}","${u.status}",${u.vx_balance},${u.demo_usdt_balance},${u.claim_eligible ? 'SI' : 'NO'},"${formatTierLabel(u.tier)}",${u.streak},"${u.created_at}"`,
       ),
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -510,7 +541,7 @@ const AdminPage: React.FC = () => {
               <SectionHeader icon={DollarSign} title="Bilancio piattaforma" subtitle="Totale saldi utenti" />
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white/5 rounded-lg p-3 text-center">
-                  <p className="text-[10px] text-white/50 mb-1">Totale VX distribuiti</p>
+                  <p className="text-[10px] text-white/50 mb-1">Saldo account totale</p>
                   <p className="text-lg font-bold text-amber-400">{totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-3 text-center">
@@ -673,7 +704,7 @@ const AdminPage: React.FC = () => {
                         setEditBalance(user.vx_balance.toString());
                       }}
                       className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/30"
-                      title="Modifica saldo Dollaro"
+                      title="Modifica saldo account"
                     >
                       <Edit3 size={12} />
                     </button>
@@ -708,9 +739,9 @@ const AdminPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
                   <div className="bg-white/5 rounded-lg p-2">
-                    <p className="text-[9px] text-white/40">Dollaro</p>
+                    <p className="text-[9px] text-white/40">Saldo</p>
                     <p className="text-xs font-bold text-amber-400">{user.vx_balance.toLocaleString()}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
@@ -725,7 +756,7 @@ const AdminPage: React.FC = () => {
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">Tier</p>
-                    <p className="text-xs font-bold text-purple-400">{user.tier || 'GTX 1650'}</p>
+                    <p className="text-xs font-bold text-purple-400">{formatTierLabel(user.tier)}</p>
                   </div>
                 </div>
 
@@ -744,28 +775,28 @@ const AdminPage: React.FC = () => {
                   >
                     <div className="grid grid-cols-2 gap-2 text-[10px]">
                       <div className="bg-white/3 rounded-lg p-2">
-                        <p className="text-white/40">ID Utente</p>
-                        <p className="text-white/80 font-mono truncate">{user.id}</p>
+                        <p className="text-white/40">Email</p>
+                        <p className="text-white/80 truncate">{user.email}</p>
                       </div>
                       <div className="bg-white/3 rounded-lg p-2">
-                        <p className="text-white/40">Codice Invito</p>
-                        <p className="text-white/80 font-mono">{user.invite_code}</p>
+                        <p className="text-white/40">Ruolo</p>
+                        <p className="text-white/80">{user.role}</p>
                       </div>
                       <div className="bg-white/3 rounded-lg p-2">
                         <p className="text-white/40">Invitato da</p>
-                        <p className="text-white/80 font-mono">{user.invited_by || 'Nessuno'}</p>
+                        <p className="text-white/80 truncate">{user.invited_by || 'Nessuno'}</p>
                       </div>
                       <div className="bg-white/3 rounded-lg p-2">
                         <p className="text-white/40">Streak</p>
                         <p className="text-white/80">{user.streak} giorni</p>
                       </div>
                       <div className="bg-white/3 rounded-lg p-2">
-                        <p className="text-white/40">Compute Power</p>
+                        <p className="text-white/40">Potenza</p>
                         <p className="text-white/80">{user.compute_power} TFLOPS</p>
                       </div>
                       <div className="bg-white/3 rounded-lg p-2">
-                        <p className="text-white/40">Registrato il</p>
-                        <p className="text-white/80">{new Date(user.created_at).toLocaleDateString('it-IT')}</p>
+                        <p className="text-white/40">Registrato</p>
+                        <p className="text-white/80">{new Date(user.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-[9px] text-white/30">
@@ -786,7 +817,7 @@ const AdminPage: React.FC = () => {
                       value={editBalance}
                       onChange={(e) => setEditBalance(e.target.value)}
                       className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm"
-                      placeholder="Nuovo saldo Dollaro"
+                      placeholder="Nuovo saldo account"
                     />
                     <button
                       onClick={() => void handleSaveBalance(user.id)}
@@ -883,10 +914,10 @@ const AdminPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-white text-sm font-semibold">{ud.device?.name}</p>
-                    <p className="text-white/40 text-[10px]">
-                      User: {userMap.get(ud.user_id ?? '')?.username ?? 'unknown'} ({userMap.get(ud.user_id ?? '')?.email ?? ud.user_id ?? 'n/a'})
+                    <p className="text-white/40 text-[10px] truncate">
+                      {userMap.get(ud.user_id ?? '')?.email ?? userMap.get(ud.user_id ?? '')?.username ?? 'Utente non trovato'}
                     </p>
-                    <p className="text-white/30 text-[10px]">Entry ID: {ud.id}</p>
+                    <p className="text-white/30 text-[10px]">{userMap.get(ud.user_id ?? '')?.username ?? 'Utente'} • dispositivo attivo</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400">
@@ -1105,13 +1136,13 @@ const AdminPage: React.FC = () => {
                 }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-xs font-medium truncate">{tx.description}</p>
-                  <p className="text-white/30 text-[9px]">{tx.user_id}</p>
+                  <p className="text-white text-sm font-medium truncate">{simplifyAdminText(tx.description)}</p>
+                  <p className="text-white/30 text-[9px]">{formatAdminActor(tx.user_id)}</p>
                 </div>
                 <div className="text-right">
                   <p className={`text-xs font-bold ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {tx.amount > 0 ? '+' : ''}
-                    {tx.amount.toFixed(2)} {tx.currency}
+                    {tx.amount.toFixed(2)} {formatAdminCurrency(tx.currency)}
                   </p>
                   <p className="text-white/30 text-[9px]">
                     {new Date(tx.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'it-IT')}
@@ -1152,13 +1183,13 @@ const AdminPage: React.FC = () => {
                     {isError ? <CircleAlert size={12} className="text-red-400" /> : <Shield size={12} className="text-yellow-400" />}
                     <p className="text-white/60 text-[10px]">{new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'it-IT')}</p>
                     <span className={`text-[10px] font-bold ml-auto ${isError ? 'text-red-300' : 'text-amber-400'}`}>
-                      {log.action}
+                      {formatLogAction(log.action)}
                     </span>
                   </div>
-                  <p className="text-white text-xs">
-                    {String(log.metadata?.description ?? log.action)}
+                  <p className="text-white text-sm leading-relaxed">
+                    {simplifyAdminText(String(log.metadata?.description ?? log.action))}
                   </p>
-                  <p className="text-white/35 text-[10px] mt-1">{log.admin_id}</p>
+                  <p className="text-white/35 text-[10px] mt-1">{formatAdminActor(log.admin_id)}</p>
                 </div>
               );
             })}
@@ -1179,7 +1210,7 @@ const AdminPage: React.FC = () => {
                   <p className="text-lg font-bold text-red-400">${totalWithdrawalsVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
-                  <p className="text-[10px] text-amber-300/70 mb-1">Totale VX distribuiti</p>
+                  <p className="text-[10px] text-amber-300/70 mb-1">Saldo account totale</p>
                   <p className="text-lg font-bold text-amber-400">{totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">

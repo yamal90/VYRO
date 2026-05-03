@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
-  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star,
-  Play
+  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -87,7 +86,8 @@ const securityBadges = [
   { icon: Server, label: '99.97% Uptime', color: 'text-emerald-400' }
 ];
 
-const VYRO_VIDEO_URL = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+const VYRO_VIDEO_URL = '/videos/vyro-faq-it.mp4';
+const VYRO_VIDEO_POSTER = '/images/gpu-hero.png';
 
 const videoChapters = [
   { time: '0:00', title: 'Introduzione a VYRO GPU', icon: Zap, color: 'text-amber-400' },
@@ -100,46 +100,22 @@ const videoChapters = [
 ];
 
 const VideoGuide: React.FC = () => {
-  const [showVideo, setShowVideo] = useState(false);
-
   return (
     <div className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-white/10 rounded-2xl overflow-hidden">
-      {!showVideo ? (
-        <div className="relative aspect-video flex flex-col items-center justify-center cursor-pointer group" onClick={() => setShowVideo(true)}>
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-[#0c101c] to-emerald-900/20" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="grid grid-cols-3 gap-4 opacity-15 absolute inset-0 p-8">
-              {[Zap, Cpu, Shield, Users, TrendingUp, Award].map((Icon, i) => (
-                <div key={i} className="flex items-center justify-center">
-                  <Icon size={32} className="text-white" />
-                </div>
-              ))}
-            </div>
-          </div>
-          <motion.div
-            className="relative z-10 flex flex-col items-center"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-          >
-            <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/30 group-hover:scale-110 transition-transform mb-4">
-              <Play size={32} className="text-[#06080f] ml-1" />
-            </div>
-            <h3 className="text-white text-lg font-bold mb-1">Guida Video VYRO</h3>
-            <p className="text-white/50 text-sm">Guarda il video tutorial in italiano</p>
-            <p className="text-white/30 text-xs mt-1">10 min • Italiano</p>
-          </motion.div>
+      <div className="relative aspect-video bg-black">
+        <video
+          controls
+          preload="metadata"
+          playsInline
+          poster={VYRO_VIDEO_POSTER}
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={VYRO_VIDEO_URL} type="video/mp4" />
+        </video>
+        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/65 text-white text-[10px] font-semibold pointer-events-none">
+          Video FAQ in italiano
         </div>
-      ) : (
-        <div className="relative aspect-video">
-          <iframe
-            src={VYRO_VIDEO_URL + '?autoplay=1&rel=0&modestbranding=1'}
-            title="VYRO GPU - Guida completa in italiano"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-        </div>
-      )}
+      </div>
 
       <div className="p-4">
         <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Capitoli</h4>
@@ -147,15 +123,14 @@ const VideoGuide: React.FC = () => {
           {videoChapters.map((chapter, i) => {
             const ChapterIcon = chapter.icon;
             return (
-              <button
+              <div
                 key={i}
-                onClick={() => setShowVideo(true)}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-left"
               >
                 <span className="text-[10px] text-white/30 tabular-nums w-8">{chapter.time}</span>
                 <ChapterIcon size={14} className={chapter.color} />
                 <span className="text-sm text-white/80">{chapter.title}</span>
-              </button>
+              </div>
             );
           })}
         </div>
