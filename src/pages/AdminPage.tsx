@@ -79,7 +79,7 @@ const AdminPage: React.FC = () => {
     min_withdraw: 0,
     deposit_asset: 'USDT',
     deposit_network: 'TRC20',
-    deposit_address: '',
+    deposit_address: '4SWFCN5UJTRHNWQS4W7GISBUN4HGMU6BV8',
   });
   React.useEffect(() => {
     if (!platformSettings) return;
