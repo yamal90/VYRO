@@ -7,7 +7,12 @@
     "confirm": "Confirmar",
     "save": "Guardar",
     "you": "Tú",
-    "dollar": "Dólar"
+    "dollar": "Dólar",
+    "active": "Activo",
+    "model": "Modelo",
+    "online": "En línea",
+    "photo": "Foto",
+    "power": "Potencia"
   },
   "settings": {
     "title": "Configuración",
@@ -85,7 +90,11 @@
     "started": "Iniciado",
     "productionInProgress": "Producción en curso...",
     "liveProduction": "Producción en vivo",
-    "disclaimer": "Cada dispositivo amplía tu presencia en la plataforma y hace el panel más rico en actividad, potencia y progresión visual."
+    "disclaimer": "Cada dispositivo amplía tu presencia en la plataforma y hace el panel más rico en actividad, potencia y progresión visual.",
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "active": "Activos",
+    "completed": "Completado"
   },
   "team": {
     "buildTeam": "Construye tu equipo de computación en la nube",

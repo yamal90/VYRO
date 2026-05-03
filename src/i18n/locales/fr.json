@@ -7,7 +7,12 @@
     "confirm": "Confirmer",
     "save": "Enregistrer",
     "you": "Vous",
-    "dollar": "Dollar"
+    "dollar": "Dollar",
+    "active": "Actif",
+    "model": "Modèle",
+    "online": "En ligne",
+    "photo": "Photo",
+    "power": "Puissance"
   },
   "settings": {
     "title": "Paramètres",
@@ -85,7 +90,11 @@
     "started": "Démarré",
     "productionInProgress": "Production en cours...",
     "liveProduction": "Production en direct",
-    "disclaimer": "Chaque appareil élargit votre présence sur la plateforme et rend le tableau de bord plus riche en activité, puissance et progression visuelle."
+    "disclaimer": "Chaque appareil élargit votre présence sur la plateforme et rend le tableau de bord plus riche en activité, puissance et progression visuelle.",
+    "pending": "En attente",
+    "processing": "En traitement",
+    "active": "Actifs",
+    "completed": "Terminé"
   },
   "team": {
     "buildTeam": "Construisez votre équipe de cloud computing",

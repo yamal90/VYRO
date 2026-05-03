@@ -7,7 +7,12 @@
     "confirm": "Bestätigen",
     "save": "Speichern",
     "you": "Du",
-    "dollar": "Dollar"
+    "dollar": "Dollar",
+    "active": "Aktiv",
+    "model": "Modell",
+    "online": "Online",
+    "photo": "Foto",
+    "power": "Leistung"
   },
   "settings": {
     "title": "Einstellungen",
@@ -85,7 +90,11 @@
     "started": "Gestartet",
     "productionInProgress": "Produktion läuft...",
     "liveProduction": "Live-Produktion",
-    "disclaimer": "Jedes Gerät erweitert Ihre Präsenz auf der Plattform und macht das Dashboard reicher an Aktivität, Leistung und visueller Progression."
+    "disclaimer": "Jedes Gerät erweitert Ihre Präsenz auf der Plattform und macht das Dashboard reicher an Aktivität, Leistung und visueller Progression.",
+    "pending": "Ausstehend",
+    "processing": "In Bearbeitung",
+    "active": "Aktiv",
+    "completed": "Abgeschlossen"
   },
   "team": {
     "buildTeam": "Bauen Sie Ihr Cloud-Computing-Team auf",
