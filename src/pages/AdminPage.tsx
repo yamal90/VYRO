@@ -130,8 +130,8 @@ const AdminPage: React.FC = () => {
     min_deposit: 0,
     min_withdraw: 0,
     deposit_asset: 'USDT',
-    deposit_network: 'TRC20',
-    deposit_address: '4SWFCN5UJTRHNWQS4W7GISBUN4HGMU6BV8',
+    deposit_network: 'BEP20',
+    deposit_address: '0xbfEABE2e143722cbf74706DB38722AF641033D7f',
   });
   React.useEffect(() => {
     if (!platformSettings) return;
