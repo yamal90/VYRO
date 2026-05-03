@@ -6,9 +6,6 @@ import { Languages, Check } from 'lucide-react';
 const LANGUAGES = [
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
 ];
 
 interface LanguageSwitcherProps {
@@ -16,7 +13,7 @@ interface LanguageSwitcherProps {
 }
 
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
@@ -75,7 +72,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) 
         <div className="flex items-center gap-3">
           <Languages size={18} className="text-amber-400" />
           <div className="text-left">
-            <p className="text-xs text-white/50">Lingua</p>
+            <p className="text-xs text-white/50">{t('settings.language')}</p>
             <p className="text-sm text-white font-medium">{currentLang.flag} {currentLang.name}</p>
           </div>
         </div>
