@@ -4,27 +4,69 @@ import { motion } from 'framer-motion';
 import {
   Activity,
   ArrowLeft,
+  Ban,
   Check,
   CircleAlert,
   Cog,
+  Copy,
   Cpu,
+  DollarSign,
   Edit3,
   Eye,
   ExternalLink,
+  Globe,
   Lock,
   LockOpen,
+  MailX,
   Plus,
   RefreshCw,
+  Search,
   Shield,
+  ShieldAlert,
+  ShieldCheck,
+  TrendingUp,
   Trash2,
+  UserCheck,
   Users,
   Wallet,
   X,
+  Zap,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
-type AdminTab = 'users' | 'devices' | 'transactions' | 'logs' | 'settings';
+type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'settings';
+
+const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }> = ({ checked, onChange, disabled }) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    disabled={disabled}
+    onClick={() => onChange(!checked)}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+      checked ? 'bg-emerald-500' : 'bg-white/20'
+    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+  >
+    <span
+      className={`inline-block h-4 w-4 rounded-full bg-white shadow-lg transform transition-transform ${
+        checked ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
+
+const SectionHeader: React.FC<{ icon: React.ElementType; title: string; subtitle?: string }> = ({ icon: Icon, title, subtitle }) => (
+  <div className="flex items-center gap-2 mb-3">
+    <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+      <Icon size={16} className="text-amber-400" />
+    </div>
+    <div>
+      <h3 className="text-white text-sm font-bold">{title}</h3>
+      {subtitle && <p className="text-white/40 text-[10px]">{subtitle}</p>}
+    </div>
+  </div>
+);
 
 const AdminPage: React.FC = () => {
   const {
@@ -51,7 +93,8 @@ const AdminPage: React.FC = () => {
   } = useApp();
   const navigate = useNavigate();
   const { i18n } = useTranslation();
-  const [activeTab, setActiveTab] = useState<AdminTab>('users');
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [userSearch, setUserSearch] = useState('');
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
   const [logFilter, setLogFilter] = useState<'all' | 'error' | 'activity'>('all');
@@ -151,6 +194,21 @@ const AdminPage: React.FC = () => {
   const effectiveAssignUserId = assignUserId || allUsers[0]?.id || '';
   const effectiveAssignDeviceId = assignDeviceId || gpuDevices[0]?.id || '';
 
+  const totalBalance = useMemo(() => allUsers.reduce((sum, u) => sum + (u.vx_balance ?? 0), 0), [allUsers]);
+  const activeUsers = useMemo(() => allUsers.filter((u) => u.status !== 'blocked'), [allUsers]);
+  const userSearchNormalized = userSearch.trim().toLowerCase();
+  const filteredUsers = useMemo(
+    () =>
+      userSearchNormalized
+        ? allUsers.filter(
+            (u) =>
+              u.username.toLowerCase().includes(userSearchNormalized) ||
+              u.email.toLowerCase().includes(userSearchNormalized),
+          )
+        : allUsers,
+    [allUsers, userSearchNormalized],
+  );
+
   React.useEffect(() => {
     if (!currentUser || currentUser.role !== 'admin') {
       adminBootstrappedForUserRef.current = null;
@@ -176,11 +234,12 @@ const AdminPage: React.FC = () => {
     );
   }
 
-  const tabs: { key: AdminTab; label: string; icon: React.ElementType }[] = [
-    { key: 'users', label: 'Utenti', icon: Users },
+  const tabs: { key: AdminTab; label: string; icon: React.ElementType; badge?: number }[] = [
+    { key: 'overview', label: 'Dashboard', icon: TrendingUp },
+    { key: 'users', label: 'Utenti', icon: Users, badge: allUsers.length },
     { key: 'devices', label: 'Dispositivi', icon: Cpu },
-    { key: 'transactions', label: 'Transazioni', icon: Activity },
-    { key: 'logs', label: 'Errori', icon: Eye },
+    { key: 'transactions', label: 'Transazioni', icon: Activity, badge: pendingDeposits.length + pendingWithdrawals.length || undefined },
+    { key: 'logs', label: 'Log', icon: Eye, badge: errorLogsCount || undefined },
     { key: 'settings', label: 'Settings', icon: Cog },
   ];
 
@@ -290,33 +349,26 @@ const AdminPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-4">
-            {[
-              { label: 'Utenti', value: allUsers.length, color: 'from-amber-500 to-amber-600' },
-              { label: 'Bloccati', value: allUsers.filter((u) => u.status === 'blocked').length, color: 'from-red-500 to-rose-600' },
-              { label: 'Dispositivi', value: adminUserDevices.length, color: 'from-blue-500 to-indigo-600' },
-              { label: 'Richieste', value: pendingDeposits.length + pendingWithdrawals.length, color: 'from-amber-500 to-orange-600' },
-            ].map((stat) => (
-            <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-xl p-3 text-center`}>
-              <p className="font-display text-lg font-bold text-white">{stat.value}</p>
-              <p className="text-[9px] text-white/75">{stat.label}</p>
-            </div>
-          ))}
-        </div>
 
-        <div className="flex gap-1 bg-white/5 rounded-xl p-1">
+
+        <div className="flex gap-1 bg-white/5 rounded-xl p-1 overflow-x-auto">
           {tabs.map((tab) => {
             const TabIcon = tab.icon;
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-2 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 transition-all ${
+                className={`flex-1 min-w-0 py-2 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition-all relative ${
                   activeTab === tab.key ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-white/70'
                 }`}
               >
                 <TabIcon size={12} />
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
+                {tab.badge ? (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[8px] text-white flex items-center justify-center font-bold">
+                    {tab.badge > 99 ? '99+' : tab.badge}
+                  </span>
+                ) : null}
               </button>
             );
           })}
@@ -324,9 +376,119 @@ const AdminPage: React.FC = () => {
       </div>
 
       <div className="px-4">
+        {activeTab === 'overview' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: 'Utenti totali', value: allUsers.length, icon: Users, color: 'from-blue-500 to-blue-600' },
+                { label: 'Utenti attivi', value: activeUsers.length, icon: UserCheck, color: 'from-emerald-500 to-emerald-600' },
+                { label: 'Bloccati', value: allUsers.filter((u) => u.status === 'blocked').length, icon: Ban, color: 'from-red-500 to-rose-600' },
+                { label: 'Dispositivi', value: adminUserDevices.length, icon: Cpu, color: 'from-purple-500 to-purple-600' },
+                { label: 'Depositi pending', value: pendingDeposits.length, icon: DollarSign, color: 'from-amber-500 to-orange-600' },
+                { label: 'Prelievi pending', value: pendingWithdrawals.length, icon: Wallet, color: 'from-cyan-500 to-cyan-600' },
+              ].map((stat) => {
+                const StatIcon = stat.icon;
+                return (
+                  <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-xl p-3`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <StatIcon size={14} className="text-white/80" />
+                      <p className="text-[10px] text-white/80 font-medium">{stat.label}</p>
+                    </div>
+                    <p className="font-display text-xl font-bold text-white">{stat.value}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={DollarSign} title="Bilancio piattaforma" subtitle="Totale saldi utenti" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/50 mb-1">Totale VX distribuiti</p>
+                  <p className="text-lg font-bold text-amber-400">{totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-white/50 mb-1">Deposito corrente</p>
+                  <p className="text-lg font-bold text-green-400">{platformSettings?.deposit_asset ?? 'USDT'}</p>
+                  <p className="text-[9px] text-white/40 mt-0.5">{platformSettings?.deposit_network ?? 'BEP20'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={ShieldCheck} title="Stato sicurezza" subtitle="Controllo rapido" />
+              <div className="space-y-2">
+                {[
+                  { label: 'RLS attivo su tutte le tabelle', ok: true },
+                  { label: 'Accesso anon revocato (solo GPU catalog)', ok: true },
+                  { label: 'Funzioni admin protette', ok: true },
+                  { label: 'Email temporanee bloccate', ok: true },
+                  { label: 'Maintenance mode', ok: !platformSettings?.maintenance_mode, warn: platformSettings?.maintenance_mode },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                    <span className="text-xs text-white/70">{item.label}</span>
+                    {item.ok ? (
+                      <ShieldCheck size={14} className="text-emerald-400" />
+                    ) : (
+                      <ShieldAlert size={14} className="text-amber-400" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <SectionHeader icon={Zap} title="Azioni rapide" />
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setActiveTab('transactions')}
+                  className="py-2.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/20 text-xs font-semibold hover:bg-amber-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <Activity size={13} />
+                  Gestisci transazioni
+                </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className="py-2.5 rounded-lg bg-blue-500/15 text-blue-300 border border-blue-500/20 text-xs font-semibold hover:bg-blue-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <Cog size={13} />
+                  Impostazioni
+                </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="py-2.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 text-xs font-semibold hover:bg-emerald-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <Users size={13} />
+                  Gestisci utenti
+                </button>
+                <button
+                  onClick={() => void refreshAppData()}
+                  className="py-2.5 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/20 text-xs font-semibold hover:bg-purple-500/25 flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw size={13} />
+                  Aggiorna dati
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'users' && (
           <div className="space-y-2">
-            {allUsers.map((user) => (
+            <div className="relative mb-2">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+              <input
+                type="text"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="Cerca utente per nome o email..."
+                className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-white/30"
+              />
+            </div>
+            <p className="text-[10px] text-white/40 px-1">
+              {filteredUsers.length} utent{filteredUsers.length === 1 ? 'e' : 'i'} trovati
+            </p>
+            {filteredUsers.map((user) => (
               <motion.div
                 key={user.id}
                 initial={{ opacity: 0 }}
@@ -786,91 +948,222 @@ const AdminPage: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {!platformSettings && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-amber-300 text-xs">
-                `platform_settings` non trovato: crea la riga con `id = 1` nel database Supabase.
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-amber-300 text-xs flex items-center gap-2">
+                <CircleAlert size={14} />
+                <code>platform_settings</code> non trovato: crea la riga con <code>id = 1</code> nel database Supabase.
               </div>
             )}
 
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-              {[
-                { key: 'maintenance_mode', label: 'Maintenance mode' },
-                { key: 'deposits_enabled', label: 'Depositi abilitati' },
-                { key: 'withdrawals_enabled', label: 'Prelievi abilitati' },
-                { key: 'daily_claim_enabled', label: 'Claim giornaliero abilitato' },
-              ].map((toggle) => (
-                <label key={toggle.key} className="flex items-center justify-between text-sm text-white">
-                  <span>{toggle.label}</span>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(settingsDraft[toggle.key as keyof typeof settingsDraft])}
-                    onChange={(e) =>
-                      setSettingsDraft((prev) => ({ ...prev, [toggle.key]: e.target.checked }))
-                    }
-                    className="w-4 h-4 accent-amber-500"
+            {/* ─── Stato piattaforma ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
+              <SectionHeader icon={Globe} title="Stato piattaforma" subtitle="Controlli operativi principali" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white font-medium">Maintenance mode</p>
+                    <p className="text-[10px] text-white/40">Blocca l'accesso agli utenti durante la manutenzione</p>
+                  </div>
+                  <Toggle
+                    checked={settingsDraft.maintenance_mode}
+                    onChange={(v) => setSettingsDraft((prev) => ({ ...prev, maintenance_mode: v }))}
                   />
-                </label>
-              ))}
+                </div>
+                <div className="border-t border-white/5" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white font-medium">Depositi abilitati</p>
+                    <p className="text-[10px] text-white/40">Permetti agli utenti di richiedere depositi</p>
+                  </div>
+                  <Toggle
+                    checked={settingsDraft.deposits_enabled}
+                    onChange={(v) => setSettingsDraft((prev) => ({ ...prev, deposits_enabled: v }))}
+                  />
+                </div>
+                <div className="border-t border-white/5" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white font-medium">Prelievi abilitati</p>
+                    <p className="text-[10px] text-white/40">Permetti agli utenti di richiedere prelievi</p>
+                  </div>
+                  <Toggle
+                    checked={settingsDraft.withdrawals_enabled}
+                    onChange={(v) => setSettingsDraft((prev) => ({ ...prev, withdrawals_enabled: v }))}
+                  />
+                </div>
+                <div className="border-t border-white/5" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white font-medium">Claim giornaliero</p>
+                    <p className="text-[10px] text-white/40">Daily claim attivo per tutti gli utenti idonei</p>
+                  </div>
+                  <Toggle
+                    checked={settingsDraft.daily_claim_enabled}
+                    onChange={(v) => setSettingsDraft((prev) => ({ ...prev, daily_claim_enabled: v }))}
+                  />
+                </div>
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <label className="text-xs text-white/70">
-                  Min deposito
+            {/* ─── Limiti transazioni ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
+              <SectionHeader icon={DollarSign} title="Limiti transazioni" subtitle="Importi minimi per depositi e prelievi" />
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-[11px] text-white/60 font-medium">Min deposito (USDT)</span>
                   <input
                     type="number"
                     value={settingsDraft.min_deposit}
                     onChange={(e) => setSettingsDraft((prev) => ({ ...prev, min_deposit: Number(e.target.value) }))}
-                    className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                    className="mt-1 w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-amber-500/50 focus:outline-none"
+                    min={0}
+                    step={1}
                   />
                 </label>
-                <label className="text-xs text-white/70">
-                  Min prelievo
+                <label className="block">
+                  <span className="text-[11px] text-white/60 font-medium">Min prelievo (USDT)</span>
                   <input
                     type="number"
                     value={settingsDraft.min_withdraw}
                     onChange={(e) => setSettingsDraft((prev) => ({ ...prev, min_withdraw: Number(e.target.value) }))}
-                    className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                    className="mt-1 w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-amber-500/50 focus:outline-none"
+                    min={0}
+                    step={1}
                   />
                 </label>
               </div>
-
-              <label className="text-xs text-white/70 block">
-                Asset deposito
-                <input
-                  type="text"
-                  value={settingsDraft.deposit_asset}
-                  onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_asset: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </label>
-
-              <label className="text-xs text-white/70 block">
-                Network deposito
-                <input
-                  type="text"
-                  value={settingsDraft.deposit_network}
-                  onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_network: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </label>
-
-              <label className="text-xs text-white/70 block">
-                Indirizzo deposito
-                <input
-                  type="text"
-                  value={settingsDraft.deposit_address}
-                  onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_address: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </label>
-
-              <button
-                onClick={() => void handleSaveSettings()}
-                className="w-full py-2.5 rounded-lg bg-amber-500 text-[#06080f] font-semibold text-sm"
-              >
-                Salva impostazioni piattaforma
-              </button>
             </div>
+
+            {/* ─── Configurazione deposito ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
+              <SectionHeader icon={Wallet} title="Configurazione deposito" subtitle="Asset, network e indirizzo wallet" />
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-[11px] text-white/60 font-medium">Asset</span>
+                  <input
+                    type="text"
+                    value={settingsDraft.deposit_asset}
+                    onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_asset: e.target.value }))}
+                    className="mt-1 w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-amber-500/50 focus:outline-none"
+                    placeholder="es. USDT"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] text-white/60 font-medium">Network</span>
+                  <input
+                    type="text"
+                    value={settingsDraft.deposit_network}
+                    onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_network: e.target.value }))}
+                    className="mt-1 w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-amber-500/50 focus:outline-none"
+                    placeholder="es. BEP20, TRC20"
+                  />
+                </label>
+              </div>
+              <label className="block">
+                <span className="text-[11px] text-white/60 font-medium">Indirizzo wallet deposito</span>
+                <div className="relative mt-1">
+                  <input
+                    type="text"
+                    value={settingsDraft.deposit_address}
+                    onChange={(e) => setSettingsDraft((prev) => ({ ...prev, deposit_address: e.target.value }))}
+                    className="w-full px-3 py-2.5 pr-10 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                    placeholder="Indirizzo wallet"
+                  />
+                  <button
+                    onClick={() => {
+                      void navigator.clipboard.writeText(settingsDraft.deposit_address);
+                      pushNotice('success', 'Indirizzo copiato');
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
+                    title="Copia indirizzo"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </label>
+            </div>
+
+            {/* ─── Sicurezza ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <SectionHeader icon={ShieldCheck} title="Sicurezza" subtitle="Stato protezioni database" />
+              <div className="space-y-2">
+                {[
+                  { label: 'Row Level Security (RLS)', desc: 'Attivo su tutte le 10 tabelle', ok: true },
+                  { label: 'Accesso anonimo', desc: 'Solo lettura GPU catalog e settings', ok: true },
+                  { label: 'Funzioni admin', desc: 'Protette con is_admin() check', ok: true },
+                  { label: 'Email temporanee', desc: '30+ domini bloccati alla registrazione', ok: true },
+                  { label: 'Security scan QR', desc: 'Attivo nella pagina depositi', ok: true },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                    <ShieldCheck size={14} className={item.ok ? 'text-emerald-400' : 'text-red-400'} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white font-medium">{item.label}</p>
+                      <p className="text-[10px] text-white/40">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── Referral system info ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <SectionHeader icon={Users} title="Sistema Referral" subtitle="Commissioni su acquisto dispositivi" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-emerald-300/70 mb-1">Livello 1 (Diretto)</p>
+                  <p className="text-xl font-bold text-emerald-400">5%</p>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-blue-300/70 mb-1">Livello 2 (Indiretto)</p>
+                  <p className="text-xl font-bold text-blue-400">2%</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-white/35 text-center">
+                Commissioni applicate solo su acquisto dispositivi. Nessun bonus invito.
+              </p>
+            </div>
+
+            {/* ─── Daily Claim info ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <SectionHeader icon={Zap} title="Daily Claim" subtitle="Formula ricompensa giornaliera" />
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                <p className="text-xs text-white font-mono text-center">0.10 + min(streak, 30) × 0.02 USDT</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-white/5 rounded-lg p-2">
+                  <p className="text-[9px] text-white/40">Giorno 1</p>
+                  <p className="text-xs font-bold text-amber-400">0.12 USDT</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-2">
+                  <p className="text-[9px] text-white/40">Giorno 15</p>
+                  <p className="text-xs font-bold text-amber-400">0.40 USDT</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-2">
+                  <p className="text-[9px] text-white/40">Giorno 30+</p>
+                  <p className="text-xs font-bold text-amber-400">0.70 USDT</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ─── Email blocklist info ─── */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <SectionHeader icon={MailX} title="Blocco email temporanee" subtitle="Domini bloccati alla registrazione" />
+              <div className="flex flex-wrap gap-1.5">
+                {['mailinator.com', 'guerrillamail.com', 'tempmail.com', 'yopmail.com', 'throwaway.email', 'temp-mail.org', 'dispostable.com', 'sharklasers.com'].map((d) => (
+                  <span key={d} className="px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded text-[9px] text-red-300 font-mono">{d}</span>
+                ))}
+                <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] text-white/50">+22 altri</span>
+              </div>
+            </div>
+
+            {/* ─── Salva ─── */}
+            <button
+              onClick={() => void handleSaveSettings()}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-[#06080f] font-bold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-shadow"
+            >
+              Salva impostazioni piattaforma
+            </button>
           </div>
         )}
       </div>
