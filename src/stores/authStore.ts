@@ -307,7 +307,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                   status: profile.account_blocked ? 'blocked' : 'active',
                   claim_eligible: Boolean(profile.claim_eligible),
                   avatar_url: profile.avatar_url,
-                  tier: profile.tier ?? 'zyra',
+                  tier: profile.tier ?? 'GTX 1650',
                   vx_balance: Number(profile.balance ?? 0),
                   demo_usdt_balance: demoUsdtBalance,
                   compute_power: computePower,

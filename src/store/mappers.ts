@@ -48,7 +48,7 @@ export const mapProfileToUser = (
   demo_usdt_balance: demoUsdtBalance,
   compute_power: computePower,
   avatar_url: profile.avatar_url || undefined,
-  tier: profile.tier ?? 'zyra',
+  tier: profile.tier ?? 'GTX 1650',
   streak: profile.streak ?? 0,
   account_blocked: profile.account_blocked ?? false,
   created_at: profile.created_at || profile.joined_at,

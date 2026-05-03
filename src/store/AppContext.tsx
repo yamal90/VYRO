@@ -397,7 +397,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       email: session.user.email ?? '',
       username: usernameFromMeta || 'user',
       role: 'user',
-      tier: 'ZYRA',
+      tier: 'GTX 1650',
       avatar_url: '',
       balance: 0,
       referral_code: referralCode,

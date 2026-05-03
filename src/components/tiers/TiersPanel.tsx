@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Crown, Zap, Shield, Star, Infinity as InfinityIcon, ChevronRight } from 'lucide-react';
+import { Crown, Zap, Shield, Star, Cpu, ChevronRight } from 'lucide-react';
 
 export interface Tier {
   id: string;
@@ -16,8 +16,8 @@ export interface Tier {
 
 export const TIERS: Tier[] = [
   {
-    id: 'zyra',
-    name: 'ZYRA',
+    id: 'gtx-1650',
+    name: 'GTX 1650',
     minBalance: 0,
     minDevices: 0,
     minTeamSize: 0,
@@ -30,8 +30,8 @@ export const TIERS: Tier[] = [
     icon: Star,
   },
   {
-    id: 'vortex',
-    name: 'VORTEX',
+    id: 'rtx-3060',
+    name: 'RTX 3060',
     minBalance: 1000,
     minDevices: 2,
     minTeamSize: 5,
@@ -44,8 +44,8 @@ export const TIERS: Tier[] = [
     icon: Zap,
   },
   {
-    id: 'nebula',
-    name: 'NEBULA',
+    id: 'rtx-4060ti',
+    name: 'RTX 4060 Ti',
     minBalance: 10000,
     minDevices: 5,
     minTeamSize: 20,
@@ -59,8 +59,8 @@ export const TIERS: Tier[] = [
     icon: Shield,
   },
   {
-    id: 'quantum',
-    name: 'QUANTUM',
+    id: 'rtx-4080',
+    name: 'RTX 4080 Super',
     minBalance: 50000,
     minDevices: 10,
     minTeamSize: 50,
@@ -75,8 +75,8 @@ export const TIERS: Tier[] = [
     icon: Crown,
   },
   {
-    id: 'infinity',
-    name: 'INFINITY',
+    id: 'rtx-4090',
+    name: 'RTX 4090',
     minBalance: 100000,
     minDevices: 20,
     minTeamSize: 100,
@@ -89,7 +89,7 @@ export const TIERS: Tier[] = [
       'Revenue sharing',
     ],
     color: 'from-amber-500 to-amber-700',
-    icon: InfinityIcon,
+    icon: Cpu,
   },
 ];
 

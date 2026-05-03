@@ -111,7 +111,7 @@ const AdminPage: React.FC = () => {
   const [withdrawStatusDraft, setWithdrawStatusDraft] = useState<
     Record<string, 'pending' | 'approved' | 'completed' | 'rejected'>
   >({});
-  const [txFilter, setTxFilter] = useState<'all' | 'pending' | 'approved' | 'completed' | 'rejected'>('all');
+  const [txFilter, setTxFilter] = useState<'all' | 'pending' | 'approved' | 'completed'>('all');
   const [txSearch, setTxSearch] = useState('');
   const [assignUserId, setAssignUserId] = useState('');
   const [assignDeviceId, setAssignDeviceId] = useState('');
@@ -168,11 +168,11 @@ const AdminPage: React.FC = () => {
     [adminWithdrawalRequests],
   );
   const sortedDepositRequests = useMemo(
-    () => [...adminDepositRequests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    () => [...adminDepositRequests].filter((d) => d.status !== 'rejected').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [adminDepositRequests],
   );
   const sortedWithdrawalRequests = useMemo(
-    () => [...adminWithdrawalRequests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    () => [...adminWithdrawalRequests].filter((w) => w.status !== 'rejected').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [adminWithdrawalRequests],
   );
   const txSearchNormalized = txSearch.trim().toLowerCase();
@@ -218,7 +218,7 @@ const AdminPage: React.FC = () => {
   const tierDistribution = useMemo(() => {
     const tiers: Record<string, number> = {};
     for (const u of allUsers) {
-      const tier = u.tier || 'Bronze';
+      const tier = u.tier || 'GTX 1650';
       tiers[tier] = (tiers[tier] ?? 0) + 1;
     }
     return Object.entries(tiers).sort(([, a], [, b]) => b - a);
@@ -373,6 +373,10 @@ const AdminPage: React.FC = () => {
     currentStatus: 'pending' | 'approved' | 'completed' | 'rejected',
   ) => {
     const nextStatus = depositStatusDraft[itemId] ?? currentStatus;
+    if (nextStatus === 'rejected') {
+      await deleteDeposit(itemId);
+      return;
+    }
     const result = await updateDepositRequestStatus(itemId, nextStatus, depositTxDraft[itemId]);
     pushNotice(result.success ? 'success' : 'error', result.message);
     if (result.success) {
@@ -384,11 +388,25 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const deleteDeposit = async (depositId: string) => {
+    const result = await updateDepositRequestStatus(depositId, 'rejected');
+    if (result.success) {
+      pushNotice('success', 'Deposito rifiutato e rimosso.');
+      await refreshAppData();
+    } else {
+      pushNotice('error', result.message);
+    }
+  };
+
   const applyWithdrawalStatus = async (
     itemId: string,
     currentStatus: 'pending' | 'approved' | 'completed' | 'rejected',
   ) => {
     const nextStatus = withdrawStatusDraft[itemId] ?? currentStatus;
+    if (nextStatus === 'rejected') {
+      await deleteWithdrawal(itemId);
+      return;
+    }
     const result = await updateWithdrawalRequestStatus(itemId, nextStatus, withdrawTxDraft[itemId]);
     pushNotice(result.success ? 'success' : 'error', result.message);
     if (result.success) {
@@ -397,6 +415,16 @@ const AdminPage: React.FC = () => {
         delete next[itemId];
         return next;
       });
+    }
+  };
+
+  const deleteWithdrawal = async (withdrawalId: string) => {
+    const result = await updateWithdrawalRequestStatus(withdrawalId, 'rejected');
+    if (result.success) {
+      pushNotice('success', 'Prelievo rifiutato e rimosso.');
+      await refreshAppData();
+    } else {
+      pushNotice('error', result.message);
     }
   };
 
@@ -697,7 +725,7 @@ const AdminPage: React.FC = () => {
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-[9px] text-white/40">Tier</p>
-                    <p className="text-xs font-bold text-purple-400">{user.tier || 'Bronze'}</p>
+                    <p className="text-xs font-bold text-purple-400">{user.tier || 'GTX 1650'}</p>
                   </div>
                 </div>
 
@@ -901,7 +929,7 @@ const AdminPage: React.FC = () => {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
               <div className="flex flex-wrap gap-2">
-                {(['all', 'pending', 'approved', 'completed', 'rejected'] as const).map((status) => (
+                {(['all', 'pending', 'approved', 'completed'] as const).map((status) => (
                   <button
                     key={status}
                     onClick={() => setTxFilter(status)}
@@ -954,7 +982,6 @@ const AdminPage: React.FC = () => {
                       <option value="pending" className="bg-[#0c101c] text-white">pending</option>
                       <option value="approved" className="bg-[#0c101c] text-white">approved</option>
                       <option value="completed" className="bg-[#0c101c] text-white">completed</option>
-                      <option value="rejected" className="bg-[#0c101c] text-white">rejected</option>
                     </select>
                     <input
                       type="text"
@@ -969,6 +996,12 @@ const AdminPage: React.FC = () => {
                         className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
                       >
                         Applica
+                      </button>
+                      <button
+                        onClick={() => void deleteDeposit(item.id)}
+                        className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
+                      >
+                        Elimina
                       </button>
                       {(depositTxDraft[item.id] ?? item.tx_hash) ? (
                         <a
@@ -1025,7 +1058,6 @@ const AdminPage: React.FC = () => {
                       <option value="pending" className="bg-[#0c101c] text-white">pending</option>
                       <option value="approved" className="bg-[#0c101c] text-white">approved</option>
                       <option value="completed" className="bg-[#0c101c] text-white">completed</option>
-                      <option value="rejected" className="bg-[#0c101c] text-white">rejected</option>
                     </select>
                     <input
                       type="text"
@@ -1040,6 +1072,12 @@ const AdminPage: React.FC = () => {
                         className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30"
                       >
                         Applica
+                      </button>
+                      <button
+                        onClick={() => void deleteWithdrawal(item.id)}
+                        className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs font-semibold hover:bg-red-500/30"
+                      >
+                        Elimina
                       </button>
                       {(withdrawTxDraft[item.id] ?? item.tx_hash) ? (
                         <a
@@ -1183,11 +1221,11 @@ const AdminPage: React.FC = () => {
                   <div key={tier} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-3 h-3 rounded-full ${
-                        tier === 'Diamond' ? 'bg-cyan-400' :
-                        tier === 'Platinum' ? 'bg-purple-400' :
-                        tier === 'Gold' ? 'bg-amber-400' :
-                        tier === 'Silver' ? 'bg-slate-300' :
-                        'bg-orange-600'
+                        tier === 'RTX 4090' ? 'bg-amber-400' :
+                        tier === 'RTX 4080 Super' ? 'bg-emerald-400' :
+                        tier === 'RTX 4060 Ti' ? 'bg-amber-500' :
+                        tier === 'RTX 3060' ? 'bg-blue-400' :
+                        'bg-slate-400'
                       }`} />
                       <span className="text-sm text-white font-medium">{tier}</span>
                     </div>
