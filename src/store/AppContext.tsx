@@ -74,7 +74,7 @@ interface AppState {
   activateDevice: (deviceId: string) => Promise<ActionResult>;
   claimDeviceProduction: (entryId: string) => Promise<ActionResult>;
   claimDailyReward: () => Promise<ActionResult>;
-  requestDeposit: (amount: number, txHash?: string) => Promise<ActionResult>;
+  requestDeposit: (amount: number, txHash?: string, proofImageUrl?: string) => Promise<ActionResult>;
   requestWithdrawal: (amount: number, walletAddress: string) => Promise<ActionResult>;
   updateDepositRequestStatus: (
     depositId: string,
@@ -310,6 +310,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           asset: row.asset,
           network: row.network,
           tx_hash: row.tx_hash,
+          proof_image_url: row.proof_image_url ?? null,
           status: row.status as AdminDepositRequest['status'],
           created_at: row.created_at,
         })),
@@ -885,10 +886,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentUser, logOperationalError, pushNotice, refreshAppData]);
 
   const requestDeposit = useCallback(
-    async (amount: number, txHash?: string): Promise<ActionResult> => {
+    async (amount: number, txHash?: string, proofImageUrl?: string): Promise<ActionResult> => {
       if (!supabase || !currentUser) return emptyResult('Non autenticato');
       const normalizedAmount = Number(amount);
       const normalizedTxHash = String(txHash ?? '').trim();
+      const normalizedProof = String(proofImageUrl ?? '').trim();
       if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
         return emptyResult('Importo deposito non valido.');
       }
@@ -898,11 +900,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (Number(platformSettings?.min_deposit ?? 0) > 0 && normalizedAmount < Number(platformSettings?.min_deposit ?? 0)) {
         return emptyResult(`Importo minimo deposito: ${Number(platformSettings?.min_deposit ?? 0).toFixed(2)}.`);
       }
+      if (!normalizedTxHash) {
+        return emptyResult('Hash transazione obbligatorio.');
+      }
+      if (!normalizedProof) {
+        return emptyResult('Screenshot dell\'hash obbligatorio.');
+      }
 
       try {
         const { data, error } = await supabase.rpc('request_deposit', {
           p_amount: normalizedAmount,
           p_tx_hash: normalizedTxHash || null,
+          p_proof_image_url: normalizedProof || null,
         });
         if (error) throw error;
         const result = data as { success: boolean; message: string };

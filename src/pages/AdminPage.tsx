@@ -1044,6 +1044,18 @@ const AdminPage: React.FC = () => {
                           BscScan <ExternalLink size={12} />
                         </a>
                       ) : null}
+                      {item.proof_image_url ? (
+                        <a
+                          href={item.proof_image_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-2 rounded-lg bg-blue-500/12 text-blue-400 text-xs font-semibold hover:bg-blue-500/20 inline-flex items-center gap-1"
+                        >
+                          Screenshot <ExternalLink size={12} />
+                        </a>
+                      ) : (
+                        <span className="text-red-400 text-[10px]">No screenshot</span>
+                      )}
                     </div>
                   </div>
                 </div>

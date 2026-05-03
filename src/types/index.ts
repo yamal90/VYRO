@@ -91,6 +91,7 @@ export interface AdminDepositRequest {
   asset: string;
   network: string;
   tx_hash: string | null;
+  proof_image_url: string | null;
   status: 'pending' | 'approved' | 'completed' | 'rejected';
   created_at: string;
 }
