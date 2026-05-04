@@ -71,11 +71,6 @@ describe('LoginPage', () => {
     // Form should not submit with invalid email
   });
 
-  it('should show Google login button', () => {
-    render(<LoginPage />, { wrapper });
-    expect(screen.getByText(/google/i)).toBeInTheDocument();
-  });
-
   it('should show forgot password link', () => {
     render(<LoginPage />, { wrapper });
     expect(screen.getByText(/password dimenticata/i)).toBeInTheDocument();

@@ -17,7 +17,6 @@ interface AuthState {
 
 interface AuthActions {
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-  loginWithGoogle: (referralCode?: string) => Promise<{ success: boolean; message: string }>;
   register: (payload: { email: string; password: string; confirmPassword: string; referralCode: string }) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
@@ -80,35 +79,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           return { success: true, message: 'Accesso completato' };
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Accesso non riuscito';
-          return { success: false, message };
-        } finally {
-          set({ authLoading: false });
-        }
-      },
-
-      loginWithGoogle: async (referralCode) => {
-        if (!supabase) return { success: false, message: 'Configura Supabase' };
-        set({ authLoading: true });
-        try {
-          const normalizedReferral = String(referralCode ?? '').trim().toUpperCase();
-          if (normalizedReferral) {
-            const check = await validateReferralCode(normalizedReferral);
-            if (!check.valid) return { success: false, message: check.message };
-          }
-          
-          const appBaseUrl = getAppBaseUrl();
-          const redirectUrl = normalizedReferral
-            ? `${appBaseUrl}?ref=${encodeURIComponent(normalizedReferral)}`
-            : appBaseUrl;
-            
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: redirectUrl },
-          });
-          if (error) throw error;
-          return { success: true, message: 'Redirect a Google...' };
-        } catch (err) {
-          const message = err instanceof Error ? err.message : 'Accesso Google non riuscito';
           return { success: false, message };
         } finally {
           set({ authLoading: false });
