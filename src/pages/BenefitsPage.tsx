@@ -197,7 +197,7 @@ const BenefitsPage: React.FC = () => {
             />
           </div>
           <p className="text-[10px] text-slate-400 mt-2 text-center">
-            {daysCompleted}/7 {t('benefits.daysCompleted')} — {t('benefits.weekBonus')}: <span className="font-bold text-amber-400">10 $</span>
+            {daysCompleted}/7 {t('benefits.daysCompleted')} — {t('benefits.weekBonus')}: <span className="font-bold text-amber-400">2 $</span>
           </p>
         </div>
       </div>
