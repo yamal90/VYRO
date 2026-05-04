@@ -40,8 +40,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 import { normalizeTierName } from '../store/mappers';
+import { useSupportTickets } from '../hooks/useSupportTickets';
 
-type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'analytics' | 'settings';
+type AdminTab = 'overview' | 'users' | 'devices' | 'transactions' | 'logs' | 'analytics' | 'tickets' | 'settings';
 
 const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }> = ({ checked, onChange, disabled }) => (
   <button
@@ -147,6 +148,23 @@ const AdminPage: React.FC = () => {
       deposit_address: platformSettings.deposit_address ?? '',
     });
   }, [platformSettings]);
+
+  const { tickets: supportTickets, loading: ticketsLoading, replyToTicket, closeTicket } = useSupportTickets(
+    currentUser?.id,
+    true,
+  );
+  const [ticketReplyDraft, setTicketReplyDraft] = useState<Record<string, string>>({});
+  const [ticketFilter, setTicketFilter] = useState<'all' | 'open' | 'replied' | 'closed'>('all');
+
+  const openTicketsCount = useMemo(
+    () => supportTickets.filter((t) => t.status === 'open').length,
+    [supportTickets],
+  );
+
+  const filteredTickets = useMemo(
+    () => ticketFilter === 'all' ? supportTickets : supportTickets.filter((t) => t.status === ticketFilter),
+    [supportTickets, ticketFilter],
+  );
 
   const errorLogsCount = useMemo(
     () => adminLogs.filter((log) => log.action.toLowerCase().includes('error_')).length,
@@ -349,6 +367,7 @@ const AdminPage: React.FC = () => {
     { key: 'transactions', label: 'TX', icon: Activity, badge: pendingDeposits.length + pendingWithdrawals.length || undefined },
     { key: 'logs', label: 'Log', icon: Eye, badge: errorLogsCount || undefined },
     { key: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { key: 'tickets', label: 'Ticket', icon: MessageSquare, badge: openTicketsCount || undefined },
     { key: 'settings', label: 'Config', icon: Cog },
   ];
 
@@ -1312,6 +1331,122 @@ const AdminPage: React.FC = () => {
               <Download size={16} />
               Esporta tutti i dati utenti (CSV)
             </button>
+          </div>
+        )}
+
+        {activeTab === 'tickets' && (
+          <div className="space-y-3">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <SectionHeader icon={MessageSquare} title="Ticket supporto" subtitle={`${openTicketsCount} aperti su ${supportTickets.length} totali`} />
+            </div>
+
+            <div className="flex items-center gap-2 mb-2">
+              {(['all', 'open', 'replied', 'closed'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setTicketFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold ${
+                    ticketFilter === f ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-white/5 text-white/60 border border-white/10'
+                  }`}
+                >
+                  {f === 'all' ? 'Tutti' : f === 'open' ? 'Aperti' : f === 'replied' ? 'Risposti' : 'Chiusi'}
+                </button>
+              ))}
+            </div>
+
+            {ticketsLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
+              </div>
+            ) : filteredTickets.length === 0 ? (
+              <div className="text-center py-8">
+                <MessageSquare size={32} className="text-slate-600 mx-auto mb-2" />
+                <p className="text-sm text-slate-500">Nessun ticket</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredTickets.map((ticket) => {
+                  const userProfile = ticket.profiles;
+                  return (
+                    <div key={ticket.id} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              ticket.status === 'open' ? 'bg-amber-500/20 text-amber-400' :
+                              ticket.status === 'replied' ? 'bg-green-500/20 text-green-400' :
+                              'bg-slate-500/20 text-slate-400'
+                            }`}>
+                              {ticket.status === 'open' ? 'Aperto' : ticket.status === 'replied' ? 'Risposto' : 'Chiuso'}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {new Date(ticket.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-white">{ticket.subject}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Da: {userProfile?.username ?? 'Utente'} ({userProfile?.email ?? ticket.user_id.substring(0, 8)})
+                          </p>
+                        </div>
+                        {ticket.status !== 'closed' && (
+                          <button
+                            onClick={() => void closeTicket(ticket.id).then((r) => { if (r.success) pushNotice('success', 'Ticket chiuso'); })}
+                            className="px-2 py-1 rounded-lg bg-slate-500/20 text-slate-400 text-[10px] font-semibold hover:bg-red-500/20 hover:text-red-400"
+                          >
+                            Chiudi
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="bg-white/3 rounded-lg p-3">
+                        <p className="text-[10px] text-amber-400 font-semibold mb-1">Messaggio utente</p>
+                        <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{ticket.message}</p>
+                      </div>
+
+                      {ticket.admin_reply && (
+                        <div className="bg-green-500/5 border border-green-500/15 rounded-lg p-3">
+                          <p className="text-[10px] text-green-400 font-semibold mb-1">Tua risposta</p>
+                          <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{ticket.admin_reply}</p>
+                          {ticket.admin_replied_at && (
+                            <p className="text-[10px] text-slate-500 mt-1">
+                              {new Date(ticket.admin_replied_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {ticket.status !== 'closed' && (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={ticketReplyDraft[ticket.id] ?? ''}
+                            onChange={(e) => setTicketReplyDraft((prev) => ({ ...prev, [ticket.id]: e.target.value }))}
+                            placeholder="Scrivi risposta..."
+                            className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-xs placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
+                          />
+                          <button
+                            onClick={() => {
+                              const reply = ticketReplyDraft[ticket.id]?.trim();
+                              if (!reply) return;
+                              void replyToTicket(ticket.id, reply).then((r) => {
+                                if (r.success) {
+                                  pushNotice('success', 'Risposta inviata');
+                                  setTicketReplyDraft((prev) => ({ ...prev, [ticket.id]: '' }));
+                                }
+                              });
+                            }}
+                            disabled={!ticketReplyDraft[ticket.id]?.trim()}
+                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-[#06080f] font-semibold text-xs disabled:opacity-50"
+                          >
+                            <Send size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

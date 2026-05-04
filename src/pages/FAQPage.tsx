@@ -7,6 +7,7 @@ import {
   Wallet, Activity, Calendar
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface FAQCategory {
   id: string;
@@ -226,6 +227,7 @@ const LiveWalletEarnings: React.FC = () => {
 
 const FAQPage: React.FC = () => {
   const { t } = useTranslation();
+  const faqNavigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>('platform');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [showTeam, setShowTeam] = useState(false);
@@ -776,7 +778,7 @@ const FAQPage: React.FC = () => {
             {t('faq.supportAvailable')}
           </p>
           <button
-            onClick={() => window.location.href = 'mailto:support@vyrogpu.com'}
+            onClick={() => faqNavigate('/support')}
             className="w-full py-3 gradient-primary rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2"
           >
             <RefreshCw size={16} />

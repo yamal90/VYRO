@@ -16,6 +16,7 @@ import {
   Edit3,
   Mail,
   Lock,
+  MessageSquare,
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import { useThemeStore } from '../stores/themeStore';
@@ -177,6 +178,13 @@ const SettingsPage: React.FC = () => {
           description: t('settings.faqDesc', 'Domande frequenti'),
           type: 'nav' as const,
           onAction: () => navigate('/faq'),
+        },
+        {
+          icon: MessageSquare,
+          label: t('settings.supportTickets', 'Assistenza'),
+          description: t('settings.supportTicketsDesc', 'Invia un ticket al supporto'),
+          type: 'nav' as const,
+          onAction: () => navigate('/support'),
         },
       ],
     },

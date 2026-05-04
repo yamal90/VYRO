@@ -86,6 +86,18 @@ export type ActivityLogRow = {
   created_at: string;
 };
 
+export type SupportTicketRow = {
+  id: string;
+  user_id: string;
+  subject: string;
+  message: string;
+  status: 'open' | 'replied' | 'closed';
+  admin_reply: string | null;
+  admin_replied_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PlatformSettingsRow = {
   id: number;
   maintenance_mode: boolean;
