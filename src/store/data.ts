@@ -9,7 +9,7 @@ export const GPU_DEVICES: GPUDevice[] = [
   { id: 'gpu-5', name: 'AMD Ryzen 5 7600', description: 'RTX 4060 Ti | 16GB RAM', price: 3000, reward_3_days: 180.00, reward_7_days: 420.00, compute_power: 160, active: true, image_url: '/images/gpu-g900.jpg?v=20260501' },
   { id: 'gpu-6', name: 'Intel Core i7-13700KF', description: 'RTX 4070 Super | 32GB RAM', price: 7200, reward_3_days: 432.00, reward_7_days: 1008.00, compute_power: 360, active: true, image_url: '/images/gpu-x5700.jpg?v=20260501' },
   { id: 'gpu-7', name: 'AMD Ryzen 7 7800X3D', description: 'RTX 4070 Ti Super | 32GB RAM', price: 18000, reward_3_days: 1080.00, reward_7_days: 2520.00, compute_power: 900, active: true, image_url: '/images/gpu-x7900.jpg?v=20260501' },
-  { id: 'gpu-8', name: 'Intel Core i9-14900K', description: 'RTX 4080 Super | 32GB RAM', price: 34000, reward_3_days: 2040.00, reward_7_days: 4760.00, compute_power: 1800, active: true, image_url: '/images/gpu-x8900.jpg?v=20260501' },
+  { id: 'gpu-8', name: 'Intel Core i9-14900K', description: 'RTX 4080 Super | 32GB RAM', price: 34000, reward_3_days: 2040.00, reward_7_days: 4760.00, compute_power: 1800, active: true, image_url: '/images/gpu-x8900.jpg?v=20260504' },
   { id: 'gpu-9', name: 'AMD Ryzen 9 7950X3D', description: 'RTX 4090 | 64GB RAM', price: 72000, reward_3_days: 4320.00, reward_7_days: 10080.00, compute_power: 4200, active: true, image_url: '/images/gpu-ix9900.jpg?v=20260501' },
 ];
 
