@@ -1057,7 +1057,7 @@ const AdminPage: React.FC = () => {
                         <a
                           href={`https://bscscan.com/tx/${depositTxDraft[item.id] ?? item.tx_hash}`}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-3 py-2 rounded-lg bg-emerald-500/12 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 inline-flex items-center gap-1"
                         >
                           BscScan <ExternalLink size={12} />
@@ -1067,7 +1067,7 @@ const AdminPage: React.FC = () => {
                         <a
                           href={item.proof_image_url}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-3 py-2 rounded-lg bg-blue-500/12 text-blue-400 text-xs font-semibold hover:bg-blue-500/20 inline-flex items-center gap-1"
                         >
                           Screenshot <ExternalLink size={12} />
@@ -1145,7 +1145,7 @@ const AdminPage: React.FC = () => {
                         <a
                           href={`https://bscscan.com/tx/${withdrawTxDraft[item.id] ?? item.tx_hash}`}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-3 py-2 rounded-lg bg-emerald-500/12 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 inline-flex items-center gap-1"
                         >
                           BscScan <ExternalLink size={12} />

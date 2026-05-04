@@ -133,7 +133,7 @@ export default defineConfig({
     },
     target: 'es2022',
     minify: 'esbuild',
-    sourcemap: true,
+    sourcemap: false,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand'],
