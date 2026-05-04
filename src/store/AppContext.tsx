@@ -451,6 +451,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .single<ProfileRow>();
         let data = profileData;
         if (profileError || !data) {
+          const isGoogleProvider = effectiveSession.user.app_metadata?.provider === 'google';
+          if (isGoogleProvider) {
+            const refFromMeta = normalizeReferralCode(
+              effectiveSession.user.user_metadata?.referred_by ??
+                effectiveSession.user.user_metadata?.referralCode ??
+                effectiveSession.user.user_metadata?.referral_code ??
+                '',
+            );
+            const refFromUrl = normalizeReferralCode(new URLSearchParams(window.location.search).get('ref') ?? '');
+            const hasReferral = !isReferralSentinel(refFromMeta || refFromUrl);
+            if (!hasReferral) {
+              await supabase.auth.signOut();
+              resetData();
+              pushNotice('error', 'Registrati prima con Google tramite un link referral. Il login Google è disponibile solo per chi si è registrato con Google.');
+              return;
+            }
+          }
           try {
             data = await ensureProfileFromSession(effectiveSession);
           } catch {
