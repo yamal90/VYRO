@@ -484,6 +484,7 @@
     "statusClosed": "Chiuso",
     "yourMessage": "Il tuo messaggio",
     "adminReply": "Risposta admin",
-    "waitingReply": "In attesa di risposta dall'admin..."
+    "waitingReply": "In attesa di risposta dall'admin...",
+    "adminOnly": "Il tuo messaggio sarà visibile solo all'admin"
   }
 }
