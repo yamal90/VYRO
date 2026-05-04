@@ -167,31 +167,29 @@ export const mapLogsToTransactions = (
     created_at: row.created_at,
   }));
 
-  const activityTransactions: Transaction[] = activities.map((row) => {
-    let type: Transaction['type'] = 'login_bonus';
-    let currency: Transaction['currency'] = 'VX';
-    if (row.type.includes('deposit')) type = 'deposit';
-    else if (row.type.includes('withdraw')) {
-      type = 'withdrawal';
-      currency = 'USDT';
-    } else if (row.type.includes('claim')) type = 'daily_claim';
-    else if (row.type.includes('team')) type = 'team_bonus';
-    else if (row.type.includes('purchase') || row.type.includes('device'))
-      type = 'device_purchase';
-    else if (row.type.includes('reward') || row.type.includes('yield'))
-      type = 'device_reward';
+  const activityTransactions: Transaction[] = activities
+    .filter((row) => !row.type.includes('deposit') && !row.type.includes('withdraw'))
+    .map((row) => {
+      let type: Transaction['type'] = 'login_bonus';
+      const currency: Transaction['currency'] = 'VX';
+      if (row.type.includes('claim')) type = 'daily_claim';
+      else if (row.type.includes('team')) type = 'team_bonus';
+      else if (row.type.includes('purchase') || row.type.includes('device'))
+        type = 'device_purchase';
+      else if (row.type.includes('reward') || row.type.includes('yield'))
+        type = 'device_reward';
 
-    return {
-      id: row.id,
-      user_id: row.owner_id,
-      type,
-      amount: Number(row.amount ?? 0),
-      currency,
-      status: 'completed' as const,
-      description: row.description,
-      created_at: row.created_at,
-    };
-  });
+      return {
+        id: row.id,
+        user_id: row.owner_id,
+        type,
+        amount: Number(row.amount ?? 0),
+        currency,
+        status: 'completed' as const,
+        description: row.description,
+        created_at: row.created_at,
+      };
+    });
 
   return [...activityTransactions, ...depositTransactions, ...withdrawalTransactions].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
