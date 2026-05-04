@@ -295,8 +295,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           } else {
             set({ bootstrapped: true });
           }
-        } catch (err) {
-          console.error('Hydration error:', err);
+        } catch {
           set({ bootstrapped: true });
         } finally {
           set({ authLoading: false });
