@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, ChevronDown, GitBranch } from 'lucide-react';
+import { Users, Copy, Check, Zap, Cpu, UserPlus, Sparkles, ChevronDown, GitBranch, Info } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
@@ -247,6 +247,10 @@ const TeamPage: React.FC = () => {
               <p className="text-[10px] text-emerald-400 font-semibold mb-1">{t('team.level2Indirect')}</p>
               <p className="text-xs text-slate-300">{t('team.activity')}: <span className="font-bold text-white">2%</span></p>
             </div>
+          </div>
+          <div className="mt-3 flex items-start gap-2 bg-blue-500/5 rounded-lg p-3 border border-blue-500/15">
+            <Info size={14} className="text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-[10px] text-slate-300 leading-relaxed">{t('team.referralEarningsInfo')}</p>
           </div>
         </div>
       </div>

@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, Cpu, Users, Zap, Award, ChevronDown, Lock,
   Server, Key, Fingerprint, Globe, AlertTriangle,
-  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star, Play,
-  Wallet, Activity
+  TrendingUp, Gift, RefreshCw, Smartphone, Camera, MapPin, Star,
+  Wallet, Activity, Calendar
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -222,58 +222,7 @@ const LiveWalletEarnings: React.FC = () => {
   );
 };
 
-const VYRO_VIDEO_URL = '/videos/vyro-faq-it.mp4';
-const VYRO_VIDEO_POSTER = '/images/gpu-hero.png';
 
-const videoChapters = [
-  { time: '0:00', title: 'Introduzione a VYRO GPU', icon: Zap, color: 'text-amber-400' },
-  { time: '0:08', title: 'Come registrarsi e iniziare', icon: Users, color: 'text-blue-400' },
-  { time: '0:17', title: 'Dashboard e gestione GPU', icon: Cpu, color: 'text-emerald-400' },
-  { time: '0:27', title: 'Depositi e prelievi USDT', icon: TrendingUp, color: 'text-purple-400' },
-  { time: '0:37', title: 'Sistema referral e team', icon: Users, color: 'text-pink-400' },
-  { time: '0:45', title: 'Tier: da GTX 1650 a RTX 4090', icon: Award, color: 'text-yellow-400' },
-  { time: '0:52', title: 'Sicurezza e protezione', icon: Shield, color: 'text-green-400' },
-];
-
-const VideoGuide: React.FC = () => {
-  return (
-    <div className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-white/10 rounded-2xl overflow-hidden">
-      <div className="relative aspect-video bg-black">
-        <video
-          controls
-          preload="metadata"
-          playsInline
-          poster={VYRO_VIDEO_POSTER}
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src={VYRO_VIDEO_URL} type="video/mp4" />
-        </video>
-        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/65 text-white text-[10px] font-semibold pointer-events-none">
-          Video FAQ in italiano
-        </div>
-      </div>
-
-      <div className="p-4">
-        <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Capitoli</h4>
-        <div className="space-y-1">
-          {videoChapters.map((chapter, i) => {
-            const ChapterIcon = chapter.icon;
-            return (
-              <div
-                key={i}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-left"
-              >
-                <span className="text-[10px] text-white/30 tabular-nums w-8">{chapter.time}</span>
-                <ChapterIcon size={14} className={chapter.color} />
-                <span className="text-sm text-white/80">{chapter.title}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const FAQPage: React.FC = () => {
   const { t } = useTranslation();
@@ -340,13 +289,17 @@ const FAQPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Video Guide */}
+      {/* Withdrawal Schedule Info */}
       <div className="px-4 mt-4 mb-4 relative z-10">
-        <div className="flex items-center gap-2 mb-3">
-          <Play size={16} className="text-amber-400" />
-          <h2 className="text-sm font-bold text-white">Guida Video — Come funziona VYRO</h2>
+        <div className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-amber-500/20 rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar size={16} className="text-amber-400" />
+            <h3 className="text-sm font-bold text-white">{t('faq.withdrawalSchedule')}</h3>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            {t('faq.withdrawalScheduleDesc')}
+          </p>
         </div>
-        <VideoGuide />
       </div>
 
       {/* Live Wallet Earnings */}

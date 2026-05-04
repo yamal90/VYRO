@@ -954,6 +954,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return emptyResult('Saldo USDT insufficiente.');
       }
 
+      const today = new Date();
+      const dayOfMonth = today.getDate();
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+      const isWithdrawalDay = dayOfMonth === 15 || dayOfMonth === 30 || (dayOfMonth === lastDayOfMonth && lastDayOfMonth < 30);
+      if (!isWithdrawalDay) {
+        return emptyResult('I prelievi sono disponibili solo il 15 e il 30 di ogni mese.');
+      }
+
       try {
         const { data, error } = await supabase.rpc('request_withdrawal', {
           p_amount: normalizedAmount,

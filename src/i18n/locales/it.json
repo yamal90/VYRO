@@ -65,7 +65,9 @@
     "afterResetLogin": "Dopo il reset puoi accedere subito con la nuova password.",
     "protectedAccess": "Accesso protetto e profilo persistito in piattaforma.",
     "referralAutoValidated": "Il referral code viene validato automaticamente.",
-    "referralMandatory": "Obbligatorio per creare il profilo."
+    "referralMandatory": "Obbligatorio per creare il profilo.",
+    "withdrawalScheduleInfo": "Prelievi: 2 volte al mese (il 15 e il 30)",
+    "withdrawalScheduleDetail": "I prelievi vengono elaborati il 15 e il 30 di ogni mese (o l'ultimo giorno del mese)."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -152,6 +154,7 @@
     "level": "Livello",
     "gpuActive": "GPU attiva",
     "noGPU": "Nessun GPU",
+    "referralEarningsInfo": "I guadagni da referral vengono accreditati solo quando i membri invitati effettuano un deposito.",
     "disclaimer": "Il programma team valorizza la crescita della tua rete con bonus progressivi, attività condivise e una panoramica chiara dei risultati generati dai membri invitati."
   },
   "transactions": {
@@ -323,6 +326,8 @@
     "needHelp": "Hai bisogno di aiuto?",
     "supportAvailable": "Il nostro team di supporto è disponibile 24/7 per rispondere a qualsiasi domanda.",
     "contactSupport": "Contatta Supporto",
+    "withdrawalSchedule": "Prelievi disponibili il 15 e il 30 di ogni mese",
+    "withdrawalScheduleDesc": "I prelievi vengono elaborati 2 volte al mese: il 15 e il 30 (o l'ultimo giorno del mese se cade prima del 30).",
     "disclaimer": "Le informazioni fornite in questa FAQ sono a scopo informativo. VYRO GPU si riserva il diritto di modificare parametri e policy con preavviso agli utenti.",
     "categories": {
       "platform": {
@@ -405,7 +410,7 @@
           },
           {
             "q": "Quali commissioni ricevo?",
-            "a": "Le commissioni si basano solo sull'acquisto di dispositivi:\n• Livello 1 (inviti diretti): 5% sull'acquisto dispositivo\n• Livello 2 (inviti dei tuoi inviti): 2% sull'acquisto dispositivo\nLe commissioni vengono calcolate in tempo reale e accreditate automaticamente."
+            "a": "Le commissioni si basano sui depositi effettuati dai tuoi referral:\n• Livello 1 (inviti diretti): 5% sul deposito del referral\n• Livello 2 (inviti dei tuoi inviti): 2% sul deposito del referral\nLe commissioni vengono calcolate solo quando il referral effettua un deposito e vengono accreditate automaticamente."
           },
           {
             "q": "Ci sono bonus progressivi?",
