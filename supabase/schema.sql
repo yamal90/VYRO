@@ -194,15 +194,19 @@ create index if not exists idx_notifications_seen on public.notifications (seen)
 
 create table if not exists public.support_tickets (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references public.profiles (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
   subject text not null,
   message text not null,
-  status text not null default 'open',
-  priority text not null default 'normal',
-  assigned_to uuid references public.profiles (id) on delete set null,
+  status text not null default 'open' check (status in ('open', 'replied', 'closed')),
+  admin_reply text,
+  admin_replied_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create index if not exists idx_support_tickets_user_id on public.support_tickets (user_id);
+create index if not exists idx_support_tickets_status on public.support_tickets (status);
+create index if not exists idx_support_tickets_created_at on public.support_tickets (created_at desc);
 
 drop trigger if exists trg_support_tickets_set_updated_at on public.support_tickets;
 create trigger trg_support_tickets_set_updated_at
@@ -1078,11 +1082,11 @@ drop policy if exists "support_tickets_read_own_or_admin" on public.support_tick
 create policy "support_tickets_read_own_or_admin"
 on public.support_tickets for select
 to authenticated
-using (owner_id = auth.uid() or private.is_admin(auth.uid()));
+using (user_id = auth.uid() or private.is_admin(auth.uid()));
 
 drop policy if exists "support_tickets_write_own_or_admin" on public.support_tickets;
 create policy "support_tickets_write_own_or_admin"
 on public.support_tickets for all
 to authenticated
-using (owner_id = auth.uid() or private.is_admin(auth.uid()))
-with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
+using (user_id = auth.uid() or private.is_admin(auth.uid()))
+with check (user_id = auth.uid() or private.is_admin(auth.uid()));
