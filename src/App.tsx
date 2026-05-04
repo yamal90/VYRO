@@ -23,6 +23,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const FAQPage = lazy(() => import('./pages/FAQPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const AchievementsPage = lazy(() => import('./components/achievements/AchievementsPanel'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 const TiersPage = lazy(() => import('./components/tiers/TiersPanel'));
 
 const queryClient = new QueryClient({
@@ -138,6 +139,7 @@ const AppContent: React.FC = () => {
               <Route path="/benefits" element={<AnimatedPage><BenefitsPage /></AnimatedPage>} />
               <Route path="/faq" element={<AnimatedPage><FAQPage /></AnimatedPage>} />
               <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
+              <Route path="/support" element={<AnimatedPage><SupportPage /></AnimatedPage>} />
               <Route path="/achievements" element={<AnimatedPage><AchievementsPage /></AnimatedPage>} />
               <Route path="/tiers" element={<AnimatedPage><TiersPage userStats={{ balance: currentUser?.vx_balance ?? 0, devices: 0, teamSize: 0 }} currentTier={currentUser?.tier} /></AnimatedPage>} />
               {isAdmin && (

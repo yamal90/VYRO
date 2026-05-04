@@ -465,5 +465,25 @@
         ]
       }
     }
+  },
+  "support": {
+    "title": "Assistenza",
+    "subtitle": "Invia un ticket e ricevi risposta dall'admin",
+    "newTicket": "Nuovo Ticket",
+    "subjectLabel": "Oggetto",
+    "subjectPlaceholder": "Descrivi brevemente il problema",
+    "messageLabel": "Messaggio",
+    "messagePlaceholder": "Scrivi il tuo messaggio in dettaglio...",
+    "send": "Invia Ticket",
+    "sending": "Invio in corso...",
+    "ticketSent": "Ticket inviato con successo! Riceverai risposta dall'admin.",
+    "myTickets": "I miei ticket",
+    "noTickets": "Non hai ancora inviato ticket",
+    "statusOpen": "In attesa",
+    "statusReplied": "Risposto",
+    "statusClosed": "Chiuso",
+    "yourMessage": "Il tuo messaggio",
+    "adminReply": "Risposta admin",
+    "waitingReply": "In attesa di risposta dall'admin..."
   }
 }

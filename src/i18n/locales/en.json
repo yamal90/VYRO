@@ -465,5 +465,25 @@
         ]
       }
     }
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Submit a ticket and get a response from admin",
+    "newTicket": "New Ticket",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Briefly describe the issue",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Write your message in detail...",
+    "send": "Send Ticket",
+    "sending": "Sending...",
+    "ticketSent": "Ticket sent successfully! You will receive a response from admin.",
+    "myTickets": "My tickets",
+    "noTickets": "You haven't submitted any tickets yet",
+    "statusOpen": "Pending",
+    "statusReplied": "Replied",
+    "statusClosed": "Closed",
+    "yourMessage": "Your message",
+    "adminReply": "Admin reply",
+    "waitingReply": "Waiting for admin response..."
   }
 }
