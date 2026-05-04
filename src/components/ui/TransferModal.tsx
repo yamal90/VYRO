@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownCircle, ArrowUpCircle, Check, Copy, X, Wallet, Shield, Camera, AlertTriangle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { ActionResult } from '../../types';
+import { supabase } from '../../lib/supabase';
 
 type TransferMode = 'deposit' | 'withdrawal';
 
@@ -139,19 +140,16 @@ const TransferModalContent: React.FC<TransferModalContentProps> = ({
     if (mode === 'deposit' && proofFile) {
       try {
         setUploadingProof(true);
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').toString().trim();
-        const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').toString().trim();
-        const sb = createClient(supabaseUrl, supabaseKey);
-        const { data: sessionData } = await sb.auth.getSession();
+        if (!supabase) throw new Error('Supabase non configurato');
+        const { data: sessionData } = await supabase.auth.getSession();
         const userId = sessionData?.session?.user?.id;
         if (!userId) throw new Error('Non autenticato');
         const ext = (proofFile.name.split('.').pop() || 'jpg').toLowerCase();
         const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
         const path = `${userId}/${Date.now()}-proof-${Math.random().toString(36).slice(2, 9)}.${safeExt}`;
-        const { error: upErr } = await sb.storage.from('avatars').upload(path, proofFile, { upsert: true });
+        const { error: upErr } = await supabase.storage.from('avatars').upload(path, proofFile, { upsert: true });
         if (upErr) throw upErr;
-        const { data: pubData } = sb.storage.from('avatars').getPublicUrl(path);
+        const { data: pubData } = supabase.storage.from('avatars').getPublicUrl(path);
         proofImageUrl = pubData.publicUrl;
       } catch {
         setError('Upload screenshot fallito. Riprova.');

@@ -105,8 +105,8 @@ export const useTransactionsStore = create<TransactionsState & TransactionsActio
         }));
         
         set({ teamMembers });
-      } catch (err) {
-        console.error('Load team error:', err);
+      } catch {
+        // silently ignore team load errors
       }
     },
 
