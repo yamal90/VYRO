@@ -229,21 +229,6 @@ as $$
   );
 $$;
 
-create or replace function public.is_admin(user_id uuid)
-returns boolean
-language sql
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = user_id
-      and role = 'admin'
-      and account_blocked = false
-  );
-$$;
-
 create or replace function private.generate_referral_code(seed_text text)
 returns text
 language plpgsql
@@ -702,15 +687,21 @@ security definer
 set search_path = public
 as $$
 declare
+  v_actor uuid := auth.uid();
   v_target_id uuid := coalesce(p_target_user_id, auth.uid());
   v_code text := upper(trim(coalesce(p_referral_code, '')));
   v_target public.profiles;
   v_referrer public.profiles;
   v_exists boolean := false;
 begin
-  if v_target_id is null then
+  if v_actor is null then
     return json_build_object('success', false, 'message', 'Utente non autenticato');
   end if;
+
+  if v_target_id <> v_actor and not private.is_admin(v_actor) then
+    return json_build_object('success', false, 'message', 'Non autorizzato');
+  end if;
+
   if v_code = '' then
     return json_build_object('success', false, 'message', 'Referral code obbligatorio');
   end if;
@@ -909,7 +900,7 @@ $$;
 
 grant execute on function public.request_deposit(numeric, text) to authenticated;
 grant execute on function public.request_withdrawal(numeric, text) to authenticated;
-grant execute on function public.validate_referral_code(text) to anon, authenticated;
+grant execute on function public.validate_referral_code(text) to authenticated;
 grant execute on function public.apply_referral_link(text, uuid) to authenticated;
 grant execute on function public.get_team_tree(uuid) to authenticated;
 grant execute on function public.admin_manage_deposit(uuid, text, text) to authenticated;
@@ -1021,11 +1012,11 @@ to authenticated
 using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
 drop policy if exists "deposits_write_own_or_admin" on public.deposits;
-create policy "deposits_write_own_or_admin"
+create policy "deposits_write_admin_only"
 on public.deposits for all
 to authenticated
-using (owner_id = auth.uid() or private.is_admin(auth.uid()))
-with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
+using (private.is_admin(auth.uid()))
+with check (private.is_admin(auth.uid()));
 
 drop policy if exists "withdrawals_read_own_or_admin" on public.withdrawals;
 create policy "withdrawals_read_own_or_admin"
@@ -1034,11 +1025,11 @@ to authenticated
 using (owner_id = auth.uid() or private.is_admin(auth.uid()));
 
 drop policy if exists "withdrawals_write_own_or_admin" on public.withdrawals;
-create policy "withdrawals_write_own_or_admin"
+create policy "withdrawals_write_admin_only"
 on public.withdrawals for all
 to authenticated
-using (owner_id = auth.uid() or private.is_admin(auth.uid()))
-with check (owner_id = auth.uid() or private.is_admin(auth.uid()));
+using (private.is_admin(auth.uid()))
+with check (private.is_admin(auth.uid()));
 
 drop policy if exists "activity_logs_read_own_or_admin" on public.activity_logs;
 create policy "activity_logs_read_own_or_admin"
