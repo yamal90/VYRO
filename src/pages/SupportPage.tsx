@@ -10,7 +10,6 @@ import {
   MessageCircle,
   ChevronDown,
   ChevronUp,
-  Plus,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
@@ -25,7 +24,6 @@ const SupportPage: React.FC = () => {
     false,
   );
 
-  const [showForm, setShowForm] = useState(false);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -41,7 +39,6 @@ const SupportPage: React.FC = () => {
       pushNotice('success', t('support.ticketSent'));
       setSubject('');
       setMessage('');
-      setShowForm(false);
     } else {
       pushNotice('error', result.message);
     }
@@ -86,68 +83,55 @@ const SupportPage: React.FC = () => {
         </div>
       </div>
 
-      {/* New Ticket Button */}
+      {/* Ticket Form - always visible */}
       <div className="px-4 mt-4">
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-[#06080f] font-semibold text-sm flex items-center justify-center gap-2"
+        <form
+          onSubmit={handleSubmit}
+          className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-amber-500/20 rounded-2xl p-4 space-y-3"
         >
-          <Plus size={16} />
-          {t('support.newTicket')}
-        </button>
-      </div>
-
-      {/* Ticket Form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-4 mt-4 overflow-hidden"
+          <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
+            <Send size={14} className="text-amber-400" />
+            {t('support.newTicket')}
+          </h3>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">
+              {t('support.subjectLabel')}
+            </label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={t('support.subjectPlaceholder')}
+              maxLength={100}
+              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">
+              {t('support.messageLabel')}
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={t('support.messagePlaceholder')}
+              rows={4}
+              maxLength={2000}
+              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none resize-none"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={sending || !subject.trim() || !message.trim()}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-[#06080f] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <form
-              onSubmit={handleSubmit}
-              className="bg-gradient-to-br from-[#0c101c] to-[#111827] border border-amber-500/20 rounded-2xl p-4 space-y-3"
-            >
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">
-                  {t('support.subjectLabel')}
-                </label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder={t('support.subjectPlaceholder')}
-                  maxLength={100}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">
-                  {t('support.messageLabel')}
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder={t('support.messagePlaceholder')}
-                  rows={4}
-                  maxLength={2000}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none resize-none"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={sending || !subject.trim() || !message.trim()}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-[#06080f] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <Send size={16} />
-                {sending ? t('support.sending') : t('support.send')}
-              </button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Send size={16} />
+            {sending ? t('support.sending') : t('support.send')}
+          </button>
+          <p className="text-[10px] text-slate-500 text-center">
+            {t('support.adminOnly', 'Il tuo messaggio sarà visibile solo all\'admin')}
+          </p>
+        </form>
+      </div>
 
       {/* Tickets List */}
       <div className="px-4 mt-6">
