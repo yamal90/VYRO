@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Eye, EyeOff, KeyRound, Ticket, UserPlus, Zap, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, KeyRound, Ticket, UserPlus, Zap, ShieldCheck, Sparkles, Loader2, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../store/AppContext';
 
@@ -486,6 +486,15 @@ const LoginPage: React.FC = () => {
               <div>
                 <p className="text-amber-400 text-sm font-bold">Facciamo crescere la community</p>
                 <p className="text-slate-400 text-[10px] mt-0.5">Il nostro unico obiettivo: far crescere la community insieme</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                <Calendar size={16} className="text-blue-400" />
+              </div>
+              <div>
+                <p className="text-blue-400 text-sm font-bold">{t('auth.withdrawalScheduleInfo')}</p>
+                <p className="text-slate-400 text-[10px] mt-0.5">{t('auth.withdrawalScheduleDetail')}</p>
               </div>
             </div>
           </div>
