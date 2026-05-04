@@ -217,9 +217,7 @@ const DashboardPage: React.FC = () => {
                 <RefreshCw size={16} className="text-slate-300" />
               </button>
               <button
-                onClick={() => {
-                  window.location.href = 'mailto:support@vyrogpu.com';
-                }}
+                onClick={() => navigate('/support')}
                 className="w-11 h-11 md:w-10 md:h-10 rounded-full glass-dark flex items-center justify-center hover:bg-white/10 transition-colors"
               >
                 <Headphones size={16} className="text-slate-300" />

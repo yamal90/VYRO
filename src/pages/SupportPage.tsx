@@ -128,7 +128,7 @@ const SupportPage: React.FC = () => {
             {sending ? t('support.sending') : t('support.send')}
           </button>
           <p className="text-[10px] text-slate-500 text-center">
-            {t('support.adminOnly', 'Il tuo messaggio sarà visibile solo all\'admin')}
+            {t('support.adminOnly', 'Il tuo messaggio arriverà direttamente all\'admin')}
           </p>
         </form>
       </div>
