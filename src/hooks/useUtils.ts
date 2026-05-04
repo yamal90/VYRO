@@ -70,8 +70,8 @@ export const useProductionStats = () => {
 
 // Theme hook
 export const useTheme = () => {
-  const [theme, setThemeState] = useState<'dark' | 'cyberpunk' | 'neon'>(() => {
-    const saved = localStorage.getItem('vyro-theme') as 'dark' | 'cyberpunk' | 'neon' | null;
+  const [theme, setThemeState] = useState<'dark' | 'cyberpunk' | 'neon' | 'light'>(() => {
+    const saved = localStorage.getItem('vyro-theme') as 'dark' | 'cyberpunk' | 'neon' | 'light' | null;
     return saved ?? 'cyberpunk';
   });
 

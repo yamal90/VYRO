@@ -18,6 +18,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
+import { useThemeStore } from '../stores/themeStore';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import NicknameModal from '../components/ui/NicknameModal';
 import AvatarModal from '../components/ui/AvatarModal';
@@ -58,6 +59,7 @@ const SettingsPage: React.FC = () => {
     pushNotice,
   } = useApp();
 
+  const themeStore = useThemeStore();
   const [prefs, setPrefs] = useState<LocalPrefs>(loadPrefs);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
@@ -105,10 +107,14 @@ const SettingsPage: React.FC = () => {
         {
           icon: Palette,
           label: t('settings.theme', 'Tema'),
-          description: prefs.darkMode ? 'Scuro' : 'Chiaro',
+          description: themeStore.theme === 'light' ? 'Chiaro' : 'Scuro',
           type: 'toggle' as const,
-          toggle: prefs.darkMode,
-          onToggle: () => togglePref('darkMode'),
+          toggle: themeStore.theme !== 'light',
+          onToggle: () => {
+            const next = themeStore.theme === 'light' ? 'dark' : 'light';
+            themeStore.setTheme(next);
+            setPrefs((prev) => ({ ...prev, darkMode: next !== 'light' }));
+          },
         },
         {
           icon: Eye,

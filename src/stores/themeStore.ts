@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
-type Theme = 'dark' | 'cyberpunk' | 'neon';
+type Theme = 'dark' | 'cyberpunk' | 'neon' | 'light';
 type Language = 'it' | 'en' | 'de' | 'fr' | 'es';
 
 interface ThemeState {
