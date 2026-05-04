@@ -62,7 +62,6 @@ interface AppState {
   balanceVisible: boolean;
   notice: AppNotice | null;
   login: (email: string, password: string) => Promise<ActionResult>;
-  loginWithGoogle: (referralCode?: string) => Promise<ActionResult>;
   requestPasswordReset: (email: string) => Promise<ActionResult>;
   completePasswordReset: (newPassword: string, confirmPassword: string) => Promise<ActionResult>;
   register: (payload: RegisterPayload) => Promise<ActionResult>;
@@ -653,37 +652,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [clearNotice, pushNotice],
   );
 
-  const loginWithGoogle = useCallback(
-    async (referralCode?: string): Promise<ActionResult> => {
-      if (!supabase) return emptyResult('Configura Supabase prima del login.');
-      clearNotice();
-      setAuthLoading(true);
-      try {
-        const normalizedReferral = String(referralCode ?? '').trim().toUpperCase();
-        if (normalizedReferral) {
-          const referralCheck = await validateReferralCode(normalizedReferral);
-          if (!referralCheck.valid) return emptyResult(referralCheck.message);
-        }
-        const appBaseUrl = getAppBaseUrl();
-        const redirectUrl = normalizedReferral
-          ? `${appBaseUrl}?ref=${encodeURIComponent(normalizedReferral)}`
-          : appBaseUrl;
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: redirectUrl },
-        });
-        if (error) throw error;
-        return { success: true, message: 'Redirect a Google in corso...' };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Accesso Google non riuscito';
-        pushNotice('error', message);
-        return emptyResult(message);
-      } finally {
-        setAuthLoading(false);
-      }
-    },
-    [clearNotice, pushNotice, validateReferralCode],
-  );
+
 
   const register = useCallback(
     async (payload: RegisterPayload): Promise<ActionResult> => {
@@ -1256,7 +1225,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     balanceVisible,
     notice,
     login,
-    loginWithGoogle,
     requestPasswordReset,
     completePasswordReset,
     register,
@@ -1289,7 +1257,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     allUsers, adminUserDevices, adminTransactions, adminLogs,
     adminDepositRequests, adminWithdrawalRequests,
     platformSettings, balanceVisible, notice,
-    login, loginWithGoogle, requestPasswordReset, completePasswordReset,
+    login, requestPasswordReset, completePasswordReset,
     register, updateNickname, updateAvatar, logout, setAuthMode,
     toggleBalanceVisibility, activateDevice, claimDeviceProduction, claimDailyReward,
     requestDeposit, requestWithdrawal,
